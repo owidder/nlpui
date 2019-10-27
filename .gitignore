@@ -1,0 +1,7 @@
+# IDE, editor
+.idea/
+*.SWP
+
+# build files / npm files
+node_modules
+build/
