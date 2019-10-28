@@ -44,7 +44,10 @@ const common = {
     devServer: {
         contentBase: path.join(__dirname, "public"),
         compress: true,
-        port: 9000
+        port: 9000,
+        proxy: {
+            "/api": "http://localhost:3100"
+        }
     },
     module: {
         strictExportPresence: true,
