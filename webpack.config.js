@@ -136,14 +136,13 @@ console.log(entries);
 
 const pages = {
     ...common,
-    entry: {...entries, initpage: "./src/pages/initPage.ts"},
+    entry: entries,
     output: {
         ...common.output,
         filename: 'static/js/[name].[contenthash:8].js',
     },
     plugins: [
         ...common.plugins,
-        ...htmlWebpackPlugins(["initpage"]),
         new MiniCssExtractPlugin({
             filename: "static/css/[name].[contenthash:8].css",}),
     ]
