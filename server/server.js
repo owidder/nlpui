@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const express = require('express');
 
 const app = express();
@@ -9,6 +10,7 @@ const server = require("http").createServer(app);
 const SUMMARY_FILENAME = '_.csv';
 const BASE_FOLDER = "/Users/oliver/dev/github/nlp/out";
 const VALUE_FILE_SUFFIX = ".tfidf.csv";
+var FAKE_SUMMARY_FILENAME = '_SUMMARY_';
 
 function isSummaryFile(filename) {
     return filename == SUMMARY_FILENAME;
@@ -28,6 +30,31 @@ function sortNonCaseSensitive(list) {
     });
 }
 
+function adaptValueFilename(filename) {
+    if(isSummaryFile(filename)) {
+        return FAKE_SUMMARY_FILENAME;
+    }
+    return filename.substr(0, filename.length - VALUE_FILE_SUFFIX.length);
+}
+
+function backAdaptValueFilePath(filePath) {
+    if(isFakeSummaryFilePath(filePath)) {
+        return filePath.substr(0, filePath.length - FAKE_SUMMARY_FILENAME.length) + SUMMARY_FILENAME;
+    }
+    return filePath + VALUE_FILE_SUFFIX;
+}
+
+function adaptNames(filesAndSubfolderNameList, absFolder) {
+    return filesAndSubfolderNameList.map(function (fileOrSubfolderName) {
+        if(isDirectory(fileOrSubfolderName, absFolder)) {
+            return fileOrSubfolderName + "/";
+        }
+        else {
+            return adaptValueFilename(fileOrSubfolderName);
+        }
+    });
+}
+
 function readFolder(relFolder) {
     const absFolder = path.join(BASE_FOLDER, relFolder);
     const filesAndSubfolders = fs.readdirSync(absFolder);
@@ -42,7 +69,7 @@ function filterNonValueFiles(filesAndSubfolderNameList, absFolder) {
 }
 
 router.get('/folder/*', function (req, res) {
-    var relFolder = req.originalUrl.substr("/api/folder".length+1);
+    const relFolder = req.originalUrl.substr("/api/folder".length+1);
     res.json({
         folder: relFolder,
         content: readFolder(relFolder)
