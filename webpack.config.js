@@ -143,6 +143,7 @@ const pages = {
     },
     plugins: [
         ...common.plugins,
+        ...htmlWebpackPlugins([]),
         new MiniCssExtractPlugin({
             filename: "static/css/[name].[contenthash:8].css",}),
     ]

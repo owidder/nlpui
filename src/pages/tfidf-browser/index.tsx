@@ -3,4 +3,7 @@ import * as ReactDOM from "react-dom";
 
 import {Directory} from "./Directory";
 
-ReactDOM.render(<Directory/>, document.getElementById("container"));
+import "materialize-css/dist/css/materialize.css";
+
+
+ReactDOM.render(<Directory path="123"/>, document.getElementById("container"));
