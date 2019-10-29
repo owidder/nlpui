@@ -68,11 +68,28 @@ function filterNonValueFiles(filesAndSubfolderNameList, absFolder) {
     });
 }
 
+function isFileOrFolder(relPath) {
+    const absPath = path.join(BASE_FOLDER, relPath);
+    if(fs.existsSync(absPath)) {
+        return fs.lstatSync(absPath).isDirectory() ? "d" : "f";
+    }
+
+    return "-";
+}
+
 router.get('/folder/*', function (req, res) {
     const relFolder = req.originalUrl.substr("/api/folder".length+1);
     res.json({
         folder: relFolder,
         content: readFolder(relFolder)
+    });
+});
+
+router.get('/isFileOrFolder/*', function (req, res) {
+    const relPath = req.originalUrl.substr("/api/isFileOrFolder".length+1);
+    res.json({
+        path: relPath,
+        isFileOrFolder: isFileOrFolder(relPath)
     });
 });
 

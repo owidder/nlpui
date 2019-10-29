@@ -2,6 +2,8 @@ import * as React from "react";
 
 import "./directory.scss";
 
+const _path = require("path");
+
 interface DirectoryProps {
     path: string
 }
@@ -32,9 +34,9 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     render() {
         return <div className="directory">
             {this.state.content.map(entry => {
-                const newPath = `${this.state.currentPath}/${entry}`
+                const newPath = _path.join(this.state.currentPath, entry)
                 return <a key={entry}
-                          href={`#${this.state.currentPath}/${entry}`}
+                          href={`#${newPath}`}
                           onClick={() => this.gotoPath(newPath)}>{entry}</a>
             })}
         </div>
