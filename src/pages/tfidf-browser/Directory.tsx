@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import "./directory.scss";
+
 interface DirectoryProps {
     path: string
 }
@@ -29,7 +31,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
 
     render() {
         return <div className="directory">
-            {this.state.content.map(entry => <div>{entry}</div>)}
+            {this.state.content.map((entry, i) => <div key={i}>{entry}</div>)}
         </div>
     }
 }
