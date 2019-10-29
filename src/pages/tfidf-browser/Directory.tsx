@@ -6,22 +6,30 @@ interface DirectoryProps {
 
 interface DirectoryState {
     content: string[]
+    currentPath: string
+}
+
+interface FolderInfo {
+    folder: string;
+    content: string[];
 }
 
 export class Directory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: []}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
-    private readDirectory() {
-
+    private async readDirectory(): Promise<string[]> {
+        const folderInfo: FolderInfo = await fetch(`/api/folder/${this.state.currentPath}`).then(response => response.json())
+        return folderInfo.content
     }
 
     async componentDidMount() {
-        const content = await fetch(`/api/folder/${this.props.path}`).then(response => response.json())
-        this.setState({content})
+        this.setState({content: await this.readDirectory()})
     }
 
     render() {
-        return <b>{JSON.stringify(this.state.content)}</b>
+        return <div className="directory">
+            {this.state.content.map(entry => <div>{entry}</div>)}
+        </div>
     }
 }
