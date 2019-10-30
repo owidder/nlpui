@@ -37,6 +37,10 @@ function adaptValueFilename(filename) {
     return filename.substr(0, filename.length - VALUE_FILE_SUFFIX.length);
 }
 
+function isFakeSummaryFilePath(filePath) {
+    return filePath.endsWith(FAKE_SUMMARY_FILENAME);
+}
+
 function backAdaptValueFilePath(filePath) {
     if(isFakeSummaryFilePath(filePath)) {
         return filePath.substr(0, filePath.length - FAKE_SUMMARY_FILENAME.length) + SUMMARY_FILENAME;
@@ -68,13 +72,20 @@ function filterNonValueFiles(filesAndSubfolderNameList, absFolder) {
     });
 }
 
+function _fileOrFolder(absPath) {
+    return fs.lstatSync(absPath).isDirectory() ? "folder" : "file";
+}
+
 function isFileOrFolder(relPath) {
     const absPath = path.join(BASE_FOLDER, relPath);
+    console.log(`isFileOrFolder: ${absPath}`)
     if(fs.existsSync(absPath)) {
-        return fs.lstatSync(absPath).isDirectory() ? "d" : "f";
+        return _fileOrFolder(absPath)
+    } else if(fs.existsSync(backAdaptValueFilePath(absPath))) {
+        return _fileOrFolder(backAdaptValueFilePath(absPath))
     }
 
-    return "-";
+    return "NA";
 }
 
 router.get('/folder/*', function (req, res) {
