@@ -30,6 +30,10 @@ const callApi = async (apiPath: string) => {
     return await fetch(`/api/${apiPath}`).then(response => response.json())
 }
 
+const pathParam = (path: string) => {
+    return `#path=${path}`
+}
+
 export class Directory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
@@ -48,15 +52,38 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
         this.gotoPath(this.props.path)
     }
 
+    currentFolderWithoutTrailingSlash(): string {
+        const currentFolder = this.state.currentPathType == "folder" ? this.state.currentPath : _path.dirname(this.state.currentPath)
+
+        return currentFolder.endsWith("/") ? currentFolder.substr(0, currentFolder.length-1) : currentFolder
+    }
+
+    parentFolderOfCurrentPath(): string {
+        const currentFolder = this.currentFolderWithoutTrailingSlash()
+        if(currentFolder.length > 0 && currentFolder != ".") {
+            const parts = currentFolder.split("/")
+            return parts.slice(0, parts.length-1).join("/")
+        }
+
+        return null
+    }
+
+    renderLink(entry: string, path: string) {
+        return <a key={entry}
+                  href={pathParam(path)}
+                  onClick={() => this.gotoPath(path)}>{entry}</a>
+    }
+
     render() {
+        const parentFolder = this.parentFolderOfCurrentPath()
+
         return <div className="directory">
+            {parentFolder != null ? this.renderLink("..", parentFolder) : <span></span>}
             {this.state.content.map(entry => {
                 const newPath = (this.state.currentPathType == "folder" ?
                     _path.join(this.state.currentPath, entry) :
                     _path.join(_path.dirname(this.state.currentPath), entry))
-                return <a key={entry}
-                          href={`#path=${newPath}`}
-                          onClick={() => this.gotoPath(newPath)}>{entry}</a>
+                return this.renderLink(entry, newPath)
             })}
         </div>
     }
