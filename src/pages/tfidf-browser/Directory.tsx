@@ -6,6 +6,9 @@ import "./directory.scss";
 
 const _path = require("path");
 
+const SRC_BASE_PATH = "https://github.com/frappe/erpnext/tree/c269c68727ffe251c1f04f1bfc373f6ddb1d1b17"
+const SUMMARY_FILE_NAME = "_SUMMARY_"
+
 interface DirectoryProps {
     path: string
 }
@@ -75,19 +78,27 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
-        return <div className="margins row">
-            <div className="list col-xs-6 col s6">
-                {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
-                {this.state.content.map(entry => {
-                    const newPath = (this.state.currentPathType == "folder" ?
-                        _path.join(this.state.currentPath, entry) :
-                        _path.join(_path.dirname(this.state.currentPath), entry))
-                    return this.renderLink(entry, newPath)
-                })}
+        return <div className="directory">
+            <h5 className="title">{this.state.currentPath}
+            {(this.state.currentPathType == "file" && !this.state.currentPath.endsWith(SUMMARY_FILE_NAME)) ? <a target="_blank" href={`${SRC_BASE_PATH}/${this.state.currentPath}`}>github</a> : <span/>}
+            </h5>
+            <div className="margins row">
+                <div className="list col-xs-6 col s6">
+                    {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
+                    {this.state.content.map(entry => {
+                        const newPath = (this.state.currentPathType == "folder" ?
+                            _path.join(this.state.currentPath, entry) :
+                            _path.join(_path.dirname(this.state.currentPath), entry))
+                        return <div className="listrow">
+                            <div>{this.renderLink(entry, newPath)}</div>
+                        </div>
+                    })}
+                </div>
+                <div className="col-xs-6 col s6">
+                    {this.state.currentPathType == "file" ? <Tfidf filePath={this.state.currentPath}/> : <span/>}
+                </div>
             </div>
-            <div className="col-xs-6 col s6">
-                {this.state.currentPathType == "file" ? <Tfidf filePath={this.state.currentPath}/> : <span/>}
             </div>
-            </div>
+
     }
 }

@@ -1,3 +1,15 @@
+.directory .title {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background-color: lightgray;
+  padding: .3em;
+
+  a {
+    margin-left: 2em;
+  }
+}
+
 .list {
   display: flex;
   flex-direction: column;
