@@ -6,17 +6,35 @@ interface TfidfProps {
     filePath: string
 }
 
+interface TermInfo {
+    term: string
+    tfidfValue: number
+}
+
 interface TfidfState {
-    content: string;
+    termInfos: TermInfo[]
+}
+
+interface FileContent {
+    path: string
+    content: string
 }
 
 export class Tfidf extends React.Component<TfidfProps, TfidfState> {
 
-    readonly state: TfidfState = {content: ""}
+    readonly state: TfidfState = {termInfos: []}
 
     async readContent() {
-        const content = await callApi(`file/${this.props.filePath}`)
-        this.setState({content: JSON.stringify(content)})
+        const fileContent: FileContent = await callApi(`file/${this.props.filePath}`)
+        const entries = fileContent.content.split("\n")
+        const termInfos: TermInfo[] = entries.filter(entry => entry.length > 0).map(entry => {
+            const parts = entry.split("\t")
+            return {
+                term: parts[0],
+                tfidfValue: Number(parts[1])
+            }
+        })
+        this.setState({termInfos})
     }
 
     componentDidMount(): void {
@@ -30,6 +48,11 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
     }
 
     render() {
-        return <div>{this.state.content}</div>
+        return <div className="list">
+            {this.state.termInfos.map(termInfo => <div className="listrow" key={termInfo.term}>
+                <div>{termInfo.term}</div>
+                <div>{termInfo.tfidfValue}</div>
+            </div>)}
+        </div>
     }
 }

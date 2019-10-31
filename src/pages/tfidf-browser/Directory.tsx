@@ -75,8 +75,8 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
-        return <div className="ml row">
-            <div className="directory col-xs-6 col s6">
+        return <div className="margins row">
+            <div className="list col-xs-6 col s6">
                 {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
                 {this.state.content.map(entry => {
                     const newPath = (this.state.currentPathType == "folder" ?

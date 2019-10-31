@@ -1,9 +1,16 @@
-.directory {
+.list {
   display: flex;
   flex-direction: column;
-  margin-left: 2em;
+
+  .listrow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }
 
-.ml {
+
+.margins {
   margin-left: 2em;
+  margin-right: 2em;
 }
