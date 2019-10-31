@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import {callApi} from "../../util/fetchUtil";
 import {Tfidf} from "./Tfidf";
 import "./directory.scss";
 
@@ -24,11 +25,7 @@ interface FolderInfo {
 
 interface PathInfo {
     path: string
-    isFileOrFolder: PathType
-}
-
-const callApi = async (apiPath: string) => {
-    return await fetch(`/api/${apiPath}`).then(response => response.json())
+    pathType: PathType
 }
 
 const pathParam = (path: string) => {
@@ -40,11 +37,11 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
     private async gotoPath(path: string) {
-        const pathInfo: PathInfo = await callApi(`/isFileOrFolder/${path}`)
-        const pathType = pathInfo.isFileOrFolder
+        const pathInfo: PathInfo = await callApi(`pathType/${path}`)
+        const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderInfo: FolderInfo = await callApi(`/folder/${folder}`)
+        const folderInfo: FolderInfo = await callApi(`folder/${folder}`)
 
         this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
     }

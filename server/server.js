@@ -20,10 +20,6 @@ function isValueFile(filename) {
     return isSummaryFile(filename) || filename.endsWith(VALUE_FILE_SUFFIX);
 }
 
-function isDirectory(filename, absFolder) {
-    return fs.lstatSync(path.join(absFolder, filename)).isDirectory();
-}
-
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -48,60 +44,119 @@ function backAdaptValueFilePath(filePath) {
     return filePath + VALUE_FILE_SUFFIX;
 }
 
+function adaptNamesRecursive(filesAndSubfolderNameList, absFolder, adaptedList, currentIndex, resolve, reject) {
+    if(currentIndex < filesAndSubfolderNameList.length) {
+        const fileOrSubfolderName = filesAndSubfolderNameList[currentIndex];
+        fs.stat(path.join(absFolder, fileOrSubfolderName), (err, stats) => {
+            if(err) reject(err);
+            if(stats.isDirectory()) {
+                adaptedList.push(fileOrSubfolderName + "/")
+            } else {
+                adaptedList.push(adaptValueFilename(fileOrSubfolderName))
+            }
+            adaptNamesRecursive(filesAndSubfolderNameList, absFolder, adaptedList, currentIndex+1, resolve, reject);
+        })
+    } else {
+        resolve(adaptedList)
+    }
+}
+
 function adaptNames(filesAndSubfolderNameList, absFolder) {
-    return filesAndSubfolderNameList.map(function (fileOrSubfolderName) {
-        if(isDirectory(fileOrSubfolderName, absFolder)) {
-            return fileOrSubfolderName + "/";
-        }
-        else {
-            return adaptValueFilename(fileOrSubfolderName);
-        }
-    });
+    return new Promise((resolve, reject) => {
+        adaptNamesRecursive(filesAndSubfolderNameList, absFolder, [], 0, resolve, reject)
+    })
 }
 
 function readFolder(relFolder) {
     const absFolder = path.join(BASE_FOLDER, relFolder);
-    const filesAndSubfolders = fs.readdirSync(absFolder);
-    const onlyFoldersAndValueFiles = filterNonValueFiles(filesAndSubfolders, absFolder);
-    return sortNonCaseSensitive(adaptNames(onlyFoldersAndValueFiles, absFolder));
+    return new Promise((resolve, reject) => {
+        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            if(err) reject(err);
+            const onlyFoldersAndValueFiles =  await filterNonValueFiles(filesAndSubfolders, absFolder);
+            const adaptedNames = await adaptNames(onlyFoldersAndValueFiles, absFolder)
+            resolve(sortNonCaseSensitive(adaptedNames));
+        });
+    })
+}
+
+function filterNonValueFilesRecursive(filesAndSubfolderNameList, absFolder, filteredList, currentIndex, resolve, reject) {
+    if(currentIndex < filesAndSubfolderNameList.length) {
+        const fileOrSubfolderName = filesAndSubfolderNameList[currentIndex];
+        if(isValueFile(fileOrSubfolderName)) {
+            filteredList.push(fileOrSubfolderName);
+            filterNonValueFilesRecursive(filesAndSubfolderNameList, absFolder, filteredList, currentIndex+1, resolve, reject)
+        } else {
+            fs.stat(path.join(absFolder, fileOrSubfolderName), (err, stats) => {
+                if(err) reject(err);
+                if(stats.isDirectory()) {
+                    filteredList.push(fileOrSubfolderName)
+                }
+                filterNonValueFilesRecursive(filesAndSubfolderNameList, absFolder, filteredList, currentIndex+1, resolve, reject)
+            })
+        }
+    } else {
+        resolve(filteredList)
+    }
 }
 
 function filterNonValueFiles(filesAndSubfolderNameList, absFolder) {
-    return filesAndSubfolderNameList.filter(fileOrSubfolderName => {
-        return isValueFile(fileOrSubfolderName) || isDirectory(fileOrSubfolderName, absFolder);
-    });
+    return new Promise((resolve, reject) => {
+        filterNonValueFilesRecursive(filesAndSubfolderNameList, absFolder, [], 0, resolve, reject)
+    })
 }
 
-function _fileOrFolder(absPath) {
-    return fs.lstatSync(absPath).isDirectory() ? "folder" : "file";
+function pathTypeFromStats(stats) {
+    return stats.isDirectory() ? "folder" : "file";
 }
 
-function isFileOrFolder(relPath) {
+function getPathType(relPath) {
     const absPath = path.join(BASE_FOLDER, relPath);
-    console.log(`isFileOrFolder: ${absPath}`)
-    if(fs.existsSync(absPath)) {
-        return _fileOrFolder(absPath)
-    } else if(fs.existsSync(backAdaptValueFilePath(absPath))) {
-        return _fileOrFolder(backAdaptValueFilePath(absPath))
-    }
-
-    return "NA";
+    return new Promise((resolve, reject) => {
+        fs.stat(absPath, (err1, stats1) => {
+            if(err1 == null) {
+                resolve(pathTypeFromStats(stats1))
+            } else {
+                fs.stat(backAdaptValueFilePath(absPath), (err2, stats2) => {
+                    if(err2 == null) {
+                        resolve(pathTypeFromStats(stats2))
+                    } else {
+                        resolve("NA")
+                    }
+                })
+            }
+        })
+    })
 }
 
-router.get('/folder/*', function (req, res) {
+function readContent(relPath) {
+    var absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
+    return new Promise((resolve, reject) => {
+        fs.readFile(absPath, 'utf8', (err, data) => {
+            if(err) reject(err);
+            resolve(data)
+        });
+    })
+}
+
+router.get('/folder/*', async function (req, res) {
     const relFolder = req.originalUrl.substr("/api/folder".length+1);
-    res.json({
-        folder: relFolder,
-        content: readFolder(relFolder)
-    });
+    console.log(`folder: ${relFolder}`);
+    const content = await readFolder(relFolder)
+    res.json({folder: relFolder, content});
 });
 
-router.get('/isFileOrFolder/*', function (req, res) {
-    const relPath = req.originalUrl.substr("/api/isFileOrFolder".length+1);
-    res.json({
-        path: relPath,
-        isFileOrFolder: isFileOrFolder(relPath)
-    });
+router.get('/file/*', async function (req, res) {
+    const relPath = req.originalUrl.substr("/api/file".length+1);
+    console.log(`file: ${relPath}`);
+    const content = await readContent(relPath);
+    res.json({path: relPath, content});
+});
+
+router.get('/pathType/*', async function (req, res) {
+    const relPath = req.originalUrl.substr("/api/pathType".length+1);
+    const pathType = await getPathType(relPath);
+    console.log(`pathType: ${relPath} -> ${pathType}`);
+    res.json({path: relPath, pathType});
 });
 
 app.use('/api', router);
