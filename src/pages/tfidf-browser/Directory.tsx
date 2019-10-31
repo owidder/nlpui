@@ -79,7 +79,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
         const parentFolder = this.parentFolderOfCurrentPath()
 
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath}
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? `/${this.state.currentPath}` : "/"}
             {(this.state.currentPathType == "file" && !this.state.currentPath.endsWith(SUMMARY_FILE_NAME)) ? <a target="_blank" href={`${SRC_BASE_PATH}/${this.state.currentPath}`}>github</a> : <span/>}
             </h5>
             <div className="margins row">
