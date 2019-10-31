@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import {Tfidf} from "./Tfidf";
 import "./directory.scss";
 
 const _path = require("path");
@@ -77,14 +78,19 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
-        return <div className="directory">
-            {parentFolder != null ? this.renderLink("..", parentFolder) : <span></span>}
-            {this.state.content.map(entry => {
-                const newPath = (this.state.currentPathType == "folder" ?
-                    _path.join(this.state.currentPath, entry) :
-                    _path.join(_path.dirname(this.state.currentPath), entry))
-                return this.renderLink(entry, newPath)
-            })}
-        </div>
+        return <div className="ml row">
+            <div className="directory col-xs-6 col s6">
+                {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
+                {this.state.content.map(entry => {
+                    const newPath = (this.state.currentPathType == "folder" ?
+                        _path.join(this.state.currentPath, entry) :
+                        _path.join(_path.dirname(this.state.currentPath), entry))
+                    return this.renderLink(entry, newPath)
+                })}
+            </div>
+            <div className="col-xs-6 col s6">
+                {this.state.currentPathType == "file" ? <Tfidf filePath={this.state.currentPath}/> : <span/>}
+            </div>
+            </div>
     }
 }
