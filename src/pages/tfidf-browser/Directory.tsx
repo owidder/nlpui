@@ -49,15 +49,13 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     }
 
     render() {
-        console.log(this.state.currentPathType)
-        console.log(this.state.currentPath)
         return <div className="directory">
             {this.state.content.map(entry => {
                 const newPath = (this.state.currentPathType == "folder" ?
                     _path.join(this.state.currentPath, entry) :
                     _path.join(_path.dirname(this.state.currentPath), entry))
                 return <a key={entry}
-                          href={`#${newPath}`}
+                          href={`#path=${newPath}`}
                           onClick={() => this.gotoPath(newPath)}>{entry}</a>
             })}
         </div>
