@@ -7,9 +7,6 @@
 
   a {
     margin-left: 2em;
-    .highlight {
-      background-color: orange;
-    }
   }
 }
 
@@ -28,4 +25,12 @@
 .margins {
   margin-left: 2em;
   margin-right: 2em;
+}
+
+.highlight {
+  background-color: lightgray;
+}
+
+.directoryentry {
+  padding: .2em;
 }

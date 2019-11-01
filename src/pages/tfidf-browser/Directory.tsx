@@ -76,8 +76,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         console.log(`key = ${entry}`)
-        return <a key={entry}
-                  className={doHighlight ? "highlight" : ""}
+        return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
                   onClick={() => this.gotoPath(path)}>{entry}</a>
     }
@@ -92,12 +91,13 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
             </h5>
             <div className="margins row">
                 <div className="list col-xs-6 col s6">
+                    {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                     {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
                     {this.state.content.filter(entry => entry != SUMMARY_FILE_NAME).map(entry => {
                         const newPath = (this.state.currentPathType == "folder" ?
                             _path.join(this.state.currentPath, entry) :
                             _path.join(_path.dirname(this.state.currentPath), entry))
-                        return <div className="listrow">
+                        return <div className="listrow" key={entry}>
                             <div>{this.renderLink(entry, newPath)}</div>
                         </div>
                     })}
