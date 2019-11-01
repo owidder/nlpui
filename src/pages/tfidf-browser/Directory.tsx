@@ -69,13 +69,21 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
         return null
     }
 
+    summaryFileOfCurrentPath() {
+        return _path.join(this.state.currentPath, SUMMARY_FILE_NAME)
+    }
+
     renderLink(entry: string, path: string) {
+        const doHighlight = _path.basename(this.state.currentPath) == entry;
+        console.log(`key = ${entry}`)
         return <a key={entry}
+                  className={doHighlight ? "highlight" : ""}
                   href={pathParam(path)}
                   onClick={() => this.gotoPath(path)}>{entry}</a>
     }
 
     render() {
+        console.log("----")
         const parentFolder = this.parentFolderOfCurrentPath()
 
         return <div className="directory">
@@ -85,7 +93,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
             <div className="margins row">
                 <div className="list col-xs-6 col s6">
                     {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
-                    {this.state.content.map(entry => {
+                    {this.state.content.filter(entry => entry != SUMMARY_FILE_NAME).map(entry => {
                         const newPath = (this.state.currentPathType == "folder" ?
                             _path.join(this.state.currentPath, entry) :
                             _path.join(_path.dirname(this.state.currentPath), entry))
@@ -95,7 +103,9 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
                     })}
                 </div>
                 <div className="col-xs-6 col s6">
-                    {this.state.currentPathType == "file" ? <Tfidf filePath={this.state.currentPath}/> : <span/>}
+                    {this.state.currentPathType == "file" ?
+                        <Tfidf filePath={this.state.currentPath}/> :
+                        <Tfidf filePath={this.summaryFileOfCurrentPath()}/>}
                 </div>
             </div>
             </div>
