@@ -134,7 +134,7 @@ function getPathType(relPath) {
 }
 
 function readContent(relPath) {
-    var absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
+    const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
     return new Promise((resolve, reject) => {
         fs.readFile(absPath, "utf8", (err, data) => {
             if(err) reject(err);
@@ -163,6 +163,27 @@ function initTermInfos() {
     })
 }
 
+const readTerms = (relPath) => {
+    const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
+    const terms = [];
+    return new Promise((resolve, reject) => {
+        const readInterface = readline.createInterface({
+            input: fs.createReadStream(absPath),
+            output: process.stdout,
+            console: false
+        });
+        readInterface.on("line", line => {
+            const parts = line.split("\t");
+            const term = parts[0];
+            const tfidfValue = Number(parts[1]);
+            const plusOrMinus = termInfos[term] ? termInfos[term] : "?";
+            terms.push({term, tfidfValue, plusOrMinus});
+        }).on("close", () => {
+            resolve(terms);
+        })
+    })
+}
+
 router.get("/termInfo/:term", (req, res) => {
     const {term} = req.params;
     const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "?";
@@ -181,6 +202,13 @@ router.get("/file/*", async function (req, res) {
     console.log(`file: ${relPath}`);
     const content = await readContent(relPath);
     res.json({path: relPath, content});
+});
+
+router.get("/file2/*", async function (req, res) {
+    const relPath = req.originalUrl.substr("/api/file".length+1);
+    console.log(`file: ${relPath}`);
+    const terms = await readTerms(relPath);
+    res.json({path: relPath, terms});
 });
 
 router.get("/pathType/*", async function (req, res) {
