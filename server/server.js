@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
-const express = require('express');
+const express = require("express");
+const readline = require("readline");
 
 const app = express();
 const router = express.Router();
@@ -135,7 +136,7 @@ function getPathType(relPath) {
 function readContent(relPath) {
     var absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
     return new Promise((resolve, reject) => {
-        fs.readFile(absPath, 'utf8', (err, data) => {
+        fs.readFile(absPath, "utf8", (err, data) => {
             if(err) reject(err);
             resolve(data)
         });
@@ -143,19 +144,22 @@ function readContent(relPath) {
 }
 
 function initTermInfos() {
-    if(fs.existsSync("./termInfos.csv")) {
-        const termInfosCsv = fs.readFileSync("./termInfos.csv");
-        termInfosCsv.forEach(termInfoCsvRow => {
-            const parts = termInfoCsvRow.split(";");
-            const termName = parts[0];
-            const plusOrMinus = parts[1];
-            termInfos[termName] = {plusOrMinus};
-        })
-    }
-}
-
-function init() {
-    initTermInfos();
+    return new Promise((resolve, reject) => {
+        if(fs.existsSync("./termInfos.csv")) {
+            fs.readFile("./termInfos.csv", "utf8", (err, termInfosCsv) => {
+                if(err) reject(err);
+                termInfosCsv.split("\n").forEach(termInfoCsvRow => {
+                    const parts = termInfoCsvRow.split(";");
+                    const termName = parts[0];
+                    const plusOrMinus = parts[1];
+                    termInfos[termName] = {plusOrMinus};
+                })
+            })
+            resolve()
+        } else {
+            resolve()
+        }
+    })
 }
 
 router.get("/termInfo/:term", (req, res) => {
@@ -185,10 +189,10 @@ router.get("/pathType/*", async function (req, res) {
     res.json({path: relPath, pathType});
 });
 
-init();
-
 app.use('/api', router);
 
-server.listen(3100, function () {
-    console.log("server for nlp-client is listening on port 3100")
-});
+initTermInfos().then(() => {
+    server.listen(3100, function () {
+        console.log("server for nlp-client is listening on port 3100")
+    });
+})
