@@ -146,16 +146,17 @@ function readContent(relPath) {
 function initTermInfos() {
     return new Promise((resolve, reject) => {
         if(fs.existsSync("./termInfos.csv")) {
-            fs.readFile("./termInfos.csv", "utf8", (err, termInfosCsv) => {
-                if(err) reject(err);
-                termInfosCsv.split("\n").forEach(termInfoCsvRow => {
-                    const parts = termInfoCsvRow.split(";");
-                    const termName = parts[0];
-                    const plusOrMinus = parts[1];
-                    termInfos[termName] = {plusOrMinus};
-                })
-            })
-            resolve()
+            const readInterface = readline.createInterface({
+                input: fs.createReadStream("./termInfos.csv"),
+                output: process.stdout,
+                console: false
+            });
+            readInterface.on("line", termInfoCsvRow => {
+                const parts = termInfoCsvRow.split(";");
+                const termName = parts[0];
+                const plusOrMinus = parts[1];
+                termInfos[termName] = {plusOrMinus};
+            }).on("close", resolve);
         } else {
             resolve()
         }
