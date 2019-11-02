@@ -12,6 +12,10 @@ const BASE_FOLDER = "/Users/oliver/dev/github/nlp/out";
 const VALUE_FILE_SUFFIX = ".tfidf.csv";
 var FAKE_SUMMARY_FILENAME = '_SUMMARY_';
 
+const ignoreTerms = [];
+const terms = [];
+const termInfos = {};
+
 function isSummaryFile(filename) {
     return filename == SUMMARY_FILENAME;
 }
@@ -138,26 +142,50 @@ function readContent(relPath) {
     })
 }
 
-router.get('/folder/*', async function (req, res) {
+function initTermInfos() {
+    if(fs.existsSync("./termInfos.csv")) {
+        const termInfosCsv = fs.readFileSync("./termInfos.csv");
+        termInfosCsv.forEach(termInfoCsvRow => {
+            const parts = termInfoCsvRow.split(";");
+            const termName = parts[0];
+            const plusOrMinus = parts[1];
+            termInfos[termName] = {plusOrMinus};
+        })
+    }
+}
+
+function init() {
+    initTermInfos();
+}
+
+router.get("/termInfo/:term", (req, res) => {
+    const {term} = req.params;
+    const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
+    res.json({term, plusOrMinus});
+})
+
+router.get("/folder/*", async function (req, res) {
     const relFolder = req.originalUrl.substr("/api/folder".length+1);
     console.log(`folder: ${relFolder}`);
     const content = await readFolder(relFolder)
     res.json({folder: relFolder, content});
 });
 
-router.get('/file/*', async function (req, res) {
+router.get("/file/*", async function (req, res) {
     const relPath = req.originalUrl.substr("/api/file".length+1);
     console.log(`file: ${relPath}`);
     const content = await readContent(relPath);
     res.json({path: relPath, content});
 });
 
-router.get('/pathType/*', async function (req, res) {
+router.get("/pathType/*", async function (req, res) {
     const relPath = req.originalUrl.substr("/api/pathType".length+1);
     const pathType = await getPathType(relPath);
     console.log(`pathType: ${relPath} -> ${pathType}`);
     res.json({path: relPath, pathType});
 });
+
+init();
 
 app.use('/api', router);
 
