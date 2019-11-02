@@ -8,7 +8,8 @@ interface TfidfProps {
 
 interface TermInfo {
     term: string
-    tfidfValue: number
+    tfidfValue?: number
+    plusOrMinus?: "+" | "-" | "?"
 }
 
 interface TfidfState {
@@ -20,9 +21,26 @@ interface FileContent {
     content: string
 }
 
+const readPlusOrMinusRecursive = async (termInfos: TermInfo[], termInfosWithPlusOrMinus: TermInfo[], index: number, resolve: (newTermInfos: TermInfo[]) => void) => {
+    if(index < termInfos.length) {
+        const currentTermInfo = termInfos[index]
+        const termInfo: TermInfo = await callApi(`termInfo/${currentTermInfo.term}`)
+        termInfosWithPlusOrMinus.push({...currentTermInfo, plusOrMinus: termInfo.plusOrMinus})
+        readPlusOrMinusRecursive(termInfos, termInfosWithPlusOrMinus, index+1, resolve)
+    } else {
+        resolve(termInfosWithPlusOrMinus)
+    }
+}
+
 export class Tfidf extends React.Component<TfidfProps, TfidfState> {
 
     readonly state: TfidfState = {termInfos: []}
+
+    setPlusOrMinus(termInfos: TermInfo[]): Promise<TermInfo[]> {
+        return new Promise(resolve => {
+            readPlusOrMinusRecursive(termInfos, [], 0, resolve)
+        })
+    }
 
     async readContent() {
         const fileContent: FileContent = await callApi(`file/${this.props.filePath}`)
@@ -34,6 +52,7 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
                 tfidfValue: Number(parts[1])
             }
         })
+        const termInfosWithPlusOrMinus = await this.setPlusOrMinus(termInfos)
         this.setState({termInfos})
     }
 

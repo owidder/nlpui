@@ -165,7 +165,7 @@ function initTermInfos() {
 
 router.get("/termInfo/:term", (req, res) => {
     const {term} = req.params;
-    const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
+    const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "?";
     res.json({term, plusOrMinus});
 })
 
