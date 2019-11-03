@@ -1,10 +1,13 @@
 const path = require("path");
 const fs = require("fs");
 const express = require("express");
+const bodyParser = require('body-parser');
 const readline = require("readline");
 
 const app = express();
 const router = express.Router();
+app.use(bodyParser.json());
+app.use("/", express.static(__dirname + "/build"));
 
 const server = require("http").createServer(app);
 
@@ -167,6 +170,14 @@ function initTermInfos() {
     })
 }
 
+const setTermInfo = (termName, plusOrMinus) => {
+    if(termInfos[termName]) {
+        termInfos[termName].plusOrMinus = plusOrMinus;
+    } else {
+        termInfos[termName] = {plusOrMinus};
+    }
+}
+
 const readTerms = (relPath) => {
     const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
     const terms = [];
@@ -183,6 +194,14 @@ const readTerms = (relPath) => {
         })
     })
 }
+
+router.post("/termInfo/:term/set", (req, res) => {
+    const {term} = req.params;
+    const {plusOrMinus} = req.body;
+    console.log(`set: ${term} = ${plusOrMinus}`);
+    setTermInfo(term, plusOrMinus);
+    res.json({term, plusOrMinus});
+})
 
 router.get("/termInfo/:term", (req, res) => {
     const {term} = req.params;
