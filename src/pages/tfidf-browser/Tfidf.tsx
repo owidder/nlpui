@@ -60,7 +60,11 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
         return <div className="list tfidf">
             {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createPlusMinusClass(termInfo.plusOrMinus)}`} key={termInfo.term}>
                 <div>{termInfo.term}</div>
-                <div>{termInfo.tfidfValue}</div>
+                <div className="next-to-each-other">
+                    <div><i className="material-icons small">add_circle_outline</i></div>
+                    <div><i className="material-icons small">remove_circle_outline</i></div>
+                    <div><i className="material-icons small">help_outline</i></div>
+                </div>
             </div>)}
         </div>
     }

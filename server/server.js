@@ -205,11 +205,20 @@ const saveTermInfos = () => {
     })
 }
 
+let saveTermInfosTimer = null;
 const subscribeNewTermInfo = () => {
     postal.subscribe({
         channel: "termInfos",
         topic: "newTermInfo",
-        callback: saveTermInfos
+        callback: () => {
+            if(saveTermInfosTimer) {
+                clearTimeout(saveTermInfosTimer);
+            }
+            saveTermInfosTimer = setTimeout(() => {
+                saveTermInfos();
+                saveTermInfosTimer = null;
+            }, 5000)
+        }
     })
 }
 
