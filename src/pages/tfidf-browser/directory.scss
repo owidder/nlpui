@@ -15,12 +15,28 @@
   flex-direction: column;
 
   .listrow {
+    width: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-bottom: .1em;
+
+    &.withline {
+      border-bottom: solid black 1px;
+    }
   }
 }
 
+.tfidf {
+  .plus {
+    background-color: lightgreen;
+  }
+
+  .showMinus {
+    color: lightgray;
+    text-decoration: line-through;
+  }
+}
 
 .margins {
   margin-left: 2em;

@@ -175,8 +175,8 @@ const readTerms = (relPath) => {
         readlineInterface.on("line", line => {
             const parts = line.split("\t");
             const term = parts[0];
-            const tfidfValue = Number(parts[1]);
-            const plusOrMinus = termInfos[term] ? termInfos[term] : "?";
+            const tfidfValue = Number(parts[1]).toFixed(2);
+            const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "?";
             terms.push({term, tfidfValue, plusOrMinus});
         }).on("close", () => {
             resolve(terms);

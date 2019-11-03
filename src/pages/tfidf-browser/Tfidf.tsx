@@ -6,36 +6,31 @@ interface TfidfProps {
     filePath: string
 }
 
+type PlusMinus = "+" | "-" | "?"
+
 interface TermInfo {
     term: string
     tfidfValue?: number
-    plusOrMinus?: "+" | "-" | "?"
+    plusOrMinus?: PlusMinus
 }
 
 interface TfidfState {
     termInfos: TermInfo[]
+    showMinus: boolean
 }
 
 interface FileContent {
     path: string
-    content: string
+    terms: TermInfo[]
 }
 
 export class Tfidf extends React.Component<TfidfProps, TfidfState> {
 
-    readonly state: TfidfState = {termInfos: []}
+    readonly state: TfidfState = {termInfos: [], showMinus: true}
 
     async readContent() {
-        const fileContent: FileContent = await callApi(`file/${this.props.filePath}`)
-        const entries = fileContent.content.split("\n")
-        const termInfos: TermInfo[] = entries.filter(entry => entry.length > 0).map(entry => {
-            const parts = entry.split("\t")
-            return {
-                term: parts[0],
-                tfidfValue: Number(parts[1])
-            }
-        })
-        this.setState({termInfos})
+        const fileContent: FileContent = await callApi(`file2/${this.props.filePath}`)
+        this.setState({termInfos: fileContent.terms})
     }
 
     componentDidMount(): void {
@@ -48,9 +43,22 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
         }
     }
 
+    createPlusMinusClass(plusMinus: PlusMinus) {
+        switch (plusMinus) {
+            case "+":
+                return "plus"
+
+            case "-":
+                return this.state.showMinus ? "showMinus" : "hideMinus"
+
+            default:
+                return "na"
+        }
+    }
+
     render() {
-        return <div className="list">
-            {this.state.termInfos.map(termInfo => <div className="listrow" key={termInfo.term}>
+        return <div className="list tfidf">
+            {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createPlusMinusClass(termInfo.plusOrMinus)}`} key={termInfo.term}>
                 <div>{termInfo.term}</div>
                 <div>{termInfo.tfidfValue}</div>
             </div>)}

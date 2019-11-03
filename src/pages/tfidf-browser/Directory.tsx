@@ -104,7 +104,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
                 <div className="col-xs-6 col s6">
                     {this.state.currentPathType == "file" ?
                         <Tfidf filePath={this.state.currentPath}/> :
-                        <Tfidf filePath={this.summaryFileOfCurrentPath()}/>}
+                        (this.state.currentPathType == "folder" ? <Tfidf filePath={this.summaryFileOfCurrentPath()}/> : <span/>)}
                 </div>
             </div>
             </div>
