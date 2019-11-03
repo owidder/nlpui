@@ -143,15 +143,19 @@ function readContent(relPath) {
     })
 }
 
+const createReadlineInterface = (path) => {
+    return readline.createInterface({
+        input: fs.createReadStream(path),
+        output: process.stdout,
+        console: false
+    });
+}
+
 function initTermInfos() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         if(fs.existsSync("./termInfos.csv")) {
-            const readInterface = readline.createInterface({
-                input: fs.createReadStream("./termInfos.csv"),
-                output: process.stdout,
-                console: false
-            });
-            readInterface.on("line", termInfoCsvRow => {
+            const readlineInterface = createReadlineInterface("./termInfos.csv");
+            readlineInterface.on("line", termInfoCsvRow => {
                 const parts = termInfoCsvRow.split(";");
                 const termName = parts[0];
                 const plusOrMinus = parts[1];
@@ -167,12 +171,8 @@ const readTerms = (relPath) => {
     const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
     const terms = [];
     return new Promise((resolve, reject) => {
-        const readInterface = readline.createInterface({
-            input: fs.createReadStream(absPath),
-            output: process.stdout,
-            console: false
-        });
-        readInterface.on("line", line => {
+        const readlineInterface = createReadlineInterface(absPath);
+        readlineInterface.on("line", line => {
             const parts = line.split("\t");
             const term = parts[0];
             const tfidfValue = Number(parts[1]);
