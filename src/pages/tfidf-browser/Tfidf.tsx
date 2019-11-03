@@ -57,6 +57,7 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
     }
 
     setPlusOrMinus(termName: string, plusOrMinus: PlusMinus) {
+        callApi(`termInfo/${termName}/set`, "POST", {plusOrMinus})
         const termInfos = this.state.termInfos.map(termInfo => {
             return termInfo.term == termName ? {...termInfo, plusOrMinus} : termInfo
         })
