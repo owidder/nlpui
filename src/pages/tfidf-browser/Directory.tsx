@@ -75,7 +75,6 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
 
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        console.log(`key = ${entry}`)
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
                   onClick={() => this.gotoPath(path)}>{entry}</a>
