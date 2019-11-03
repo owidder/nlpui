@@ -56,14 +56,21 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
         }
     }
 
+    setPlusOrMinus(termName: string, plusOrMinus: PlusMinus) {
+        const termInfos = this.state.termInfos.map(termInfo => {
+            return termInfo.term == termName ? {...termInfo, plusOrMinus} : termInfo
+        })
+        this.setState({termInfos})
+    }
+
     render() {
         return <div className="list tfidf">
             {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createPlusMinusClass(termInfo.plusOrMinus)}`} key={termInfo.term}>
                 <div>{termInfo.term}</div>
                 <div className="next-to-each-other">
-                    <div><i className="material-icons small">add_circle_outline</i></div>
-                    <div><i className="material-icons small">remove_circle_outline</i></div>
-                    <div><i className="material-icons small">help_outline</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "+")}><i className="material-icons small">add_circle_outline</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "-")}><i className="material-icons small">remove_circle_outline</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "?")}><i className="material-icons small">help_outline</i></div>
                 </div>
             </div>)}
         </div>
