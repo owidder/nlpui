@@ -1,3 +1,7 @@
 frappe;-
 agriculture;+
 account;+
+class;-
+self;-
+db;-
+doc;-

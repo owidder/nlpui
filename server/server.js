@@ -178,6 +178,7 @@ const setTermInfo = (termName, plusOrMinus) => {
     } else {
         termInfos[termName] = {plusOrMinus};
     }
+    publishNewTermInfo();
 }
 
 const readTerms = (relPath) => {
@@ -201,6 +202,21 @@ const saveTermInfos = () => {
     fs.writeFileSync(TERM_INFOS_REL_PATH, "");
     Object.keys(termInfos).forEach(termName => {
         fs.appendFileSync(TERM_INFOS_REL_PATH, `${termName};${termInfos[termName].plusOrMinus}\n`);
+    })
+}
+
+const subscribeNewTermInfo = () => {
+    postal.subscribe({
+        channel: "termInfos",
+        topic: "newTermInfo",
+        callback: saveTermInfos
+    })
+}
+
+const publishNewTermInfo = () => {
+    postal.publish({
+        channel: "termInfos",
+        topic: "newTermInfo",
     })
 }
 
@@ -251,9 +267,14 @@ router.get("/pathType/*", async function (req, res) {
     res.json({path: relPath, pathType});
 });
 
+const init = () => {
+    subscribeNewTermInfo();
+    return initTermInfos();
+}
+
 app.use('/api', router);
 
-initTermInfos().then(() => {
+init().then(() => {
     server.listen(3100, function () {
         console.log("server for nlp-client is listening on port 3100")
     });
