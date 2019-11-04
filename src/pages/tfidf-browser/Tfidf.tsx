@@ -6,7 +6,7 @@ interface TfidfProps {
     filePath: string
 }
 
-type PlusMinus = "+" | "-" | "?"
+type PlusMinus = "+" | "-" | "?" | ""
 
 interface TermInfo {
     term: string
@@ -51,6 +51,9 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
             case "-":
                 return this.state.showMinus ? "showMinus" : "hideMinus"
 
+            case "?":
+                return "dontknow"
+
             default:
                 return "na"
         }
@@ -72,6 +75,7 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
                     <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "+")}><i className="material-icons small">add_circle_outline</i></div>
                     <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "-")}><i className="material-icons small">remove_circle_outline</i></div>
                     <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "?")}><i className="material-icons small">help_outline</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "")}><i className="material-icons small">highlight_off</i></div>
                 </div>
             </div>)}
         </div>

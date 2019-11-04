@@ -173,11 +173,16 @@ function initTermInfos() {
 }
 
 const setTermInfo = (termName, plusOrMinus) => {
-    if(termInfos[termName]) {
-        termInfos[termName].plusOrMinus = plusOrMinus;
+    if(!plusOrMinus) {
+        delete termInfos[termName]
     } else {
-        termInfos[termName] = {plusOrMinus};
+        if(termInfos[termName]) {
+            termInfos[termName].plusOrMinus = plusOrMinus;
+        } else {
+            termInfos[termName] = {plusOrMinus};
+        }
     }
+
     publishNewTermInfo();
 }
 
@@ -190,7 +195,7 @@ const readTerms = (relPath) => {
             const parts = line.split("\t");
             const term = parts[0];
             const tfidfValue = Number(parts[1]).toFixed(2);
-            const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "?";
+            const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
             terms.push({term, tfidfValue, plusOrMinus});
         }).on("close", () => {
             resolve(terms);
@@ -244,7 +249,7 @@ router.post("/termInfo/:term/set", (req, res) => {
 
 router.get("/termInfo/:term", (req, res) => {
     const {term} = req.params;
-    const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "?";
+    const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
     res.json({term, plusOrMinus});
 })
 
