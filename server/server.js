@@ -159,7 +159,7 @@ const createReadlineInterface = (path) => {
 function initTermInfos() {
     return new Promise(resolve => {
         if(fs.existsSync(TERM_INFOS_REL_PATH)) {
-            const readlineInterface = createReadlineInterface("./termInfos.csv");
+            const readlineInterface = createReadlineInterface(TERM_INFOS_REL_PATH);
             readlineInterface.on("line", termInfoCsvRow => {
                 const parts = termInfoCsvRow.split(";");
                 const termName = parts[0];
