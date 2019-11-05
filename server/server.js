@@ -12,11 +12,13 @@ app.use("/", express.static(__dirname + "/build"));
 
 const server = require("http").createServer(app);
 
-const SUMMARY_FILENAME = '_.csv';
+const SUMMARY_FILENAME = "_.csv";
 const BASE_FOLDER = "/Users/oliver/dev/github/nlp/out";
 const VALUE_FILE_SUFFIX = ".tfidf.csv";
-const FAKE_SUMMARY_FILENAME = '_SUMMARY_';
-const TERM_INFOS_REL_PATH = "./termInfos.csv";
+const FAKE_SUMMARY_FILENAME = "_SUMMARY_";
+
+const termInfosName = process.argv.length > 2 ? process.argv[2] : "default";
+const termInfosRelPath = `./termInfos.${termInfosName}.csv`;
 
 const ignoreTerms = [];
 const terms = [];
@@ -158,8 +160,8 @@ const createReadlineInterface = (path) => {
 
 function initTermInfos() {
     return new Promise(resolve => {
-        if(fs.existsSync(TERM_INFOS_REL_PATH)) {
-            const readlineInterface = createReadlineInterface(TERM_INFOS_REL_PATH);
+        if(fs.existsSync(termInfosRelPath)) {
+            const readlineInterface = createReadlineInterface(termInfosRelPath);
             readlineInterface.on("line", termInfoCsvRow => {
                 const parts = termInfoCsvRow.split(";");
                 const termName = parts[0];
@@ -204,9 +206,9 @@ const readTerms = (relPath) => {
 }
 
 const saveTermInfos = () => {
-    fs.writeFileSync(TERM_INFOS_REL_PATH, "");
+    fs.writeFileSync(termInfosRelPath, "");
     Object.keys(termInfos).forEach(termName => {
-        fs.appendFileSync(TERM_INFOS_REL_PATH, `${termName};${termInfos[termName].plusOrMinus}\n`);
+        fs.appendFileSync(termInfosRelPath, `${termName};${termInfos[termName].plusOrMinus}\n`);
     })
 }
 
