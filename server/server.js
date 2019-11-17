@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const readline = require("readline");
 const postal = require("postal");
 
+const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
+
 const app = express();
 const router = express.Router();
 app.use(bodyParser.json());
@@ -159,13 +161,15 @@ const createReadlineInterface = (path) => {
 }
 
 function initTermInfos() {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
+        await initMaybeTechTerms();
         if(fs.existsSync(termInfosRelPath)) {
             const readlineInterface = createReadlineInterface(termInfosRelPath);
             readlineInterface.on("line", termInfoCsvRow => {
                 const parts = termInfoCsvRow.split(";");
                 const termName = parts[0];
                 const plusOrMinus = parts[1];
+                const _isMaybeTechTerm = isMaybeTechTerm(termName);
                 termInfos[termName] = {plusOrMinus};
             }).on("close", resolve);
         } else {
