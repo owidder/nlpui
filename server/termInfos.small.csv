@@ -55,7 +55,6 @@ ignore;-
 db;-
 max;-
 license;-
-pvt;-
 function;-
 technology;-
 contributor;-
@@ -125,7 +124,6 @@ module;-
 label;-
 data;-
 custom;-
-document;+
 select;-
 list;-
 future;-
@@ -399,3 +397,5 @@ orange;-
 vat;+
 transport;+
 draft;+
+document;+
+pvt;-

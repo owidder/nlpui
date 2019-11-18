@@ -169,7 +169,6 @@ function initTermInfos() {
                 const parts = termInfoCsvRow.split(";");
                 const termName = parts[0];
                 const plusOrMinus = parts[1];
-                const _isMaybeTechTerm = isMaybeTechTerm(termName);
                 termInfos[termName] = {plusOrMinus};
             }).on("close", resolve);
         } else {
@@ -202,7 +201,8 @@ const readTerms = (relPath) => {
             const term = parts[0];
             const tfidfValue = Number(parts[1]).toFixed(2);
             const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
-            terms.push({term, tfidfValue, plusOrMinus});
+            const maybeTechTerm = isMaybeTechTerm(term);
+            terms.push({term, tfidfValue, plusOrMinus, maybeTechTerm});
         }).on("close", () => {
             resolve(terms);
         })

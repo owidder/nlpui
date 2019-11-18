@@ -6,12 +6,13 @@ interface TfidfProps {
     filePath: string
 }
 
-type PlusMinus = "+" | "-" | "?" | ""
+type PlusMinus = "+" | "-" | "?" | "" | "T"
 
 interface TermInfo {
     term: string
     tfidfValue?: number
-    plusOrMinus?: PlusMinus
+    plusOrMinus?: PlusMinus,
+    maybeTechTerm?: boolean
 }
 
 interface TfidfState {
@@ -43,19 +44,23 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
         }
     }
 
-    createPlusMinusClass(plusMinus: PlusMinus) {
-        switch (plusMinus) {
+    createClassFromTermInfo(termInfo: TermInfo) {
+        const maybeTechClass = (clazz: string) => termInfo.maybeTechTerm ? `${clazz} maybetech` : clazz;
+        switch (termInfo.plusOrMinus) {
             case "+":
-                return "plus"
+                return maybeTechClass("plus")
+
+            case "T":
+                return "tech"
 
             case "-":
-                return this.state.showMinus ? "showMinus" : "hideMinus"
+                return maybeTechClass(this.state.showMinus ? "showMinus" : "hideMinus")
 
             case "?":
-                return "dontknow"
+                return maybeTechClass("dontknow")
 
             default:
-                return "na"
+                return maybeTechClass("na")
         }
     }
 
@@ -69,12 +74,12 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
 
     render() {
         return <div className="list tfidf">
-            {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createPlusMinusClass(termInfo.plusOrMinus)}`} key={termInfo.term}>
+            {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createClassFromTermInfo(termInfo)}`} key={termInfo.term}>
                 <div>{termInfo.term}</div>
                 <div className="next-to-each-other">
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "+")}><i className="material-icons small">add_circle_outline</i></div>
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "-")}><i className="material-icons small">remove_circle_outline</i></div>
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "?")}><i className="material-icons small">help_outline</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "+")}><i className="material-icons small">{termInfo.plusOrMinus == "+" ? "add_circle" : "add_circle_outline"}</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "-")}><i className="material-icons small">{termInfo.plusOrMinus == "-" ? "remove_circle" : "remove_circle_outline"}</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "?")}><i className="material-icons small">{termInfo.plusOrMinus == "?" ? "help" : "help_outline"}</i></div>
                     <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "")}><i className="material-icons small">highlight_off</i></div>
                 </div>
             </div>)}
