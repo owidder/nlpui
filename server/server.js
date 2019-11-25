@@ -4,8 +4,18 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const readline = require("readline");
 const postal = require("postal");
+const commandLineArgs = require('command-line-args');
 
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
+
+const cliOptionsConfig = [
+    {name: "name", alias: "n", type: String},
+    {name: "docpath", alias: "d", type: String},
+    {name: "outpath", alias: "o", type: String},
+    {name: "type", alias: "t", type: String},
+]
+
+const cliOptions = commandLineArgs(cliOptionsConfig);
 
 const app = express();
 const router = express.Router();
