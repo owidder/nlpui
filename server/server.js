@@ -25,15 +25,13 @@ app.use("/", express.static(__dirname + "/build"));
 const server = require("http").createServer(app);
 
 const SUMMARY_FILENAME = "_.csv";
-const BASE_FOLDER = "/Users/oliver/dev/github/nlp/out";
 const VALUE_FILE_SUFFIX = ".tfidf.csv";
 const FAKE_SUMMARY_FILENAME = "_SUMMARY_";
 
-const termInfosName = process.argv.length > 2 ? process.argv[2] : "default";
-const termInfosRelPath = `./termInfos.${termInfosName}.csv`;
+const termInfosName = cliOptions.name || "default";
+const termInfosRelPath = path.join(cliOptions.outpath || ".", `./termInfos.${termInfosName}.csv`);
 
 const ignoreTerms = [];
-const terms = [];
 const termInfos = {};
 
 function isSummaryFile(filename) {
@@ -92,7 +90,7 @@ function adaptNames(filesAndSubfolderNameList, absFolder) {
 }
 
 function readFolder(relFolder) {
-    const absFolder = path.join(BASE_FOLDER, relFolder);
+    const absFolder = absDocPath(relFolder);
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
             if(err) reject(err);
@@ -133,8 +131,12 @@ function pathTypeFromStats(stats) {
     return stats.isDirectory() ? "folder" : "file";
 }
 
+const absDocPath = (relPath) => {
+    return path.join(cliOptions.docpath, relPath)
+}
+
 function getPathType(relPath) {
-    const absPath = path.join(BASE_FOLDER, relPath);
+    const absPath = absDocPath(relPath);
     return new Promise((resolve, reject) => {
         fs.stat(absPath, (err1, stats1) => {
             if(err1 == null) {
@@ -153,7 +155,7 @@ function getPathType(relPath) {
 }
 
 function readContent(relPath) {
-    const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
+    const absPath = backAdaptValueFilePath(absDocPath(relPath));
     return new Promise((resolve, reject) => {
         fs.readFile(absPath, "utf8", (err, data) => {
             if(err) reject(err);
@@ -202,7 +204,7 @@ const setTermInfo = (termName, plusOrMinus) => {
 }
 
 const readTerms = (relPath) => {
-    const absPath = backAdaptValueFilePath(path.join(BASE_FOLDER, relPath));
+    const absPath = backAdaptValueFilePath(absDocPath(relPath));
     const terms = [];
     return new Promise((resolve, reject) => {
         const readlineInterface = createReadlineInterface(absPath);
