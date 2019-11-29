@@ -1,4 +1,6 @@
 import * as React from "react";
+import {css} from "@emotion/core";
+import ClimbingBoxLoader from "react-spinners/ClipLoader";
 
 import {callApi} from "../../util/fetchUtil";
 
@@ -18,6 +20,7 @@ interface TermInfo {
 interface TfidfState {
     termInfos: TermInfo[]
     showMinus: boolean
+    isLoading: boolean
 }
 
 interface FileContent {
@@ -25,13 +28,19 @@ interface FileContent {
     terms: TermInfo[]
 }
 
+const override = css`
+  display: block;
+  margin: 0 auto;
+  border-color: red;
+`;
+
 export class Tfidf extends React.Component<TfidfProps, TfidfState> {
 
-    readonly state: TfidfState = {termInfos: [], showMinus: true}
+    readonly state: TfidfState = {termInfos: [], showMinus: true, isLoading: true}
 
     async readContent() {
         const fileContent: FileContent = await callApi(`file2/${this.props.filePath}`)
-        this.setState({termInfos: fileContent.terms})
+        this.setState({termInfos: fileContent.terms, isLoading: false})
     }
 
     componentDidMount(): void {
@@ -73,6 +82,14 @@ export class Tfidf extends React.Component<TfidfProps, TfidfState> {
     }
 
     render() {
+        if(this.state.isLoading) {
+            return <ClimbingBoxLoader
+                css={override}
+                size={150}
+                color={"green"}
+                loading={true}
+            />
+        }
         return <div className="list tfidf">
             {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createClassFromTermInfo(termInfo)}`} key={termInfo.term}>
                 <div>{termInfo.term}</div>

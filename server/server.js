@@ -12,7 +12,7 @@ const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
     {name: "docpath", alias: "d", type: String},
     {name: "outpath", alias: "o", type: String},
-    {name: "type", alias: "t", type: String},
+    {name: "techpath", alias: "t", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -174,7 +174,7 @@ const createReadlineInterface = (path) => {
 
 function initTermInfos() {
     return new Promise(async resolve => {
-        await initMaybeTechTerms();
+        await initMaybeTechTerms(cliOptions.techpath);
         if(fs.existsSync(termInfosRelPath)) {
             const readlineInterface = createReadlineInterface(termInfosRelPath);
             readlineInterface.on("line", termInfoCsvRow => {

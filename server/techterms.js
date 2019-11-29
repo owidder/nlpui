@@ -1,8 +1,6 @@
 const fs = require("fs");
 const readline = require("readline");
 
-const STACKEXCHANGE_PATH = "/Users/oliver/dev/github/nlp/dict/stackexchange.txt";
-
 const maybeTechTerms = [];
 
 const createReadlineInterface = (path) => {
@@ -12,9 +10,9 @@ const createReadlineInterface = (path) => {
         console: false
     });
 }
-const initMaybeTechTerms = () => {
+const initMaybeTechTerms = (techpath) => {
     return new Promise(resolve => {
-        const linereader = createReadlineInterface(STACKEXCHANGE_PATH);
+        const linereader = createReadlineInterface(techpath);
         linereader.on("line", line => {
             maybeTechTerms.push(line);
         }).on("close", resolve);

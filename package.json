@@ -14,11 +14,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@emotion/core": "^10.0.22",
     "materialize-css": "^1.0.0",
     "path-browserify": "^1.0.0",
     "query-string": "^6.8.3",
     "react": "^16.11.0",
-    "react-dom": "^16.11.0"
+    "react-dom": "^16.11.0",
+    "react-spinners": "^0.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
