@@ -20,7 +20,8 @@ const cliOptions = commandLineArgs(cliOptionsConfig);
 const app = express();
 const router = express.Router();
 app.use(bodyParser.json());
-app.use("/", express.static(__dirname + "/build"));
+const rootFolder = __dirname + "/../build";
+app.use("/", express.static(rootFolder));
 
 const server = require("http").createServer(app);
 
@@ -308,6 +309,6 @@ app.use('/api', router);
 
 init().then(() => {
     server.listen(3100, function () {
-        console.log("server for nlp-client is listening on port 3100")
+        console.log(`server for nlp-client is listening on port 3100, folder: ${rootFolder}`)
     });
 })
