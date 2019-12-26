@@ -7,6 +7,7 @@ const postal = require("postal");
 const commandLineArgs = require('command-line-args');
 
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
+const {createReadlineInterface} = require("./fileUtil");
 
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
@@ -165,14 +166,6 @@ function readContent(relPath) {
     })
 }
 
-const createReadlineInterface = (path) => {
-    return readline.createInterface({
-        input: fs.createReadStream(path),
-        output: process.stdout,
-        console: false
-    });
-}
-
 function initTermInfos() {
     return new Promise(async resolve => {
         await initMaybeTechTerms(cliOptions.techpath);
@@ -278,6 +271,11 @@ router.get("/folder/*", async function (req, res) {
     const content = await readFolder(relFolder)
     res.json({folder: relFolder, content});
 });
+
+router.get("/topic/:num_topics/:topic_num", (req, res) => {
+    const {num_topic, topic_num} = req.params;
+
+})
 
 router.get("/file/*", async function (req, res) {
     const relPath = req.originalUrl.substr("/api/file".length+1);
