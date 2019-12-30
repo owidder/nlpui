@@ -8,12 +8,14 @@ const commandLineArgs = require('command-line-args');
 
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
 const {createReadlineInterface} = require("./fileUtil");
+const {readTopic, readTopicNums, readAllTopics} = require("./topics");
 
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
     {name: "docpath", alias: "d", type: String},
     {name: "outpath", alias: "o", type: String},
     {name: "techpath", alias: "t", type: String},
+    {name: "topicspath", alias: "p", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -272,9 +274,21 @@ router.get("/folder/*", async function (req, res) {
     res.json({folder: relFolder, content});
 });
 
-router.get("/topic/:num_topics/:topic_num", (req, res) => {
-    const {num_topic, topic_num} = req.params;
+router.get("/topic/:num_topics/:topic_num", async (req, res) => {
+    const {num_topics, topic_num} = req.params;
+    const topic = await readTopic(cliOptions.topicspath, num_topics, topic_num);
+    res.json(topic);
+})
 
+router.get("/allTopics/:num_topics/:num_entries", async (req, res) => {
+    const {num_topics, num_entries} = req.params;
+    const allTopics = await readAllTopics(cliOptions.topicspath, num_topics, num_entries);
+    res.json(allTopics);
+})
+
+router.get("/topicNums", async (req, res) => {
+    const topicNums = await readTopicNums(cliOptions.topicspath);
+    res.json(topicNums);
 })
 
 router.get("/file/*", async function (req, res) {
