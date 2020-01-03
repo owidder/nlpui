@@ -21,6 +21,8 @@ interface TopicsState {
 
 export class Topics extends React.Component<TopicsProps, TopicsState> {
 
+    readonly state: TopicsState = {isLoading: true, topics: []}
+
     async readContent() {
         const {num_topics, num_entries} = this.props
         const topics: Topic[] = await callApi(`/allTopics/${num_topics}/${num_entries}`)
@@ -31,8 +33,11 @@ export class Topics extends React.Component<TopicsProps, TopicsState> {
         this.readContent()
     }
 
-    componentDidUpdate(): void {
-        this.readContent()
+    componentDidUpdate(prevProps:TopicsProps): void {
+        if(this.props.num_entries != prevProps.num_entries || this.props.num_topics != prevProps.num_topics) {
+            this.setState({isLoading: true})
+            this.readContent()
+        }
     }
 
     render()  {
