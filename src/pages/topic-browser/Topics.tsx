@@ -15,44 +15,9 @@ interface TopicEntry {
 
 type Topic = TopicEntry[];
 
-interface TopicsState {
-    topics: Topic[];
-    isLoading: boolean;
-}
-
-export class Topics extends React.Component<TopicsProps, TopicsState> {
-
-    readonly state: TopicsState = {isLoading: true, topics: []}
-
-    async readContent() {
-        const {num_topics, num_entries} = this.props
-        const topics: Topic[] = await callApi(`/allTopics/${num_topics}/${num_entries}`)
-        this.setState({topics, isLoading: false})
-    }
-
-    componentDidMount(): void {
-        this.readContent()
-    }
-
-    componentDidUpdate(prevProps:TopicsProps): void {
-        if(this.props.num_entries != prevProps.num_entries || this.props.num_topics != prevProps.num_topics) {
-            this.setState({isLoading: true})
-            this.readContent()
-        }
-    }
-
-    render()  {
-        if(this.state.isLoading) {
-            return <div>Loading...</div>
-        }
-
-        return <div>{JSON.stringify(this.state.topics)}</div>
-    }
-}
-
-export const Topics2 = ({num_topics, num_entries}: TopicsProps) => {
+export const Topics = ({num_topics, num_entries}: TopicsProps) => {
     const [isLoading, setIsLoading] = useState(true)
-    const [topics, setTopics] = useState([])
+    const [topics, setTopics] = useState([] as Topic[])
 
     useEffect(() => {
         setIsLoading(true)
