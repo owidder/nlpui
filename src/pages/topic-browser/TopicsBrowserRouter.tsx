@@ -7,7 +7,7 @@ import {
     useParams
 } from "react-router-dom";
 
-import {Topics} from "./Topics";
+import {Topics, Topics2} from "./Topics";
 
 export const TopicsBrowserRouter = () => {
 
@@ -39,5 +39,5 @@ export const TopicsBrowserRouter = () => {
 const _Topics = () => {
     const {num_topics, num_entries} = useParams();
 
-    return <Topics num_topics={num_topics} num_entries={num_entries}/>
+    return <Topics2 num_topics={num_topics} num_entries={num_entries}/>
 }
