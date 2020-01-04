@@ -1,0 +1,27 @@
+.list {
+  display: flex;
+  flex-direction: column;
+
+  .listrow {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: .1em;
+
+    &.withline {
+      border-bottom: solid black 1px;
+    }
+  }
+
+  .stringcell {
+    font-size: xx-small;
+    text-align: left;
+    flex: 1;
+    width: 100%;
+    padding-left: 1em;
+    border: solid black 1px;
+    margin: 1px;
+  }
+}
+

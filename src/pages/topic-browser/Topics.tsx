@@ -3,6 +3,8 @@ import {useState, useEffect} from "react";
 
 import {callApi} from "../../util/fetchUtil";
 
+import "../styles.scss"
+
 interface TopicsProps {
     num_topics: number;
     num_entries: number;
@@ -34,5 +36,9 @@ export const Topics = ({num_topics, num_entries}: TopicsProps) => {
         return <div>Loading...</div>
     }
 
-    return <div>{JSON.stringify(topics)}</div>
+    return <div className="list">
+        {topics.map((topic, index) => <div className="listrow" key={index}>
+            {topic.map((topicEntry, index) => <div className="stringcell" key={index}>{topicEntry.word}</div>)}
+        </div>)}
+    </div>
 }
