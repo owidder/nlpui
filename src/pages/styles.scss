@@ -15,12 +15,12 @@
   }
 
   .stringcell {
-    font-size: xx-small;
+    font-size: small;
     text-align: left;
     flex: 1;
     width: 100%;
     padding-left: 1em;
-    border: solid black 1px;
+    border-bottom: solid lightgray 1px;
     margin: 1px;
   }
 }

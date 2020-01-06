@@ -1,33 +1,24 @@
-import * as React from "react";
+import * as React from "react"
 import {
     HashRouter as Router,
     Switch,
     Route,
     Link,
     useParams
-} from "react-router-dom";
+} from "react-router-dom"
 
-import {Topics} from "./Topics";
+import {Topics} from "./Topics"
+import {TopicNums} from "./TopicNums"
 
 export const TopicsBrowserRouter = () => {
 
     return <Router>
         <div className="row">
-            <div className="col s2">
-                <ul>
-                    <li>
-                        <Link to="/topic/10/5">topic/10/5</Link>
-                    </li>
-                    <li>
-                        <Link to="/topic/10/15">topic/10/15</Link>
-                    </li>
-                    <li>
-                        <Link to="/topic/20/25">topic/20/25</Link>
-                    </li>
-                </ul>
+            <div className="col s1">
+                <TopicNums/>
             </div>
 
-            <div className="col s10">
+            <div className="col s11">
                 <Switch>
                     <Route path="/topic/:num_topics/:num_entries" children={<_Topics/>}/>
                 </Switch>

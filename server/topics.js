@@ -66,7 +66,7 @@ function readTopicNums(basePath) {
         fs.readdir(basePath, async (err, subfolderNames) => {
             if(err) reject(err);
             const topicNums = subfolderNames.filter(name => /^_\d{5}$/.test(name)).map(name => Number(name.substr(1)));
-            topicNums.sort();
+            topicNums.sort((a, b) => a - b);
             resolve(topicNums);
         });
     })
