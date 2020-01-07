@@ -38,7 +38,8 @@ export const Topics = ({num_topics, num_entries}: TopicsProps) => {
 
     return <div className="list">
         {topics.map((topic, index) => <div className="listrow" key={index}>
-            {topic.map((topicEntry, index) => <div className="stringcell" key={index}>{topicEntry.word}</div>)}
+            <div className="cell index">{index+1}</div>
+            {topic.map((topicEntry, index) => <div className="cell string" key={index}>{topicEntry.word}</div>)}
         </div>)}
     </div>
 }
