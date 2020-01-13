@@ -16,6 +16,7 @@
   "dependencies": {
     "@emotion/core": "^10.0.22",
     "materialize-css": "^1.0.0",
+    "mathjs": "^6.5.0",
     "path-browserify": "^1.0.0",
     "query-string": "^6.8.3",
     "react": "^16.11.0",

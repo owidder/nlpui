@@ -9,6 +9,7 @@ const commandLineArgs = require('command-line-args');
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
 const {createReadlineInterface} = require("./fileUtil");
 const {readTopic, readTopicNums, readAllTopics} = require("./topics");
+const {initVectors, cosine} = require("./vectors");
 
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
@@ -16,6 +17,7 @@ const cliOptionsConfig = [
     {name: "outpath", alias: "o", type: String},
     {name: "techpath", alias: "t", type: String},
     {name: "topicspath", alias: "p", type: String},
+    {name: "vectorspath", alias: "v", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -312,9 +314,19 @@ router.get("/pathType/*", async function (req, res) {
     res.json({path: relPath, pathType});
 });
 
+router.get("/cosine", (req, res) => {
+    const doc1 = req.query.doc1;
+    const doc2 = req.query.doc2;
+
+    const cos = cosine(doc1, doc2);
+    res.json({result: cos})
+})
+
 const init = () => {
     subscribeNewTermInfo();
-    return initTermInfos();
+    const initTermInfosPromise = initTermInfos();
+    const initVectorsPromise = initVectors(cliOptions.vectorspath);
+    return Promise.all([initTermInfosPromise, initVectorsPromise]);
 }
 
 app.use('/api', router);

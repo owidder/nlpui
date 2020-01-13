@@ -20,6 +20,7 @@ const _readTopic = (topicPath) => {
     return new Promise((resolve, reject) => {
         const readlineInterface = createReadlineInterface(topicPath);
         readlineInterface.on("line", line => {
+
             const parts = line.split("\t");
             const word = parts[0];
             const value = Number(parts[1]);
