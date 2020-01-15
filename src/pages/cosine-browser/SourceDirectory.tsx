@@ -77,7 +77,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const parentFolder = this.parentFolderOfCurrentPath()
 
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? `/${this.state.currentPath}` : "/"}</h5>
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath.split("/").reverse()[0].split(".")[0] : "/"}</h5>
             <div className="margins row">
                 <div className="list col-xs-6 col s6">
                     {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
