@@ -70,7 +70,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry}</a>
+                  onClick={() => this.gotoPath(path)}>{entry.split(".")[0]}</a>
     }
 
     render() {

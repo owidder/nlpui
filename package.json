@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@emotion/core": "^10.0.22",
+    "lodash": "^4.17.15",
     "materialize-css": "^1.0.0",
     "mathjs": "^6.5.0",
     "path-browserify": "^1.0.0",
