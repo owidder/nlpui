@@ -14,6 +14,7 @@ const {initVectors, cosine, similarDocs} = require("./vectors");
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
     {name: "docpath", alias: "d", type: String},
+    {name: "srcpath", alias: "s", type: String},
     {name: "outpath", alias: "o", type: String},
     {name: "techpath", alias: "t", type: String},
     {name: "topicspath", alias: "p", type: String},
@@ -95,14 +96,24 @@ function adaptNames(filesAndSubfolderNameList, absFolder) {
     })
 }
 
-function readFolder(relFolder) {
-    const absFolder = absDocPath(relFolder);
+function readFolder(relFolder, basePath=cliOptions.docpath) {
+    const absFolder = path.join(basePath, relFolder);
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
             if(err) reject(err);
             const onlyFoldersAndValueFiles =  await filterNonValueFiles(filesAndSubfolders, absFolder);
             const adaptedNames = await adaptNames(onlyFoldersAndValueFiles, absFolder)
             resolve(sortNonCaseSensitive(adaptedNames));
+        });
+    })
+}
+
+function readSrcFolder(relFolder, basePath=cliOptions.srcpath) {
+    const absFolder = path.join(basePath, relFolder);
+    return new Promise((resolve, reject) => {
+        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            if(err) reject(err);
+            resolve(sortNonCaseSensitive(filesAndSubfolders));
         });
     })
 }
@@ -141,8 +152,8 @@ const absDocPath = (relPath) => {
     return path.join(cliOptions.docpath, relPath)
 }
 
-function getPathType(relPath) {
-    const absPath = absDocPath(relPath);
+function getPathType(relPath, basePath=cliOptions.docpath) {
+    const absPath = path.join(basePath, relPath);
     return new Promise((resolve, reject) => {
         fs.stat(absPath, (err1, stats1) => {
             if(err1 == null) {
@@ -276,6 +287,13 @@ router.get("/folder/*", async function (req, res) {
     res.json({folder: relFolder, content});
 });
 
+router.get("/src/folder/*", async function (req, res) {
+    const relFolder = req.originalUrl.substr("/api/src/folder".length+1);
+    console.log(`folder: ${relFolder}`);
+    const content = await readSrcFolder(relFolder, cliOptions.srcpath)
+    res.json({folder: relFolder, content});
+});
+
 router.get("/topic/:num_topics/:topic_num", async (req, res) => {
     const {num_topics, topic_num} = req.params;
     const topic = await readTopic(cliOptions.topicspath, num_topics, topic_num);
@@ -301,7 +319,7 @@ router.get("/file/*", async function (req, res) {
 });
 
 router.get("/file2/*", async function (req, res) {
-    const relPath = req.originalUrl.substr("/api/file".length+1);
+    const relPath = req.originalUrl.substr("/api/file2".length+1);
     console.log(`file: ${relPath}`);
     const terms = await readTerms(relPath);
     res.json({path: relPath, terms});
@@ -310,6 +328,13 @@ router.get("/file2/*", async function (req, res) {
 router.get("/pathType/*", async function (req, res) {
     const relPath = decodeURI(req.originalUrl.substr("/api/pathType".length+1));
     const pathType = await getPathType(relPath);
+    console.log(`pathType: ${relPath} -> ${pathType}`);
+    res.json({path: relPath, pathType});
+});
+
+router.get("/src/pathType/*", async function (req, res) {
+    const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length+1));
+    const pathType = await getPathType(relPath, cliOptions.srcpath);
     console.log(`pathType: ${relPath} -> ${pathType}`);
     res.json({path: relPath, pathType});
 });
@@ -324,7 +349,7 @@ router.get("/cosine", (req, res) => {
 
 router.get("/cosineValues", (req, res) => {
     const doc1 = req.query.doc1;
-    similarDocs(doc1, .5).then(docs => {
+    similarDocs(doc1, .4).then(docs => {
         res.json(docs)
     })
 })

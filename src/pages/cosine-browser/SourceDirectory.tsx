@@ -32,16 +32,16 @@ const pathParam = (path: string) => {
     return `#path=${path}`
 }
 
-export class Directory extends React.Component<DirectoryProps, DirectoryState> {
+export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
     private async gotoPath(path: string) {
-        const pathInfo: PathInfo = await callApi(`pathType/${path}`)
+        const pathInfo: PathInfo = await callApi(`src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderInfo: FolderInfo = await callApi(`folder/${folder}`)
+        const folderInfo: FolderInfo = await callApi(`src/folder/${folder}`)
 
         this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
     }
