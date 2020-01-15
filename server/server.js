@@ -9,7 +9,7 @@ const commandLineArgs = require('command-line-args');
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
 const {createReadlineInterface} = require("./fileUtil");
 const {readTopic, readTopicNums, readAllTopics} = require("./topics");
-const {initVectors, cosine} = require("./vectors");
+const {initVectors, cosine, similarDocs} = require("./vectors");
 
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
@@ -308,7 +308,7 @@ router.get("/file2/*", async function (req, res) {
 });
 
 router.get("/pathType/*", async function (req, res) {
-    const relPath = req.originalUrl.substr("/api/pathType".length+1);
+    const relPath = decodeURI(req.originalUrl.substr("/api/pathType".length+1));
     const pathType = await getPathType(relPath);
     console.log(`pathType: ${relPath} -> ${pathType}`);
     res.json({path: relPath, pathType});
@@ -320,6 +320,13 @@ router.get("/cosine", (req, res) => {
 
     const cos = cosine(doc1, doc2);
     res.json({result: cos})
+})
+
+router.get("/cosineValues", (req, res) => {
+    const doc1 = req.query.doc1;
+    similarDocs(doc1, .5).then(docs => {
+        res.json(docs)
+    })
 })
 
 const init = () => {
