@@ -10,6 +10,7 @@ const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
 const {createReadlineInterface} = require("./fileUtil");
 const {readTopic, readTopicNums, readAllTopics} = require("./topics");
 const {initVectors, cosine, similarDocs} = require("./vectors");
+const {initOnepagers, getOnepager} = require("./onepagers");
 
 const cliOptionsConfig = [
     {name: "name", alias: "n", type: String},
@@ -19,6 +20,7 @@ const cliOptionsConfig = [
     {name: "techpath", alias: "t", type: String},
     {name: "topicspath", alias: "p", type: String},
     {name: "vectorspath", alias: "v", type: String},
+    {name: "onepagerspath", alias: "r", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -354,11 +356,18 @@ router.get("/cosineValues", (req, res) => {
     })
 })
 
+router.get("/onepager/:name", (req, res) => {
+    const name = decodeURI(req.originalUrl.substr("/api/onepager".length+1));
+    const onepager = getOnepager(name);
+    res.json(onepager)
+})
+
 const init = () => {
     subscribeNewTermInfo();
     const initTermInfosPromise = initTermInfos();
     const initVectorsPromise = initVectors(cliOptions.vectorspath);
-    return Promise.all([initTermInfosPromise, initVectorsPromise]);
+    const initOnepagersPromise = initOnepagers(cliOptions.onepagerspath);
+    return Promise.all([initTermInfosPromise, initVectorsPromise, initOnepagersPromise]);
 }
 
 app.use('/api', router);
