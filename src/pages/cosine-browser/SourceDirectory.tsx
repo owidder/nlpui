@@ -2,6 +2,7 @@ import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
+import {OnepagerTable} from "./OnepagerTable";
 import "./directory.scss";
 
 const _path = require("path");
@@ -16,6 +17,7 @@ interface DirectoryState {
     content: string[]
     currentPath: string
     currentPathType?: PathType
+    currentSourceDocument?: string
 }
 
 interface FolderInfo {
@@ -73,13 +75,17 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                   onClick={() => this.gotoPath(path)}>{entry.split(".")[0]}</a>
     }
 
+    showSourceDocument(currentSourceDocument: string) {
+        this.setState({currentSourceDocument})
+    }
+
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
         return <div className="directory">
             <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath.split("/").reverse()[0].split(".")[0] : "/"}</h5>
             <div className="margins row">
-                <div className="list col-xs-6 col s6">
+                <div className="list col-xs-2 col s2">
                     {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                     {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
                     {this.state.content.map(entry => {
@@ -91,8 +97,13 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         </div>
                     })}
                 </div>
-                <div className="col-xs-6 col s6">
-                    {this.state.currentPathType == "file" ? <Cosines document={this.state.currentPath}/> : <span/>}
+                <div className="col-xs-3 col s3">
+                    {this.state.currentPathType == "file" ? <Cosines
+                        clickHandler={(docName) => this.showSourceDocument(docName)}
+                        document={this.state.currentPath}/> : <span/>}
+                </div>
+                <div className="col-xs-7 col s7">
+                    {this.state.currentSourceDocument ? <OnepagerTable name={this.state.currentSourceDocument}/> : <span/>}
                 </div>
             </div>
             </div>

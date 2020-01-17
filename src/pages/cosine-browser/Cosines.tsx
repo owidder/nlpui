@@ -7,15 +7,17 @@ import {callApi} from "../../util/fetchUtil";
 import "../styles.scss"
 
 interface CosinesProps {
-    document: string;
+    document: string
+    clickHandler: (string) => void
+    highlightDocName?: string
 }
 
 interface CosineValue {
-    document: string;
-    cosine: number;
+    document: string
+    cosine: number
 }
 
-export const Cosines = ({document}: CosinesProps) => {
+export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
 
     useEffect(() => {
@@ -25,11 +27,22 @@ export const Cosines = ({document}: CosinesProps) => {
         })
     }, [document])
 
+    const classForDocName = (docName: string) => {
+        return highlightDocName == docName ? "highlight" : "";
+    }
+
     return <div className="list">
-        {cosineValues.map((cosineValue, index) => <div className="listrow" key={index}>
-            <div className="cell index">{index+1}</div>
-            <div className="cell string">{cosineValue.document.split("/")[1].split(".")[0]}</div>
-            <div className="cell">{cosineValue.cosine.toFixed(2)}</div>
-        </div>)}
+        {cosineValues.map((cosineValue, index) => {
+            const docName = cosineValue.document.split("/")[1].split(".")[0]
+            return <div className="listrow" key={index}>
+                <div className="cell index">{index+1}</div>
+                <div className="cell string">
+                    <a className={classForDocName(docName)}
+                       onClick={() => clickHandler(docName)}>{docName}
+                    </a>
+                </div>
+                <div className="cell">{cosineValue.cosine.toFixed(2)}</div>
+            </div>
+        })}
     </div>
 }

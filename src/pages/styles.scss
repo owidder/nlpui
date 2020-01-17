@@ -33,6 +33,13 @@
       flex: .2;
       background-color: lightgray;
     }
+
+    &.caption {
+      text-align: left;
+      font-weight: bold;
+      padding-right: 1em;
+      border-bottom: none;
+    }
   }
 
   .stringcell {

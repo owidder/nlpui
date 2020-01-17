@@ -7,7 +7,9 @@ const initOnepagers = (onepagersPath) => {
         fs.readFile(onepagersPath, (err, content) => {
             const rawOnepagers = JSON.parse(content);
             rawOnepagers.forEach(_onepager => {
-                onepagers[_onepager.name] = _onepager;
+                const loesung = _onepager["lösung"];
+                delete _onepager["lösung"];
+                onepagers[_onepager.name] = {..._onepager, loesung};
             })
             resolve(onepagers)
         })
