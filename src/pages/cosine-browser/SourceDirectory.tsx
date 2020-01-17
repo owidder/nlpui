@@ -4,11 +4,13 @@ import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
 import {OnepagerTable} from "./OnepagerTable";
 import "./directory.scss";
+import {setHashValue} from "../../util/queryUtil2";
 
 const _path = require("path");
 
 interface DirectoryProps {
     path: string
+    initialSourceDocument: string
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -36,7 +38,7 @@ const pathParam = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, currentSourceDocument: this.props.initialSourceDocument}
 
     private async gotoPath(path: string) {
         const pathInfo: PathInfo = await callApi(`src/pathType/${path}`)
@@ -76,6 +78,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     showSourceDocument(currentSourceDocument: string) {
+        setHashValue("isd", currentSourceDocument)
         this.setState({currentSourceDocument})
     }
 
