@@ -28,7 +28,7 @@ export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps
     }, [document])
 
     const classForDocName = (docName: string) => {
-        return highlightDocName == docName ? "highlight" : "";
+        return highlightDocName == docName ? "pointer highlight" : "pointer";
     }
 
     return <div className="list">

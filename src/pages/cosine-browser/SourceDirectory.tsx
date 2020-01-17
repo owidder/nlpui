@@ -103,6 +103,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <div className="col-xs-3 col s3">
                     {this.state.currentPathType == "file" ? <Cosines
                         clickHandler={(docName) => this.showSourceDocument(docName)}
+                        highlightDocName={this.state.currentSourceDocument}
                         document={this.state.currentPath}/> : <span/>}
                 </div>
                 <div className="col-xs-7 col s7">
