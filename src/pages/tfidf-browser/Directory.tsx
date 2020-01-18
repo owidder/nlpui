@@ -1,8 +1,10 @@
-import * as React from "react";
+import * as React from "react"
 
-import {callApi} from "../../util/fetchUtil";
-import {Tfidf} from "./Tfidf";
-import "./directory.scss";
+import {callApi} from "../../util/fetchUtil"
+import {Tfidf} from "./Tfidf"
+
+import "./directory.scss"
+import "../styles.scss"
 
 const _path = require("path");
 

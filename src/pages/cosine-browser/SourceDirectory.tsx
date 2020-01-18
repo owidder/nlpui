@@ -47,7 +47,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const folder = (pathType == "file" ? _path.dirname(path) : path)
         const folderInfo: FolderInfo = await callApi(`src/folder/${folder}`)
 
-        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
+        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, currentSourceDocument: this.props.initialSourceDocument})
     }
 
     async componentDidMount() {
@@ -85,10 +85,12 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
+        const gridClass = (width: number) => `col-xs-${width} col s${width}`
+
         return <div className="directory">
             <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath.split("/").reverse()[0].split(".")[0] : "/"}</h5>
             <div className="margins row">
-                <div className="list col-xs-2 col s2">
+                <div className={gridClass(3)}>
                     {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                     {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
                     {this.state.content.map(entry => {
@@ -100,13 +102,13 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         </div>
                     })}
                 </div>
-                <div className="col-xs-3 col s3">
+                <div className={gridClass(4)}>
                     {this.state.currentPathType == "file" ? <Cosines
                         clickHandler={(docName) => this.showSourceDocument(docName)}
                         highlightDocName={this.state.currentSourceDocument}
                         document={this.state.currentPath}/> : <span/>}
                 </div>
-                <div className="col-xs-7 col s7">
+                <div className={gridClass(5)}>
                     {this.state.currentSourceDocument ? <OnepagerTable name={this.state.currentSourceDocument}/> : <span/>}
                 </div>
             </div>

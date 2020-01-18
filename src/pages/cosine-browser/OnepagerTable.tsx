@@ -29,24 +29,28 @@ export const OnepagerTable = ({name}: OnepagerTableProps) => {
     const [isLoading, setIsLoading] = useState(true)
 
     const renderRow = (name: string, content: JSX.Element) => {
-        return <div>
-            <div className="cell caption">{name}</div>
-            <div className="cell">{content}</div>
-        </div>
+        if(content) {
+            return <div>
+                <div className="cell caption">{name}</div>
+                <div className="cell">{content}</div>
+            </div>
+        }
+
+        return <span/>
     }
 
     const stringContent = (attribute: string) => {
         if(attribute) {
             return <span>{attribute}</span>
         }
-        return <span/>
+        return undefined
     }
 
     const stringArrayContent = (attribute: string[]) => {
         if(attribute) {
             return <span>{attribute.map((s, i) => <span key={i}>{s}<br/></span>)}</span>
         }
-        return <span/>
+        return undefined
     }
 
     const stringDoubleArrayContent = (attribute: string[][]) => {
@@ -55,7 +59,7 @@ export const OnepagerTable = ({name}: OnepagerTableProps) => {
                 {attribute.map((ss, i1) => ss.map((s, i2) => <span key={`${i1}-${i2}`}>{s}<br/></span>))}
             </span>
         }
-        return <span key={Math.random().toString()}/>
+        return undefined
     }
 
     useEffect(() => {

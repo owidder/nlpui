@@ -23,7 +23,7 @@ export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps
     useEffect(() => {
         callApi(`cosineValues?doc1=${document}`).then((_cosineValues: CosineValue[]) => {
             const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine)
-            setCosineValues(sortedCosineValues)
+            setCosineValues([{document, cosine: 1}, ...sortedCosineValues])
         })
     }, [document])
 
@@ -35,7 +35,7 @@ export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps
         {cosineValues.map((cosineValue, index) => {
             const docName = cosineValue.document.split("/")[1].split(".")[0]
             return <div className="listrow" key={index}>
-                <div className="cell index">{index+1}</div>
+                <div className="cell index">{index}</div>
                 <div className="cell string">
                     <a className={classForDocName(docName)}
                        onClick={() => clickHandler(docName)}>{docName}

@@ -351,7 +351,7 @@ router.get("/cosine", (req, res) => {
 
 router.get("/cosineValues", (req, res) => {
     const doc1 = req.query.doc1;
-    similarDocs(doc1, .4).then(docs => {
+    similarDocs(doc1, .3).then(docs => {
         res.json(docs)
     })
 })
