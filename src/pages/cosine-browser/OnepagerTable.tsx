@@ -24,9 +24,15 @@ interface Onepager {
     kompetenzbereich?: string[]
 }
 
+interface TermInfos {
+    [key: string]: {plusOrMinus: "+" | "-" | "?" | "" | "T"}
+}
+
 export const OnepagerTable = ({name}: OnepagerTableProps) => {
     const [onepager, setOnepager] = useState({} as Onepager)
     const [isLoading, setIsLoading] = useState(true)
+    const [wordCounts, setWordCounts] = useState({})
+    const [termInfos, setTermInfos] = useState({} as TermInfos)
 
     const renderRow = (name: string, content: JSX.Element) => {
         if(content) {
@@ -39,6 +45,17 @@ export const OnepagerTable = ({name}: OnepagerTableProps) => {
         return <span/>
     }
 
+    const showWords = (wordString: string) => {
+        return <span>
+            {wordString.replace("-", " ").split(" ").map((word, index) => {
+                const count = wordCounts[word]
+                const isTerm = termInfos[word] && termInfos[word].plusOrMinus == "+"
+                const className = count > 0 ? `is-topic is-topic-${count}` : (isTerm ? "is-term" : "")
+                return <span className={className} key={index} title={count}>{word} </span>
+            })}
+        </span>
+    }
+
     const stringContent = (attribute: string) => {
         if(attribute) {
             return <span>{attribute}</span>
@@ -48,26 +65,40 @@ export const OnepagerTable = ({name}: OnepagerTableProps) => {
 
     const stringArrayContent = (attribute: string[]) => {
         if(attribute) {
-            return <span>{attribute.map((s, i) => <span key={i}>{s}<br/></span>)}</span>
+            return <div>{attribute.map((s, i) => <div key={i}>{showWords(s)}</div>)}</div>
         }
         return undefined
     }
 
     const stringDoubleArrayContent = (attribute: string[][]) => {
         if(attribute) {
-            return <span key={Math.random().toString()}>
-                {attribute.map((ss, i1) => ss.map((s, i2) => <span key={`${i1}-${i2}`}>{s}<br/></span>))}
-            </span>
+            return <div>
+                {attribute.map((ss, i1) => ss.map((s, i2) => <div key={`${i1}-${i2}`}>{showWords(s)}</div>))}
+            </div>
         }
         return undefined
     }
 
     useEffect(() => {
-        callApi(`onepager/${name}`).then((_onepager: Onepager) => {
-            setOnepager(_onepager)
-            setIsLoading(false)
-        })
+        init()
     }, [name])
+
+    const init = async () => {
+        const _onepager = await callApi(`onepager/${name}`)
+        setOnepager(_onepager)
+
+        if(Object.keys(wordCounts).length == 0) {
+            const _wordCounts = await callApi("/wordCounts")
+            setWordCounts(_wordCounts)
+        }
+
+        if(Object.keys(termInfos).length == 0) {
+            const _termInfos = await callApi("/termInfos")
+            setTermInfos(_termInfos)
+        }
+
+        setIsLoading(false)
+    }
 
     if(!isLoading) {
         return <div className="list">

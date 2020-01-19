@@ -8,7 +8,7 @@ const commandLineArgs = require('command-line-args');
 
 const {initMaybeTechTerms, isMaybeTechTerm} = require("./techterms");
 const {createReadlineInterface} = require("./fileUtil");
-const {readTopic, readTopicNums, readAllTopics} = require("./topics");
+const {readTopic, readTopicNums, readAllTopics, initWordCounts, getWordCounts} = require("./topics");
 const {initVectors, cosine, similarDocs} = require("./vectors");
 const {initOnepagers, getOnepager} = require("./onepagers");
 
@@ -21,6 +21,8 @@ const cliOptionsConfig = [
     {name: "topicspath", alias: "p", type: String},
     {name: "vectorspath", alias: "v", type: String},
     {name: "onepagerspath", alias: "r", type: String},
+    {name: "num_topics", alias: "i", type: String},
+    {name: "num_entries", alias: "e", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -282,6 +284,10 @@ router.get("/termInfo/:term", (req, res) => {
     res.json({term, plusOrMinus});
 })
 
+router.get("/termInfos", (req, res) => {
+    res.json(termInfos)
+})
+
 router.get("/folder/*", async function (req, res) {
     const relFolder = req.originalUrl.substr("/api/folder".length+1);
     console.log(`folder: ${relFolder}`);
@@ -362,12 +368,18 @@ router.get("/onepager/:name", (req, res) => {
     res.json(onepager)
 })
 
+router.get("/wordCounts", (req, res) => {
+    const wordCounts = getWordCounts();
+    res.json(wordCounts)
+})
+
 const init = () => {
     subscribeNewTermInfo();
     const initTermInfosPromise = initTermInfos();
     const initVectorsPromise = initVectors(cliOptions.vectorspath);
     const initOnepagersPromise = initOnepagers(cliOptions.onepagerspath);
-    return Promise.all([initTermInfosPromise, initVectorsPromise, initOnepagersPromise]);
+    const initWordCountsPromise = initWordCounts(cliOptions.topicspath, cliOptions.num_topics, cliOptions.num_entries);
+    return Promise.all([initTermInfosPromise, initVectorsPromise, initOnepagersPromise, initWordCountsPromise])
 }
 
 app.use('/api', router);

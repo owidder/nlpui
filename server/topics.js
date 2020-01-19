@@ -73,9 +73,45 @@ function readTopicNums(basePath) {
     })
 }
 
+let wordCounts;
+
+async function initWordCounts(basePath, num_topics, num_entries) {
+    const topics = await readAllTopics(basePath, num_topics, num_entries);
+    wordCounts = topics.reduce((_wordCounts, topic) => {
+        topic.forEach(wordAndValue => {
+            const word = wordAndValue.word;
+            if(_wordCounts[word] > 0) {
+                _wordCounts[word]++;
+            } else {
+                _wordCounts[word] = 1;
+            }
+        })
+
+        return _wordCounts
+    }, {})
+
+    return wordCounts
+}
+
+function getWordCounts() {
+    return wordCounts;
+}
+
+const enrichWords = (wordString) => {
+    return wordString.split(" ").map(word => {
+        const count = wordCounts[word];
+        if(count > 0) {
+            return `<span className="is-token is-token-${count}">${word}</span>`
+        }
+        return word
+    }).join(" ");
+}
 
 module.exports = {
     readTopic,
     readTopicNums,
     readAllTopics,
+    initWordCounts,
+    enrichWords,
+    getWordCounts,
 }
