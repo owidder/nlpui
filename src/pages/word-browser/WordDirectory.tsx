@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import {callApi} from "../../util/fetchUtil"
-import {Tfidf} from "./Tfidf"
+import {Words} from "./Tfidf"
 import {OnepagerTable} from "../cosine-browser/OnepagerTable"
 
 import "./directory.scss"
@@ -39,7 +39,7 @@ const pathParam = (path: string) => {
     return `#path=${path}`
 }
 
-export class Directory extends React.Component<DirectoryProps, DirectoryState> {
+export class WordDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
@@ -48,7 +48,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
         const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderInfo: FolderInfo = await callApi(`folder/${folder}`)
+        const folderInfo: FolderInfo = await callApi(`words/folder/${folder}`)
         const docName = path ? path.split("/")[1].split(".")[0] : undefined
 
         this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, currentSourceDocument: docName})
@@ -109,9 +109,7 @@ export class Directory extends React.Component<DirectoryProps, DirectoryState> {
                     })}
                 </div>
                 <div className={gridClass(4)}>
-                    {this.state.currentPathType == "file" ?
-                        <Tfidf filePath={this.state.currentPath}/> :
-                        (this.state.currentPathType == "folder" ? <Tfidf filePath={this.summaryFileOfCurrentPath()}/> : <span/>)}
+                    {this.state.currentPathType == "file" ? <Words filePath={this.state.currentPath}/> : <span/>}
                 </div>
                 <div className={gridClass(4)}>
                     {this.state.currentSourceDocument ? <OnepagerTable

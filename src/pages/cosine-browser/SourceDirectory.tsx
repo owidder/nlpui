@@ -109,7 +109,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         document={this.state.currentPath}/> : <span/>}
                 </div>
                 <div className={gridClass(5)}>
-                    {this.state.currentSourceDocument ? <OnepagerTable name={this.state.currentSourceDocument}/> : <span/>}
+                    {this.state.currentSourceDocument ? <OnepagerTable withWordCounts={true} name={this.state.currentSourceDocument}/> : <span/>}
                 </div>
             </div>
             </div>

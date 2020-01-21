@@ -7,6 +7,7 @@ import "../styles.scss"
 
 interface OnepagerTableProps {
     name: string
+    withWordCounts: boolean
 }
 
 interface Onepager {
@@ -28,7 +29,7 @@ interface TermInfos {
     [key: string]: {plusOrMinus: "+" | "-" | "?" | "" | "T"}
 }
 
-export const OnepagerTable = ({name}: OnepagerTableProps) => {
+export const OnepagerTable = ({name, withWordCounts}: OnepagerTableProps) => {
     const [onepager, setOnepager] = useState({} as Onepager)
     const [isLoading, setIsLoading] = useState(true)
     const [wordCounts, setWordCounts] = useState({})
@@ -47,10 +48,10 @@ export const OnepagerTable = ({name}: OnepagerTableProps) => {
 
     const showWords = (wordString: string) => {
         return <span>
-            {wordString.replace("-", " ").split(" ").map((word, index) => {
+            {wordString.replace("/", " ").replace("-", " ").split(" ").map((word, index) => {
                 const count = wordCounts[word]
                 const isTerm = termInfos[word] && termInfos[word].plusOrMinus == "+"
-                const className = count > 0 ? `is-topic is-topic-${count}` : (isTerm ? "is-term" : "")
+                const className = (count > 0 && withWordCounts) ? `is-topic is-topic-${count}` : (isTerm ? "is-term" : "")
                 return <span className={className} key={index} title={count}>{word} </span>
             })}
         </span>

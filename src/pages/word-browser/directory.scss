@@ -1,0 +1,74 @@
+.directory .title {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background-color: lightgray;
+  padding: .3em;
+
+  a {
+    margin-left: 2em;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+
+  .listrow {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: .1em;
+
+    &.withline {
+      border-bottom: solid black 1px;
+    }
+  }
+}
+
+.next-to-each-other {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.tfidf {
+  .plus {
+    background-color: lightgreen;
+  }
+
+  .showMinus {
+    color: lightgray;
+    text-decoration: line-through;
+  }
+
+  .dontknow {
+    background-color: lightgray;
+  }
+
+  .maybetech {
+    font-weight: bolder;
+  }
+}
+
+.margins {
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+.highlight {
+  background-color: lightgray;
+}
+
+.directoryentry {
+  padding: .2em;
+}
+
+.material-icons.small {
+  font-size: 1.2em;
+}
