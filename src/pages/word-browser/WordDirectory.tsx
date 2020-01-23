@@ -80,7 +80,7 @@ export class WordDirectory extends React.Component<DirectoryProps, DirectoryStat
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry.endsWith(".txt") ? entry.split(".")[0] : entry}</a>
+                  onClick={() => this.gotoPath(path)}>{entry.endsWith(".txt") ? entry.split(".txt")[0] : entry}</a>
     }
 
     render() {

@@ -33,7 +33,7 @@ export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps
 
     return <div className="list">
         {cosineValues.map((cosineValue, index) => {
-            const docName = cosineValue.document.split("/")[1].split(".")[0]
+            const docName = cosineValue.document.split("/")[1].split(".txt")[0]
             return <div className="listrow" key={index}>
                 <div className="cell index">{index}</div>
                 <div className="cell string">

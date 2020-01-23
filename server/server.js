@@ -232,7 +232,7 @@ const readTerms = (relPath) => {
             const parts = line.split("\t");
             const term = parts[0];
             const tfidfValue = Number(parts[1]).toFixed(2);
-            const plusOrMinus = termInfos[term] ? termInfos[term].plusOrMinus : "";
+            const plusOrMinus = termInfos[term.toLowerCase()] ? termInfos[term.toLowerCase()].plusOrMinus : "";
             const maybeTechTerm = isMaybeTechTerm(term);
             terms.push({term, tfidfValue, plusOrMinus, maybeTechTerm});
         }).on("close", () => {
