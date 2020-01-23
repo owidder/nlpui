@@ -24,7 +24,7 @@ interface WordsState {
 
 interface FileContent {
     path: string
-    terms: WordInfo[]
+    words: WordInfo[]
 }
 
 const override = css`
@@ -39,7 +39,7 @@ export class Words extends React.Component<WordsProps, WordsState> {
 
     async readContent() {
         const fileContent: FileContent = await callApi(`words/file/${this.props.filePath}`)
-        this.setState({wordInfos: fileContent.terms, isLoading: false})
+        this.setState({wordInfos: fileContent.words, isLoading: false})
     }
 
     componentDidMount(): void {
@@ -72,10 +72,10 @@ export class Words extends React.Component<WordsProps, WordsState> {
         }
     }
 
-    setPlusOrMinus(termName: string, plusOrMinus: PlusMinus) {
-        callApi(`termInfo/${termName}/set`, "POST", {plusOrMinus})
-        const termInfos = this.state.termInfos.map(termInfo => {
-            return termInfo.term == termName ? {...termInfo, plusOrMinus} : termInfo
+    setPlusOrMinus(word: string, plusOrMinus: PlusMinus) {
+        callApi(`termInfo/set?term=${encodeURIComponent(word)}`, "POST", {plusOrMinus})
+        const wordInfos = this.state.wordInfos.map(wordInfo => {
+            return wordInfo.word == word ? {...wordInfo, plusOrMinus} : wordInfo
         })
         this.setState({wordInfos})
     }
@@ -90,13 +90,13 @@ export class Words extends React.Component<WordsProps, WordsState> {
             />
         }
         return <div className="list tfidf">
-            {this.state.termInfos.map(termInfo => <div className={`listrow withline ${this.createClassFromTermInfo(termInfo)}`} key={termInfo.term}>
-                <div>{termInfo.term}</div>
+            {this.state.wordInfos.map(wordInfo => <div className={`listrow withline ${this.createClassFromTermInfo(wordInfo)}`} key={wordInfo.word}>
+                <div>{wordInfo.word}</div>
                 <div className="next-to-each-other">
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "+")}><i className="material-icons small">{termInfo.plusOrMinus == "+" ? "add_circle" : "add_circle_outline"}</i></div>
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "-")}><i className="material-icons small">{termInfo.plusOrMinus == "-" ? "remove_circle" : "remove_circle_outline"}</i></div>
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "?")}><i className="material-icons small">{termInfo.plusOrMinus == "?" ? "help" : "help_outline"}</i></div>
-                    <div className="clickable" onClick={() => this.setPlusOrMinus(termInfo.term, "")}><i className="material-icons small">highlight_off</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(wordInfo.word, "+")}><i className="material-icons small">{wordInfo.plusOrMinus == "+" ? "add_circle" : "add_circle_outline"}</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(wordInfo.word, "-")}><i className="material-icons small">{wordInfo.plusOrMinus == "-" ? "remove_circle" : "remove_circle_outline"}</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(wordInfo.word, "?")}><i className="material-icons small">{wordInfo.plusOrMinus == "?" ? "help" : "help_outline"}</i></div>
+                    <div className="clickable" onClick={() => this.setPlusOrMinus(wordInfo.word, "")}><i className="material-icons small">highlight_off</i></div>
                 </div>
             </div>)}
         </div>

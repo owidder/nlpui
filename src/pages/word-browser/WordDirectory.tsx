@@ -1,16 +1,13 @@
 import * as React from "react"
 
 import {callApi} from "../../util/fetchUtil"
-import {Words} from "./Tfidf"
+import {Words} from "./Words"
 import {OnepagerTable} from "../cosine-browser/OnepagerTable"
 
 import "./directory.scss"
 import "../styles.scss"
 
 const _path = require("path");
-
-const SRC_BASE_PATH = "https://github.com/frappe/erpnext/tree/c269c68727ffe251c1f04f1bfc373f6ddb1d1b17"
-const SUMMARY_FILE_NAME = "_SUMMARY_"
 
 interface DirectoryProps {
     path: string
@@ -44,14 +41,19 @@ export class WordDirectory extends React.Component<DirectoryProps, DirectoryStat
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
     private async gotoPath(path: string) {
-        const pathInfo: PathInfo = await callApi(`pathType/${path}`)
+        const pathInfo: PathInfo = await callApi(`src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
         const folderInfo: FolderInfo = await callApi(`words/folder/${folder}`)
-        const docName = path ? path.split("/")[1].split(".")[0] : undefined
 
-        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, currentSourceDocument: docName})
+        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
+        if(pathType == "file") {
+            const docName = path ? path.split("/")[1].split(".")[0] : undefined
+            this.setState({currentSourceDocument: docName})
+        } else {
+            this.setState({currentSourceDocument: undefined})
+        }
     }
 
     async componentDidMount() {
@@ -74,15 +76,11 @@ export class WordDirectory extends React.Component<DirectoryProps, DirectoryStat
         return null
     }
 
-    summaryFileOfCurrentPath() {
-        return _path.join(this.state.currentPath, SUMMARY_FILE_NAME)
-    }
-
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry}</a>
+                  onClick={() => this.gotoPath(path)}>{entry.endsWith(".txt") ? entry.split(".")[0] : entry}</a>
     }
 
     render() {
@@ -92,14 +90,12 @@ export class WordDirectory extends React.Component<DirectoryProps, DirectoryStat
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? `/${this.state.currentPath}` : "/"}
-            {(this.state.currentPathType == "file" && !this.state.currentPath.endsWith(SUMMARY_FILE_NAME)) ? <a target="_blank" href={`${SRC_BASE_PATH}/${this.state.currentPath}`}>github</a> : <span/>}
-            </h5>
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? `/${this.state.currentPath}` : "/"}</h5>
             <div className="margins row">
                 <div className={`list ${gridClass(4)}`}>
                     {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                     {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
-                    {this.state.content.filter(entry => entry != SUMMARY_FILE_NAME).map(entry => {
+                    {this.state.content.map(entry => {
                         const newPath = (this.state.currentPathType == "folder" ?
                             _path.join(this.state.currentPath, entry) :
                             _path.join(_path.dirname(this.state.currentPath), entry))

@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import {getHashParamValue} from "../../util/queryUtil2";
-import {WordDirectory} from "./Directory";
+import {WordDirectory} from "./WordDirectory";
 
 import "materialize-css/dist/css/materialize.css";
 

@@ -48,9 +48,10 @@ export const OnepagerTable = ({name, withWordCounts}: OnepagerTableProps) => {
 
     const showWords = (wordString: string) => {
         return <span>
-            {wordString.replace("/", " ").replace("-", " ").split(" ").map((word, index) => {
-                const count = wordCounts[word]
-                const isTerm = termInfos[word] && termInfos[word].plusOrMinus == "+"
+            {wordString.split(" ").map((word, index) => {
+                const wordLc = word.toLocaleLowerCase()
+                const count = wordCounts[wordLc]
+                const isTerm = termInfos[wordLc] && termInfos[wordLc].plusOrMinus == "+"
                 const className = (count > 0 && withWordCounts) ? `is-topic is-topic-${count}` : (isTerm ? "is-term" : "")
                 return <span className={className} key={index} title={count}>{word} </span>
             })}

@@ -280,7 +280,13 @@ router.put("/termInfo/save", (req, res) => {
 router.post("/termInfo/:term/set", (req, res) => {
     const {term} = req.params;
     const {plusOrMinus} = req.body;
-    console.log(`set: ${term} = ${plusOrMinus}`);
+    setTermInfo(term, plusOrMinus);
+    res.json({term, plusOrMinus});
+})
+
+router.post("/termInfo/set", (req, res) => {
+    const {term} = req.query;
+    const {plusOrMinus} = req.body;
     setTermInfo(term, plusOrMinus);
     res.json({term, plusOrMinus});
 })
