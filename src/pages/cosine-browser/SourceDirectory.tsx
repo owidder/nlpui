@@ -2,7 +2,6 @@ import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
-import {OnepagerTable} from "./OnepagerTable";
 import "./directory.scss";
 import {setHashValue} from "../../util/queryUtil2";
 
@@ -107,9 +106,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         clickHandler={(docName) => this.showSourceDocument(docName)}
                         highlightDocName={this.state.currentSourceDocument}
                         document={this.state.currentPath}/> : <span/>}
-                </div>
-                <div className={gridClass(5)}>
-                    {this.state.currentSourceDocument ? <OnepagerTable withWordCounts={true} name={this.state.currentSourceDocument}/> : <span/>}
                 </div>
             </div>
             </div>
