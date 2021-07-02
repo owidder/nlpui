@@ -33,24 +33,32 @@ const cosine = (doc1Name, doc2Name) => {
     const vector1 = vectors[doc1Name];
     const vector2 = vectors[doc2Name];
 
-    return computeCosineBetweenVectors(vector1, vector2);
+    if(vector1 != null && vector2 != null) {
+        return computeCosineBetweenVectors(vector1, vector2);
+    }
+
+    return 0;
 }
 
 const similarDocs = (doc1, threshold) => {
-    return new Promise(resolve => {
-        const docs = Object.keys(vectors).reduce((list, doc2) => {
-            if(doc1 == doc2) {
+    return new Promise((resolve, reject) => {
+        try {
+            const docs = Object.keys(vectors).reduce((list, doc2) => {
+                if (doc1 == doc2) {
+                    return list
+                }
+
+                const _cosine = cosine(doc1, doc2);
+                if (_cosine > threshold) {
+                    return [...list, {document: doc2, cosine: _cosine}]
+                }
+
                 return list
-            }
-
-            const _cosine = cosine(doc1, doc2);
-            if(_cosine > threshold) {
-                return [...list, {document: doc2, cosine: _cosine}]
-            }
-
-            return list
-        }, []);
-        resolve(docs)
+            }, []);
+            resolve(docs)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 

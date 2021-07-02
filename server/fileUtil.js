@@ -5,7 +5,7 @@ const createReadlineInterface = (path) => {
     return readline.createInterface({
         input: fs.createReadStream(path),
         output: process.stdout,
-        console: false
+        terminal: false
     });
 }
 

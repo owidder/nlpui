@@ -3,6 +3,7 @@ import {useState, useEffect} from "react";
 import * as _ from "lodash";
 
 import {callApi} from "../../util/fetchUtil";
+import {docNameFromPath} from "./util";
 
 import "../styles.scss"
 
@@ -10,6 +11,7 @@ interface CosinesProps {
     document: string
     clickHandler: (string) => void
     highlightDocName?: string
+    staticCall?: boolean
 }
 
 interface CosineValue {
@@ -17,11 +19,12 @@ interface CosineValue {
     cosine: number
 }
 
-export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps) => {
+export const Cosines = ({document, clickHandler, highlightDocName, staticCall}: CosinesProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
 
     useEffect(() => {
-        callApi(`cosineValues?doc1=${document}`).then((_cosineValues: CosineValue[]) => {
+        const url = staticCall ? `src/folder/${document}` : `/api/cosineValues?doc1=${document}`
+        callApi(url).then((_cosineValues: CosineValue[]) => {
             const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine)
             setCosineValues([{document, cosine: 1}, ...sortedCosineValues])
         })
@@ -33,7 +36,7 @@ export const Cosines = ({document, clickHandler, highlightDocName}: CosinesProps
 
     return <div className="list">
         {cosineValues.map((cosineValue, index) => {
-            const docName = cosineValue.document.split("/")[1].split(".txt")[0]
+            const docName = docNameFromPath(cosineValue.document)
             return <div className="listrow" key={index}>
                 <div className="cell index">{index}</div>
                 <div className="cell string">

@@ -128,7 +128,7 @@ const common = {
         ],
     },
     plugins: [
-        new CopyWebpackPlugin([PUBLIC_PATH])
+        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/static", to: "cosine-browser"}])
     ],
     resolve: {
         extensions: [".tsx", ".ts", ".js"]

@@ -18,7 +18,7 @@ export const getHashParamValue = (paramName: string, defValue?: string) => {
     const hash = window.location.hash;
     const parsed = queryString.parse(hash);
 
-    return parsed[paramName] || "";
+    return parsed[paramName] || defValue;
 }
 
 const doCutTrailingSlash = (value: string, cutTrailingSlash: boolean) => {

@@ -1,10 +1,10 @@
-const path = require("path");
-const fs = require("fs");
 const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 
 const {initVectors, cosine, similarDocs} = require("./vectors");
+
+const {readSrcFolder, getPathType} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "srcpath", alias: "s", type: String},
@@ -22,67 +22,63 @@ app.use("/", express.static(rootFolder));
 
 const server = require("http").createServer(app);
 
-function sortNonCaseSensitive(list) {
-    return list.sort(function (a, b) {
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-    });
-}
-
-function readSrcFolder(relFolder, basePath = cliOptions.srcpath) {
-    const absFolder = path.join(basePath, relFolder);
-    return new Promise((resolve, reject) => {
-        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            if (err) reject(err);
-            resolve(sortNonCaseSensitive(filesAndSubfolders));
-        });
-    })
-}
-
-function pathTypeFromStats(stats) {
-    return stats.isDirectory() ? "folder" : "file";
-}
-
-function getPathType(relPath, basePath = cliOptions.srcpath) {
-    const absPath = path.join(basePath, relPath);
-    return new Promise((resolve, reject) => {
-        fs.stat(absPath, (err, stats) => {
-            if (err) reject(err);
-            resolve(pathTypeFromStats(stats))
-        })
-    })
+async function isFolderOrUtf8(path) {
+    if(path.endsWith(".utf8")) {
+        return true;
+    }
+    return getPathType(path) === "folder"
 }
 
 router.get("/src/folder/*", async function (req, res) {
-    const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
-    const content = await readSrcFolder(relFolder, cliOptions.srcpath)
-    res.json({folder: relFolder, content});
+    try {
+        const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
+        const content = await readSrcFolder(relFolder, cliOptions.srcpath)
+        res.json({folder: relFolder, content});
+    } catch (e) {
+        res.status(500).json({ error: e.toString() });
+    }
 });
 
 router.get("/src/pathType/*", async function (req, res) {
-    const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
-    const pathType = await getPathType(relPath, cliOptions.srcpath);
-    console.log(`pathType: ${relPath} -> ${pathType}`);
-    res.json({path: relPath, pathType});
+    try {
+        const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
+        const pathType = await getPathType(relPath, cliOptions.srcpath);
+        console.log(`pathType: ${relPath} -> ${pathType}`);
+        res.json({path: relPath, pathType});
+    } catch (e) {
+        res.status(500).json({ error: e.toString() });
+    }
 });
 
 router.get("/cosine", (req, res) => {
-    const doc1 = req.query.doc1;
-    const doc2 = req.query.doc2;
+    try {
+        const doc1 = req.query.doc1;
+        const doc2 = req.query.doc2;
 
-    const cos = cosine(doc1, doc2);
-    res.json({result: cos})
+        const cos = cosine(doc1, doc2);
+        res.json({result: cos})
+    } catch (e) {
+        res.status(500).json({ error: e.toString() });
+    }
 })
 
-router.get("/cosineValues", (req, res) => {
-    const doc1 = req.query.doc1;
-    similarDocs(doc1, .3).then(docs => {
+router.get("/cosineValues", async (req, res) => {
+    try {
+        const doc1 = req.query.doc1;
+        const docs = await similarDocs(doc1, .3)
         res.json(docs)
-    })
+    } catch (e) {
+        res.status(500).json({ error: e.toString() });
+    }
 })
 
 app.use('/api', router);
 
 const port = cliOptions.port ? Number(cliOptions.port) : 3100;
+
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err);
+});
 
 initVectors(cliOptions.vectorspath).then(() => {
     server.listen(port, function () {

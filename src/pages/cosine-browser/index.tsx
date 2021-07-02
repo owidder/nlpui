@@ -6,7 +6,7 @@ import {SourceDirectory} from "./SourceDirectory"
 
 import "materialize-css/dist/css/materialize.css"
 
-const path = getHashParamValue("path", "");
+const path = getHashParamValue("path", "erpnext");
 const initialSourceDocument = getHashParamValue("isd", undefined)
 
-ReactDOM.render(<SourceDirectory path={path} initialSourceDocument={initialSourceDocument}/>, document.getElementById("container"))
+ReactDOM.render(<SourceDirectory path={path} initialSourceDocument={initialSourceDocument} staticFolderCall={true}/>, document.getElementById("container"))

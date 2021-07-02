@@ -5,11 +5,15 @@ import {Cosines} from "./Cosines";
 import "./directory.scss";
 import {setHashValue} from "../../util/queryUtil2";
 
+import {docNameFromPath} from "./util"
+
 const _path = require("path");
 
 interface DirectoryProps {
     path: string
     initialSourceDocument: string
+    staticFolderCall?: boolean
+    staticFileCall?: boolean
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -35,16 +39,22 @@ const pathParam = (path: string) => {
     return `#path=${path}`
 }
 
+const lastPartOfPath = (path: string) => {
+    const parts = path.split("/")
+    return parts[parts.length-1]
+}
+
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path, currentSourceDocument: this.props.initialSourceDocument}
 
     private async gotoPath(path: string) {
-        const pathInfo: PathInfo = await callApi(`src/pathType/${path}`)
+        const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderInfo: FolderInfo = await callApi(`src/folder/${folder}`)
+        const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder/${folder}`
+        const folderInfo: FolderInfo = await callApi(folderUrl)
 
         this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, currentSourceDocument: this.props.initialSourceDocument})
     }
@@ -69,11 +79,17 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         return null
     }
 
+    renderLinkWithDiv(entry: string, path: string) {
+        return <div className="listrow" key={path + entry}>
+            <div>{this.renderLink(entry, path)}</div>
+        </div>
+    }
+
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry.split(".")[0]}</a>
+                  onClick={() => this.gotoPath(path)}>{entry}</a>
     }
 
     showSourceDocument(currentSourceDocument: string) {
@@ -87,25 +103,25 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath.split("/").reverse()[0].split(".")[0] : "/"}</h5>
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? docNameFromPath(this.state.currentPath) : "/"}</h5>
             <div className="margins row">
                 <div className={gridClass(3)}>
-                    {this.renderLink(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
-                    {parentFolder != null ? this.renderLink("..", parentFolder) : <span/>}
+                    {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
+                    {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                     {this.state.content.map(entry => {
                         const newPath = (this.state.currentPathType == "folder" ?
                             _path.join(this.state.currentPath, entry) :
                             _path.join(_path.dirname(this.state.currentPath), entry))
-                        return <div className="listrow" key={entry}>
-                            <div>{this.renderLink(entry, newPath)}</div>
-                        </div>
+                        return this.renderLinkWithDiv(entry, newPath)
                     })}
                 </div>
-                <div className={gridClass(4)}>
+                <div className={gridClass(9)}>
                     {this.state.currentPathType == "file" ? <Cosines
                         clickHandler={(docName) => this.showSourceDocument(docName)}
                         highlightDocName={this.state.currentSourceDocument}
-                        document={this.state.currentPath}/> : <span/>}
+                        document={this.state.currentPath}
+                        staticCall={this.props.staticFileCall}
+                    /> : <span/>}
                 </div>
             </div>
             </div>
