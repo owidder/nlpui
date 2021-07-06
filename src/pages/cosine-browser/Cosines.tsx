@@ -1,6 +1,7 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
 import * as _ from "lodash";
+const _path = require("path");
 
 import {callApi} from "../../util/fetchUtil";
 import {docNameFromPath} from "./util";
@@ -9,8 +10,7 @@ import "../styles.scss"
 
 interface CosinesProps {
     document: string
-    clickHandler: (string) => void
-    highlightDocName?: string
+    srcRoot: string
     staticCall?: boolean
 }
 
@@ -19,7 +19,7 @@ interface CosineValue {
     cosine: number
 }
 
-export const Cosines = ({document, clickHandler, highlightDocName, staticCall}: CosinesProps) => {
+export const Cosines = ({document, staticCall, srcRoot}: CosinesProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
 
     useEffect(() => {
@@ -30,8 +30,9 @@ export const Cosines = ({document, clickHandler, highlightDocName, staticCall}: 
         })
     }, [document])
 
-    const classForDocName = (docName: string) => {
-        return highlightDocName == docName ? "pointer highlight" : "pointer";
+    const srcPathFromPath = (path: string): string => {
+        const realPath = path.split(".utf8")[0]
+        return _path.join(srcRoot, realPath)
     }
 
     return <div className="list">
@@ -40,9 +41,7 @@ export const Cosines = ({document, clickHandler, highlightDocName, staticCall}: 
             return <div className="listrow" key={index}>
                 <div className="cell index">{index}</div>
                 <div className="cell string">
-                    <a className={classForDocName(docName)}
-                       onClick={() => clickHandler(docName)}>{docName}
-                    </a>
+                    <a className="pointer" href={srcPathFromPath(cosineValue.document)} target="_blank">{docName}</a>
                 </div>
                 <div className="cell">{cosineValue.cosine.toFixed(2)}</div>
             </div>

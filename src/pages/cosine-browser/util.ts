@@ -1,5 +1,7 @@
 const docNameFromPath = (path: string): string => {
-    return path.split("/").reverse()[0].split(".utf8")[0]
+    return cutUtf8(path.split("/").reverse()[0])
 }
 
-export {docNameFromPath}
+const cutUtf8 = (name: string): string => name.split(".utf8")[0]
+
+export {docNameFromPath, cutUtf8}

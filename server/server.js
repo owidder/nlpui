@@ -22,13 +22,6 @@ app.use("/", express.static(rootFolder));
 
 const server = require("http").createServer(app);
 
-async function isFolderOrUtf8(path) {
-    if(path.endsWith(".utf8")) {
-        return true;
-    }
-    return getPathType(path) === "folder"
-}
-
 router.get("/src/folder/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
@@ -65,7 +58,7 @@ router.get("/cosine", (req, res) => {
 router.get("/cosineValues", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const docs = await similarDocs(doc1, .3)
+        const docs = await similarDocs(doc1, .9)
         res.json(docs)
     } catch (e) {
         res.status(500).json({ error: e.toString() });

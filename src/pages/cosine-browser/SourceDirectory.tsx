@@ -3,15 +3,13 @@ import * as React from "react";
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
 import "./directory.scss";
-import {setHashValue} from "../../util/queryUtil2";
 
-import {docNameFromPath} from "./util"
+import {docNameFromPath, cutUtf8} from "./util"
 
 const _path = require("path");
 
 interface DirectoryProps {
     path: string
-    initialSourceDocument: string
     staticFolderCall?: boolean
     staticFileCall?: boolean
 }
@@ -22,7 +20,6 @@ interface DirectoryState {
     content: string[]
     currentPath: string
     currentPathType?: PathType
-    currentSourceDocument?: string
 }
 
 interface FolderInfo {
@@ -46,7 +43,7 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, currentSourceDocument: this.props.initialSourceDocument}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
     private async gotoPath(path: string) {
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
@@ -56,7 +53,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder/${folder}`
         const folderInfo: FolderInfo = await callApi(folderUrl)
 
-        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, currentSourceDocument: this.props.initialSourceDocument})
+        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
     }
 
     async componentDidMount() {
@@ -89,12 +86,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry}</a>
-    }
-
-    showSourceDocument(currentSourceDocument: string) {
-        setHashValue("isd", currentSourceDocument)
-        this.setState({currentSourceDocument})
+                  onClick={() => this.gotoPath(path)}>{cutUtf8(entry)}</a>
     }
 
     render() {
@@ -117,8 +109,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 </div>
                 <div className={gridClass(9)}>
                     {this.state.currentPathType == "file" ? <Cosines
-                        clickHandler={(docName) => this.showSourceDocument(docName)}
-                        highlightDocName={this.state.currentSourceDocument}
+                        srcRoot="https://github.com/frappe/erpnext/tree/develop/"
                         document={this.state.currentPath}
                         staticCall={this.props.staticFileCall}
                     /> : <span/>}
