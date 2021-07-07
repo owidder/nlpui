@@ -58,8 +58,8 @@ router.get("/cosine", (req, res) => {
 router.get("/cosineValues", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const docs = await similarDocs(doc1, .9)
-        res.json(docs)
+        const docs = await similarDocs(doc1, .5)
+        res.json(docs.slice(0, 10))
     } catch (e) {
         res.status(500).json({ error: e.toString() });
     }
