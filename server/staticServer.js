@@ -30,7 +30,7 @@ const createStaticFolderResponse = async (folderName, absPath, outPath) => {
 }
 
 const createStaticFileResponse = async (fileName, relPath, outPath) => {
-    const similarDocsList = await similarDocs(path.join(relPath, fileName), .75)
+    const similarDocsList = await similarDocs(path.join(relPath, fileName), .19)
 
     const outName = path.join(outPath, `${fileName}.json`)
     return new Promise((resolve, reject) => {
@@ -48,14 +48,14 @@ const createStaticResponsesRecursive = async (absRootPath, currentRelPath, outPa
     for(const fileOrFolder of filesAndFolders) {
         if(!fileOrFolder.startsWith(".")) {
             const pathType = await getPathType(fileOrFolder, currentPath)
-            if(pathType === "folder" && pathType === type) {
+            if(pathType === "folder" && (type == null || pathType === type)) {
                 const newOut = path.join(outPath, fileOrFolder)
                 if(!fs.existsSync(newOut)) {
                     fs.mkdirSync(newOut)
                 }
                 await createStaticFolderResponse(fileOrFolder, currentPath, newOut)
                 await createStaticResponsesRecursive(absRootPath, path.join(currentRelPath, fileOrFolder), newOut, type)
-            } else if(pathType === "file" && pathType === type) {
+            } else if(pathType === "file" && (type == null || pathType === type)) {
                 await createStaticFileResponse(fileOrFolder, currentRelPath, outPath)
             }
         }

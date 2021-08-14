@@ -2,9 +2,9 @@ import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
-import "./directory.scss";
+import "../directory.scss";
 
-import {docNameFromPath, cutUtf8} from "./util"
+import {docNameFromPath} from "./util"
 
 const _path = require("path");
 
@@ -86,7 +86,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{cutUtf8(entry)}</a>
+                  onClick={() => this.gotoPath(path)}>{entry}</a>
     }
 
     render() {
@@ -109,7 +109,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 </div>
                 <div className={gridClass(9)}>
                     {this.state.currentPathType == "file" ? <Cosines
-                        srcRoot="https://github.com/frappe/erpnext/tree/develop/"
+                        codeSrcRoot="https://github.com/frappe/erpnext/tree/develop/erpnext"
+                        docsSrcRoot="https://github.com/frappe/erpnext_documentation/tree/master/erpnext_documentation/www/docs/v13/user/manual/en"
                         document={this.state.currentPath}
                         staticCall={this.props.staticFileCall}
                     /> : <span/>}

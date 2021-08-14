@@ -1,4 +1,3 @@
-const webpack = require("webpack");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -128,7 +127,8 @@ const common = {
         ],
     },
     plugins: [
-        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/static", to: "cosine-browser"}])
+        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/static", to: "cosine-browser"}]),
+        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/lsi", to: "lsi"}]),
     ],
     resolve: {
         extensions: [".tsx", ".ts", ".js"]

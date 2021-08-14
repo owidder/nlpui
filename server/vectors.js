@@ -5,9 +5,8 @@ const {createReadlineInterface} = require("./fileUtil");
 const vectors = {};
 
 const computeCosineBetweenVectors = (vector1, vector2) => {
-    if(vector1.length == vector2.length) {
-        const cosine = math.multiply(vector1, vector2) / (math.norm(vector1) * math.norm(vector2));
-        return cosine;
+    if(vector1.length === vector2.length) {
+        return math.multiply(vector1, vector2) / (math.norm(vector1) * math.norm(vector2));
     }
 
     return 0;
@@ -20,8 +19,7 @@ const initVectors = (vectorspath) => {
         readlineInterface.on("line", line => {
             const parts = line.split("\t");
             const filename = parts[0];
-            const vector = parts.slice(1).map(Number)
-            vectors[filename] = vector;
+            vectors[filename] = parts.slice(1).map(Number);
         }).on("close", () => {
             resolve(vectors);
         })
@@ -40,11 +38,19 @@ const cosine = (doc1Name, doc2Name) => {
     return 0;
 }
 
+const sortDocsWithCosines = (docsWiithCosines) => {
+    return docsWiithCosines.sort((a, b) => {
+        if(a.cosine > b.cosine) return -1;
+        if(a.cosine < b.cosine) return 1;
+        return 0;
+    })
+}
+
 const similarDocs = (doc1, threshold) => {
     return new Promise((resolve, reject) => {
         try {
             const docs = Object.keys(vectors).reduce((list, doc2) => {
-                if (doc1 == doc2) {
+                if (doc1 === doc2) {
                     return list
                 }
 
@@ -55,7 +61,7 @@ const similarDocs = (doc1, threshold) => {
 
                 return list
             }, []);
-            resolve(docs)
+            resolve(sortDocsWithCosines(docs))
         } catch (e) {
             reject(e)
         }

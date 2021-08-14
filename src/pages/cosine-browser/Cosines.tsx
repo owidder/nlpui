@@ -10,7 +10,8 @@ import "../styles.scss"
 
 interface CosinesProps {
     document: string
-    srcRoot: string
+    codeSrcRoot: string
+    docsSrcRoot: string
     staticCall?: boolean
 }
 
@@ -19,7 +20,11 @@ interface CosineValue {
     cosine: number
 }
 
-export const Cosines = ({document, staticCall, srcRoot}: CosinesProps) => {
+const ERPNEXT_CODE_ROOT = "https://github.com/frappe/erpnext/tree/develop/erpnext"
+const ERPNEXT_DOCS_ROOT = "https://github.com/frappe/erpnext_documentation/tree/master/erpnext_documentation/www/docs/v13/user/manual/en"
+const AXELOR_SRC_ROOT = "https://github.com/axelor/axelor-open-suite/blob/master/"
+
+export const Cosines = ({document, staticCall}: CosinesProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
 
     useEffect(() => {
@@ -31,8 +36,15 @@ export const Cosines = ({document, staticCall, srcRoot}: CosinesProps) => {
     }, [document])
 
     const srcPathFromPath = (path: string): string => {
-        const realPath = path.split(".utf8")[0]
-        return _path.join(srcRoot, realPath)
+        if(path.startsWith("erpnext/code/")) {
+            return _path.join(ERPNEXT_CODE_ROOT, path.substr(13))
+        } else if(path.startsWith("erpnext/docs/")) {
+            return _path.join(ERPNEXT_DOCS_ROOT, path.substr(13))
+        } else if(path.startsWith("axelor-open-suite/")) {
+            return _path.join(AXELOR_SRC_ROOT, path.substr(18))
+        }
+
+        return "???"
     }
 
     return <div className="list">
@@ -43,7 +55,7 @@ export const Cosines = ({document, staticCall, srcRoot}: CosinesProps) => {
                 <div className="cell string">
                     <a className="pointer" href={srcPathFromPath(cosineValue.document)} target="_blank">{docName}</a>
                 </div>
-                <div className="cell">{cosineValue.cosine.toFixed(2)}</div>
+                <div className="cell"><a target="_blank" href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a></div>
             </div>
         })}
     </div>

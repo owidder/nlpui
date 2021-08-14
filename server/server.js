@@ -1,14 +1,16 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
+const path = require("path");
 
 const {initVectors, cosine, similarDocs} = require("./vectors");
+const {readFeatures} = require("./tfidf");
 
 const {readSrcFolder, getPathType} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "srcpath", alias: "s", type: String},
-    {name: "vectorspath", alias: "v", type: String},
+    {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
 ]
 
@@ -26,7 +28,7 @@ router.get("/src/folder/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
         const content = await readSrcFolder(relFolder, cliOptions.srcpath)
-        res.json({folder: relFolder, content});
+        res.json({folder: relFolder, content: content.filter(e => !e.startsWith("."))});
     } catch (e) {
         res.status(500).json({ error: e.toString() });
     }
@@ -58,9 +60,19 @@ router.get("/cosine", (req, res) => {
 router.get("/cosineValues", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const docs = await similarDocs(doc1, .5)
-        res.json(docs.slice(0, 10))
+        const docs = await similarDocs(doc1, .1)
+        res.json(docs.slice(0, 100))
     } catch (e) {
+        res.status(500).json({ error: e.toString() });
+    }
+})
+
+router.get("/features", async (req, res) => {
+    try {
+        const doc1 = req.query.doc1;
+        const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.tfidf.csv`));
+        res.json(features)
+    } catch(e) {
         res.status(500).json({ error: e.toString() });
     }
 })
@@ -73,7 +85,7 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-initVectors(cliOptions.vectorspath).then(() => {
+initVectors(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });

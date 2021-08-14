@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="server (pt)" type="NodeJSConfigurationType" application-parameters="--srcpath $PROJECT_DIR$/../erpnext --vectorspath $PROJECT_DIR$/data/lsi/erpnext/prepare_text/vectors-erpnext.csv --port 3200" path-to-js-file="server.js" working-dir="$PROJECT_DIR$/server">
-    <method v="2" />
-  </configuration>
-</component>

@@ -21,12 +21,12 @@ function getPathType(relPath, basePath) {
     })
 }
 
-const filterFoldersAndUtf8 = async (filesAndSubfolders, relPath, basePath) => {
+const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     const filtered = []
     for(const fileOrSubfolder of filesAndSubfolders) {
         const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
         if(pathType === "file") {
-            if(fileOrSubfolder.endsWith(".utf8") && !fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".")) {
+            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".")) {
                 filtered.push(fileOrSubfolder)
             }
         } else {
@@ -41,7 +41,7 @@ function readSrcFolder(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            const filtered = await filterFoldersAndUtf8(filesAndSubfolders, relFolder, basePath);
+            const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(filtered));
         });
