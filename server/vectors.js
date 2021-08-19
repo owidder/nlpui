@@ -26,6 +26,10 @@ const initVectors = (vectorspath) => {
     })
 }
 
+const hasVector = (docName) => {
+    return vectors[docName] != null;
+}
+
 const cosine = (doc1Name, doc2Name) => {
 
     const vector1 = vectors[doc1Name];
@@ -68,4 +72,4 @@ const similarDocs = (doc1, threshold) => {
     })
 }
 
-module.exports = {initVectors, cosine, similarDocs}
+module.exports = {initVectors, cosine, similarDocs, hasVector}
