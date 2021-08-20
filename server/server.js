@@ -12,6 +12,7 @@ const cliOptionsConfig = [
     {name: "srcpath", alias: "s", type: String},
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
+    {name: "filter", alias: "f", type: String}
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -43,7 +44,7 @@ router.get("/src/folder/*", async function (req, res) {
         const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
         const entries = await readSrcFolder(relFolder, cliOptions.srcpath);
         const undottedEntries = entries.filter(e => !e.startsWith("."));
-        const foldersOrFilesWithVectors = await filterFilesWithoutVectors(relFolder, undottedEntries);
+        const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
         res.json({
             folder: relFolder, content: foldersOrFilesWithVectors
         });

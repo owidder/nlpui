@@ -45,7 +45,7 @@ const common = {
         compress: true,
         port: 9000,
         proxy: {
-            "/api": "http://localhost:3200"
+            "/api": "http://localhost:3225"
         }
     },
     module: {

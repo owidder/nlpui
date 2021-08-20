@@ -3,8 +3,7 @@ import * as React from "react";
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
 import "../directory.scss";
-
-import {docNameFromPath} from "./util"
+import {srcPathFromPath} from "./srcFromPath";
 
 const _path = require("path");
 
@@ -95,9 +94,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? docNameFromPath(this.state.currentPath) : "/"}</h5>
+            <a target="_blank" href={srcPathFromPath(this.state.currentPath)}><h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"}</h5></a>
             <div className="margins row">
-                <div className={gridClass(3)}>
+                <div className={gridClass(2)}>
                     {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                     {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                     {this.state.content.map(entry => {
@@ -107,7 +106,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         return this.renderLinkWithDiv(entry, newPath)
                     })}
                 </div>
-                <div className={gridClass(9)}>
+                <div className={gridClass(10)}>
                     {this.state.currentPathType == "file" ? <Cosines
                         codeSrcRoot="https://github.com/frappe/erpnext/tree/develop/erpnext"
                         docsSrcRoot="https://github.com/frappe/erpnext_documentation/tree/master/erpnext_documentation/www/docs/v13/user/manual/en"
