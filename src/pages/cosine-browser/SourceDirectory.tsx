@@ -3,7 +3,7 @@ import * as React from "react";
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
 import "../directory.scss";
-import {srcPathFromPath} from "./srcFromPath";
+import {srcPathFromPath} from "../srcFromPath";
 
 const _path = require("path");
 

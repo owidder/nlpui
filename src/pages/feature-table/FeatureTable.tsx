@@ -5,6 +5,7 @@ import {callApi} from "../../util/fetchUtil";
 
 import "../styles.scss"
 import "../directory.scss";
+import {srcPathFromPath} from "../srcFromPath";
 
 interface FeatureTableProps {
     documentPath: string
@@ -27,7 +28,7 @@ export const FeatureTable = ({documentPath}: FeatureTableProps) => {
     }, [documentPath])
 
     return <div className="directory list">
-        <h5 className="title">{documentPath}</h5>
+        <a target="_blank" href={srcPathFromPath(documentPath)}><h5 className="title">{documentPath}</h5></a>
         {features.length > 0 ?
             features.map((feature, index) => {
                     return <div className="listrow" key={index}>
