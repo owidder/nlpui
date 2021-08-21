@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
+const {createReadlineInterface} = require("./fileUtil");
+
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -48,4 +50,18 @@ function readSrcFolder(relFolder, basePath) {
     })
 }
 
-module.exports = {readSrcFolder, getPathType}
+function readAggFolder(relFolder, basePath) {
+    const absFolder = path.join(basePath, relFolder);
+    return new Promise(resolve => {
+        const readLineInterface = createReadlineInterface(path.join(absFolder, "_.csv"));
+        const wordsAndValues = [];
+        readLineInterface.on("line", line => {
+            const wordAndValue = line.split("\t");
+            wordsAndValues.push({word: wordAndValue[0], value: wordAndValue[1]});
+        }).on("close", () => {
+            resolve(wordsAndValues)
+        })
+    })
+}
+
+module.exports = {readSrcFolder, getPathType, readAggFolder}

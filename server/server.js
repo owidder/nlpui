@@ -6,13 +6,13 @@ const path = require("path");
 const {initVectors, cosine, similarDocs, hasVector} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readSrcFolder, getPathType} = require("./serverFunctions")
+const {readSrcFolder, getPathType, readAggFolder} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "srcpath", alias: "s", type: String},
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
-    {name: "filter", alias: "f", type: String}
+    {name: "filter", alias: "f", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -38,6 +38,16 @@ const filterFilesWithoutVectors = async (relFolder, entries) => {
 
     return filtered;
 }
+
+router.get("/agg/folder/*", async function (req, res) {
+   try {
+       const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
+       const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
+       res.json(wordsAndValues);
+   } catch(e) {
+       res.status(500).json({error: e.toString()});
+   }
+});
 
 router.get("/src/folder/*", async function (req, res) {
     try {
