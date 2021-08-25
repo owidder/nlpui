@@ -53,14 +53,22 @@ function readSrcFolder(relFolder, basePath) {
 function readAggFolder(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise(resolve => {
-        const readLineInterface = createReadlineInterface(path.join(absFolder, "_.csv"));
-        const wordsAndValues = [];
-        readLineInterface.on("line", line => {
-            const wordAndValue = line.split("\t");
-            wordsAndValues.push({word: wordAndValue[0], value: wordAndValue[1]});
-        }).on("close", () => {
-            resolve(wordsAndValues)
-        })
+        const absPathToFile = path.join(absFolder, "_.csv");
+        if(fs.existsSync(absPathToFile)) {
+            const readLineInterface = createReadlineInterface(path.join(absFolder, "_.csv"));
+            const wordsAndValues = [];
+            let lineNo = 0;
+            readLineInterface.on("line", line => {
+                if(lineNo++ < 20) {
+                    const wordAndValue = line.split("\t");
+                    wordsAndValues.push({word: wordAndValue[0], value: wordAndValue[1]});
+                }
+            }).on("close", () => {
+                resolve(wordsAndValues)
+            })
+        } else {
+            resolve([])
+        }
     })
 }
 

@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
+const fs = require("fs");
 
 const {initVectors, cosine, similarDocs, hasVector} = require("./vectors");
 const {readFeatures} = require("./tfidf");
@@ -13,6 +14,7 @@ const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
     {name: "filter", alias: "f", type: String},
+    {name: "stopwordspath", alias: "p", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -24,6 +26,22 @@ const rootFolder = __dirname + "/../build";
 app.use("/", express.static(rootFolder));
 
 const server = require("http").createServer(app);
+
+const saveStopwords = () => {
+    const stopwordsStr = JSON.stringify(stopwords, null, 4);
+    fs.writeFileSync(cliOptions.stopwordspath, stopwordsStr);
+}
+
+const readStopwords = () => {
+    if(fs.existsSync(cliOptions.stopwordspath)) {
+        const stopwordsStr = fs.readFileSync(cliOptions.stopwordspath);
+        return JSON.parse(stopwordsStr);
+    }
+
+    return {}
+}
+
+const stopwords = readStopwords();
 
 const filterFilesWithoutVectors = async (relFolder, entries) => {
     const filtered = [];
@@ -39,11 +57,27 @@ const filterFilesWithoutVectors = async (relFolder, entries) => {
     return filtered;
 }
 
+const filterStopwords = (path, wordsAndValues) => {
+    let filteredWordsAndValues = [...wordsAndValues]
+    for(const _path in stopwords) {
+        filteredWordsAndValues = filteredWordsAndValues.filter(wav => {
+            if(_path == "." || path.startsWith(_path)) {
+                return !stopwords[_path].includes(wav.word)
+            }
+
+            return true
+        })
+    }
+
+    return filteredWordsAndValues
+}
+
 router.get("/agg/folder/*", async function (req, res) {
    try {
        const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
-       res.json(wordsAndValues);
+       const filteredWordsAndValues = filterStopwords(relFolder, wordsAndValues);
+       res.json(filteredWordsAndValues);
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
@@ -102,6 +136,23 @@ router.get("/features", async (req, res) => {
         const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.tfidf.csv`));
         res.json(features)
     } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
+})
+
+router.post("/setStopword", async (req, res) => {
+    try {
+        const {path, word} = req.body;
+        if(stopwords[path] == undefined) {
+            stopwords[path] = [word]
+        } else {
+            if(!stopwords[path].includes(word)) {
+                stopwords[path].push(word)
+            }
+        }
+        saveStopwords();
+        res.json({status: "ok"})
+    } catch(e) {
         res.status(500).json({error: e.toString()});
     }
 })

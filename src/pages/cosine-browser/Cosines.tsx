@@ -3,14 +3,12 @@ import {useState, useEffect} from "react";
 import * as _ from "lodash";
 
 import {callApi} from "../../util/fetchUtil";
-import {srcPathFromPath} from "../srcFromPath";
+ import {srcPathFromPath} from "../srcFromPath";
 
 import "../styles.scss"
 
 interface CosinesProps {
     document: string
-    codeSrcRoot: string
-    docsSrcRoot: string
     staticCall?: boolean
 }
 

@@ -2,6 +2,7 @@ import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
 import {Cosines} from "./Cosines";
+import {WordCloud} from "./WordCloud";
 import "../directory.scss";
 import {srcPathFromPath} from "../srcFromPath";
 
@@ -108,11 +109,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 </div>
                 <div className={gridClass(10)}>
                     {this.state.currentPathType == "file" ? <Cosines
-                        codeSrcRoot="https://github.com/frappe/erpnext/tree/develop/erpnext"
-                        docsSrcRoot="https://github.com/frappe/erpnext_documentation/tree/master/erpnext_documentation/www/docs/v13/user/manual/en"
                         document={this.state.currentPath}
                         staticCall={this.props.staticFileCall}
-                    /> : <span/>}
+                    /> : <WordCloud path={this.state.currentPath}/>}
                 </div>
             </div>
             </div>
