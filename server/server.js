@@ -15,6 +15,7 @@ const cliOptionsConfig = [
     {name: "port", type: String},
     {name: "filter", alias: "f", type: String},
     {name: "stopwordspath", alias: "p", type: String},
+    {name: "unstemdictpath", alias: "u", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -41,7 +42,22 @@ const readStopwords = () => {
     return {}
 }
 
-const stopwords = readStopwords();
+const readUnstemDict = () => {
+    if(fs.existsSync(cliOptions.unstemdictpath)) {
+        const unstemDictJson = fs.readFileSync(cliOptions.unstemdictpath);
+        return JSON.parse(unstemDictJson);
+    }
+}
+
+let stopwords;
+let unstemDict;
+
+const unstemWordsAndValues = (wordsAndValues) => {
+    return wordsAndValues.map(wav => {
+        const unstemmedWord = unstemDict[wav.word] ? unstemDict[wav.word] : wav.word;
+        return {word: unstemmedWord, value: wav.value}
+    })
+}
 
 const filterFilesWithoutVectors = async (relFolder, entries) => {
     const filtered = [];
@@ -77,7 +93,7 @@ router.get("/agg/folder/*", async function (req, res) {
        const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
        const filteredWordsAndValues = filterStopwords(relFolder, wordsAndValues);
-       res.json(filteredWordsAndValues);
+       res.json(unstemWordsAndValues(filteredWordsAndValues));
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
@@ -166,6 +182,8 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectors(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
+    stopwords = readStopwords();
+    unstemDict = readUnstemDict();
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });
