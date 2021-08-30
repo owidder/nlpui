@@ -29,7 +29,7 @@ const createCloud = (path: string) => {
         series.minFontSize = 20;
         series.maxFontSize = 200;
 
-        series.labels.template.url = `${window.location.origin}${window.location.pathname}?path=${path}&word={word}${window.location.hash}`;
+        series.labels.template.url = `${window.location.origin}${window.location.pathname}?swpath=${path}&sw={word}${window.location.hash}`;
 
         series.heatRules.push({
             "target": series.labels.template,
@@ -52,8 +52,8 @@ export const WordCloud = ({path}: WordCloudProps) => {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
 
-        const paramPath = urlParams.get("path");
-        const paramWord = urlParams.get("word");
+        const paramPath = urlParams.get("swpath");
+        const paramWord = urlParams.get("sw");
         if(paramPath && paramWord) {
             callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(status => {
                 console.log(status);

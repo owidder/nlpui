@@ -7,7 +7,7 @@ const fs = require("fs");
 const {initVectors, cosine, similarDocs, hasVector} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readSrcFolder, getPathType, readAggFolder} = require("./serverFunctions")
+const {readSrcFolder, getPathType, readAggFolder, readSrcFolder2} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "srcpath", alias: "s", type: String},
@@ -42,22 +42,26 @@ const readStopwords = () => {
     return {}
 }
 
+let stopwords;
+let unstemDict;
+let reversedUnstemDict;
+
 const readUnstemDict = () => {
     if(fs.existsSync(cliOptions.unstemdictpath)) {
         const unstemDictJson = fs.readFileSync(cliOptions.unstemdictpath);
         return JSON.parse(unstemDictJson);
     }
+
+    return {}
 }
 
-let stopwords;
-let unstemDict;
-
-const unstemWordsAndValues = (wordsAndValues) => {
-    return wordsAndValues.map(wav => {
-        const unstemmedWord = unstemDict[wav.word] ? unstemDict[wav.word] : wav.word;
-        return {word: unstemmedWord, value: wav.value}
-    })
+const createReversedDict = (dict) => {
+    return Object.keys(dict).reduce((_rev, word) => {
+        return {..._rev, [dict[word]]: word}
+    }, {})
 }
+
+const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
 
 const filterFilesWithoutVectors = async (relFolder, entries) => {
     const filtered = [];
@@ -93,7 +97,10 @@ router.get("/agg/folder/*", async function (req, res) {
        const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
        const filteredWordsAndValues = filterStopwords(relFolder, wordsAndValues);
-       res.json(unstemWordsAndValues(filteredWordsAndValues));
+       const unstemmed = filteredWordsAndValues.map(wav => {
+           return {...wav, word: unstem(wav.word)}
+       })
+       res.json(unstemmed);
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
@@ -103,6 +110,20 @@ router.get("/src/folder/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
         const entries = await readSrcFolder(relFolder, cliOptions.srcpath);
+        const undottedEntries = entries.filter(e => !e.startsWith("."));
+        const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
+        res.json({
+            folder: relFolder, content: foldersOrFilesWithVectors
+        });
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
+});
+
+router.get("/src/folder2/*", async function (req, res) {
+    try {
+        const relFolder = req.originalUrl.substr("/api/src/folder2".length + 1);
+        const entries = await readSrcFolder2(relFolder, path.join(cliOptions.datapath, "tfidf"));
         const undottedEntries = entries.filter(e => !e.startsWith("."));
         const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
         res.json({
@@ -150,7 +171,10 @@ router.get("/features", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
         const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.tfidf.csv`));
-        res.json(features)
+        const unstemmedFeatures = features.map(f => {
+            return {...f, feature: unstem(f.feature)}
+        })
+        res.json(unstemmedFeatures)
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
@@ -159,11 +183,12 @@ router.get("/features", async (req, res) => {
 router.post("/setStopword", async (req, res) => {
     try {
         const {path, word} = req.body;
+        const stemmed = reversedUnstemDict[word] ? reversedUnstemDict[word] : word;
         if(stopwords[path] == undefined) {
-            stopwords[path] = [word]
+            stopwords[path] = [stemmed]
         } else {
-            if(!stopwords[path].includes(word)) {
-                stopwords[path].push(word)
+            if(!stopwords[path].includes(stemmed)) {
+                stopwords[path].push(stemmed)
             }
         }
         saveStopwords();
@@ -184,6 +209,7 @@ process.on('uncaughtException', function (err) {
 initVectors(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
     stopwords = readStopwords();
     unstemDict = readUnstemDict();
+    reversedUnstemDict = createReversedDict(unstemDict);
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });

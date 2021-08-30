@@ -50,7 +50,7 @@ const sortDocsWithCosines = (docsWiithCosines) => {
     })
 }
 
-const similarDocs = (doc1, threshold) => {
+const similarDocs = (doc1, threshold = 0) => {
     return new Promise((resolve, reject) => {
         try {
             const docs = Object.keys(vectors).reduce((list, doc2) => {

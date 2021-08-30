@@ -11,7 +11,8 @@ const cliOptionsConfig = [
     {name: "vectorspath", alias: "v", type: String},
     {name: "port", type: String},
     {name: "threshold", alias: "t", type: Number},
-    {name: "type", alias: "y", type: String}
+    {name: "type", alias: "y", type: String},
+    {name: "mintfidf", alias: "m", type: Number},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -29,19 +30,23 @@ const createStaticFolderResponse = async (folderName, absPath, outPath) => {
     })
 }
 
-const createStaticFileResponse = async (fileName, relPath, outPath) => {
-    const similarDocsList = await similarDocs(path.join(relPath, fileName), .19)
+const createStaticFileResponse = async (_fileName, relPath, outPath, minTfIdf) => {
+    const fileName = _fileName.split(".tfidf.csv")[0];
+    const similarDocsList = await similarDocs(path.join(relPath, fileName), minTfIdf);
+    const rounded = similarDocsList.map(d => {
+        return {...d, cosine: Math.round((d.cosine + Number.EPSILON) * 100) / 100}
+    })
 
     const outName = path.join(outPath, `${fileName}.json`)
     return new Promise((resolve, reject) => {
-        fs.writeFile(outName, JSON.stringify(similarDocsList), err => {
+        fs.writeFile(outName, JSON.stringify(rounded, null, 4), err => {
             if(err) reject(err);
-            resolve(similarDocsList)
+            resolve(rounded)
         })
     })
 }
 
-const createStaticResponsesRecursive = async (absRootPath, currentRelPath, outPath, type) => {
+const createStaticResponsesRecursive = async (absRootPath, currentRelPath, outPath, type, minTfIdf) => {
     console.log(currentRelPath)
     const currentPath = path.join(absRootPath, currentRelPath)
     const filesAndFolders = await readSrcFolder("/", currentPath)
@@ -51,19 +56,19 @@ const createStaticResponsesRecursive = async (absRootPath, currentRelPath, outPa
             if(pathType === "folder" && (type == null || pathType === type)) {
                 const newOut = path.join(outPath, fileOrFolder)
                 if(!fs.existsSync(newOut)) {
-                    fs.mkdirSync(newOut)
+                    fs.mkdirSync(newOut, {recursive: true})
                 }
                 await createStaticFolderResponse(fileOrFolder, currentPath, newOut)
-                await createStaticResponsesRecursive(absRootPath, path.join(currentRelPath, fileOrFolder), newOut, type)
+                await createStaticResponsesRecursive(absRootPath, path.join(currentRelPath, fileOrFolder), newOut, type, minTfIdf)
             } else if(pathType === "file" && (type == null || pathType === type)) {
-                await createStaticFileResponse(fileOrFolder, currentRelPath, outPath)
+                await createStaticFileResponse(fileOrFolder, currentRelPath, outPath, minTfIdf)
             }
         }
     }
 }
 
 const main = async () => {
-    await createStaticResponsesRecursive(cliOptions.srcpath, "", cliOptions.outpath, cliOptions.type)
+    await createStaticResponsesRecursive(cliOptions.srcpath, "", cliOptions.outpath, cliOptions.type, cliOptions.mintfidf);
     process.exit(0)
 }
 

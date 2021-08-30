@@ -28,7 +28,7 @@ const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     for(const fileOrSubfolder of filesAndSubfolders) {
         const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
         if(pathType === "file") {
-            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".")) {
+            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === "_.csv")) {
                 filtered.push(fileOrSubfolder)
             }
         } else {
@@ -46,6 +46,18 @@ function readSrcFolder(relFolder, basePath) {
             const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(filtered));
+        });
+    })
+}
+
+function readSrcFolder2(relFolder, basePath) {
+    const absFolder = path.join(basePath, relFolder);
+    return new Promise((resolve, reject) => {
+        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
+            const withoutTfIdfExtension = filtered.map(f => f.split(".tfidf.csv")[0]);
+            if (err) reject(err);
+            resolve(sortNonCaseSensitive(withoutTfIdfExtension));
         });
     })
 }
@@ -72,4 +84,4 @@ function readAggFolder(relFolder, basePath) {
     })
 }
 
-module.exports = {readSrcFolder, getPathType, readAggFolder}
+module.exports = {readSrcFolder, getPathType, readAggFolder, readSrcFolder2}

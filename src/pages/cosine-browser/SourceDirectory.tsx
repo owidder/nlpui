@@ -50,7 +50,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const pathType = pathInfo.pathType
 
         const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder/${folder}`
+        const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
         const folderInfo: FolderInfo = await callApi(folderUrl)
 
         this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
