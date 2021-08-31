@@ -5,3 +5,5 @@
 # build files / npm files
 node_modules
 build/
+
+data/_all
