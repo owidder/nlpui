@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4plugins_wordCloud from "@amcharts/amcharts4/plugins/wordCloud";
 
@@ -14,7 +14,7 @@ interface WordAndValue {
     value: number
 }
 
-const createCloud = (path: string) => {
+const createCloud = (path: string, editStopwords: boolean) => {
     callApi(`/api/agg/folder/${path}`).then((_wordsAndValues: WordAndValue[]) => {
         const chart = am4core.create("wordCloud", am4plugins_wordCloud.WordCloud);
         chart.fontFamily = "Courier New";
@@ -29,7 +29,9 @@ const createCloud = (path: string) => {
         series.minFontSize = 20;
         series.maxFontSize = 200;
 
-        series.labels.template.url = `${window.location.origin}${window.location.pathname}?swpath=${path}&sw={word}${window.location.hash}`;
+        if(editStopwords) {
+            series.labels.template.url = `${window.location.origin}${window.location.pathname}?swpath=${path}&sw={word}${window.location.hash}`;
+        }
 
         series.heatRules.push({
             "target": series.labels.template,
@@ -47,6 +49,13 @@ const createCloud = (path: string) => {
 }
 
 export const WordCloud = ({path}: WordCloudProps) => {
+    const [switchOnEditStopwords, setSwitchOnEditStopwords] = useState(false)
+
+    useEffect(() => {
+        callApi("/api/config", "GET").then(({editStopwords}) => {
+            setSwitchOnEditStopwords(editStopwords)
+        })
+    }, [])
 
     useEffect(() => {
         const queryString = window.location.search;
@@ -57,12 +66,12 @@ export const WordCloud = ({path}: WordCloudProps) => {
         if(paramPath && paramWord) {
             callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(status => {
                 console.log(status);
-                createCloud(path);
+                createCloud(path, switchOnEditStopwords);
             })
         } else {
-            createCloud(path);
+            createCloud(path, switchOnEditStopwords);
         }
-    }, [path])
+    }, [path, switchOnEditStopwords])
 
     return <div id="wordCloud"></div>
 }

@@ -4,18 +4,15 @@ const commandLineArgs = require('command-line-args');
 const path = require("path");
 const fs = require("fs");
 
-const {initVectors, cosine, similarDocs, hasVector} = require("./vectors");
+const {initVectors, cosine, similarDocs} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readSrcFolder, getPathType, readAggFolder, readSrcFolder2} = require("./serverFunctions")
+const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType} = require("./serverFunctions")
 
 const cliOptionsConfig = [
-    {name: "srcpath", alias: "s", type: String},
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
-    {name: "filter", alias: "f", type: String},
     {name: "stopwordspath", alias: "p", type: String},
-    {name: "unstemdictpath", alias: "u", type: String},
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -47,8 +44,9 @@ let unstemDict;
 let reversedUnstemDict;
 
 const readUnstemDict = () => {
-    if(fs.existsSync(cliOptions.unstemdictpath)) {
-        const unstemDictJson = fs.readFileSync(cliOptions.unstemdictpath);
+    const unstemDictPath = path.join(cliOptions.datapath, "unstem_dict.json");
+    if(fs.existsSync(unstemDictPath)) {
+        const unstemDictJson = fs.readFileSync(unstemDictPath);
         return JSON.parse(unstemDictJson);
     }
 
@@ -62,20 +60,6 @@ const createReversedDict = (dict) => {
 }
 
 const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
-
-const filterFilesWithoutVectors = async (relFolder, entries) => {
-    const filtered = [];
-    for (const entry of entries) {
-        const path = `${relFolder}/${entry}`;
-        const pathType = await getPathType(path, cliOptions.srcpath);
-        const isFolderOrFileWithVector = (pathType === "folder" || hasVector(path));
-        if(isFolderOrFileWithVector) {
-            filtered.push(entry);
-        }
-    }
-
-    return filtered;
-}
 
 const filterStopwords = (path, wordsAndValues) => {
     let filteredWordsAndValues = [...wordsAndValues]
@@ -106,20 +90,6 @@ router.get("/agg/folder/*", async function (req, res) {
    }
 });
 
-router.get("/src/folder/*", async function (req, res) {
-    try {
-        const relFolder = req.originalUrl.substr("/api/src/folder".length + 1);
-        const entries = await readSrcFolder(relFolder, cliOptions.srcpath);
-        const undottedEntries = entries.filter(e => !e.startsWith("."));
-        const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
-        res.json({
-            folder: relFolder, content: foldersOrFilesWithVectors
-        });
-    } catch (e) {
-        res.status(500).json({error: e.toString()});
-    }
-});
-
 router.get("/src/folder2/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder2".length + 1);
@@ -137,7 +107,7 @@ router.get("/src/folder2/*", async function (req, res) {
 router.get("/src/pathType/*", async function (req, res) {
     try {
         const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
-        const pathType = await getPathType(relPath, cliOptions.srcpath);
+        const pathType = await getPathType(relPath, path.join(cliOptions.datapath, "tfidf"));
         console.log(`pathType: ${relPath} -> ${pathType}`);
         res.json({path: relPath, pathType});
     } catch (e) {
@@ -157,6 +127,10 @@ router.get("/cosine", (req, res) => {
     }
 })
 
+router.get("/config", (req, res) => {
+    res.json({editStopwords: cliOptions.stopwordspath != null})
+})
+
 router.get("/cosineValues", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
@@ -170,7 +144,7 @@ router.get("/cosineValues", async (req, res) => {
 router.get("/features", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.tfidf.csv`));
+        const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.${TFIDF_EXTENSION}`));
         const unstemmedFeatures = features.map(f => {
             return {...f, feature: unstem(f.feature)}
         })
@@ -182,17 +156,21 @@ router.get("/features", async (req, res) => {
 
 router.post("/setStopword", async (req, res) => {
     try {
-        const {path, word} = req.body;
-        const stemmed = reversedUnstemDict[word] ? reversedUnstemDict[word] : word;
-        if(stopwords[path] == undefined) {
-            stopwords[path] = [stemmed]
-        } else {
-            if(!stopwords[path].includes(stemmed)) {
-                stopwords[path].push(stemmed)
+        if(cliOptions.stopwordspath != null) {
+            const {path, word} = req.body;
+            const stemmed = reversedUnstemDict[word] ? reversedUnstemDict[word] : word;
+            if(stopwords[path] == undefined) {
+                stopwords[path] = [stemmed]
+            } else {
+                if(!stopwords[path].includes(stemmed)) {
+                    stopwords[path].push(stemmed)
+                }
             }
+            saveStopwords();
+            res.json({status: "ok"})
+        } else {
+            res.status(409).json({error: "stopwords editing not enabled"});
         }
-        saveStopwords();
-        res.json({status: "ok"})
     } catch(e) {
         res.status(500).json({error: e.toString()});
     }

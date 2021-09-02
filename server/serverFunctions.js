@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
+const TFIDF_EXTENSION = "tfidf.csv";
+
 const {createReadlineInterface} = require("./fileUtil");
 
 function sortNonCaseSensitive(list) {
@@ -13,12 +15,31 @@ function pathTypeFromStats(stats) {
     return stats.isDirectory() ? "folder" : "file";
 }
 
+function getPathTypeSync(relPath, basePath) {
+    const absPath = path.join(basePath, relPath);
+    if(fs.existsSync(absPath)) {
+        return fs.statSync(absPath).isDirectory() ? "folder" : "file";
+    } else {
+        if(fs.existsSync(`${absPath}.${TFIDF_EXTENSION}`)) {
+            return "file";
+        }
+    }
+
+    throw "unknown path"
+}
+
 function getPathType(relPath, basePath) {
     const absPath = path.join(basePath, relPath);
     return new Promise((resolve, reject) => {
         fs.stat(absPath, (err, stats) => {
-            if (err) reject(err);
-            resolve(pathTypeFromStats(stats))
+            if (err) {
+                fs.stat(`${absPath}.${TFIDF_EXTENSION}`, (err) => {
+                    if(err) reject(err);
+                    resolve("file");
+                })
+            } else {
+                resolve(pathTypeFromStats(stats))
+            }
         })
     })
 }
@@ -84,4 +105,4 @@ function readAggFolder(relFolder, basePath) {
     })
 }
 
-module.exports = {readSrcFolder, getPathType, readAggFolder, readSrcFolder2}
+module.exports = {readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync}
