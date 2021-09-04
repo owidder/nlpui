@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
-import {Cosines} from "./Cosines";
+import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
 import {srcPathFromPath} from "../srcFromPath";
@@ -108,9 +108,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                     })}
                 </div>
                 <div className={gridClass(10)}>
-                    {this.state.currentPathType == "file" ? <Cosines
+                    {this.state.currentPathType == "file" ? <CosinesWithProgress
                         document={this.state.currentPath}
-                        staticCall={this.props.staticFileCall}
                     /> : <WordCloud path={this.state.currentPath}/>}
                 </div>
             </div>

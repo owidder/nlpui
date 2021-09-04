@@ -4,7 +4,7 @@ const commandLineArgs = require('command-line-args');
 const path = require("path");
 const fs = require("fs");
 
-const {initVectors, cosine, similarDocs} = require("./vectors");
+const {initVectors, cosine, similarDocs, similarDocsWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
 const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType} = require("./serverFunctions")
@@ -131,11 +131,44 @@ router.get("/config", (req, res) => {
     res.json({editStopwords: cliOptions.stopwordspath != null})
 })
 
+const _streamRecursive = (res, max, ctr) => {
+    if(ctr < max) {
+        setTimeout(() => {
+            res.write(`ctr:${ctr}/${max}`);
+            _streamRecursive(res, max, ctr+1);
+            console.log(`ctr = ${ctr}`);
+        }, 1000)
+    } else {
+        setTimeout(() => {
+            res.write(`json:${JSON.stringify({time: Date.now()})}`)
+            res.status(200).send()
+        })
+    }
+}
+
+router.get("/stream", (req, res) => {
+    const max = req.query.max;
+    _streamRecursive(res, max, 0)
+})
+
 router.get("/cosineValues", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
         const docs = await similarDocs(doc1, .1)
         res.json(docs.slice(0, 100))
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
+})
+
+router.get("/cosineValuesWithProgress", async (req, res) => {
+    try {
+        const doc1 = req.query.doc1;
+        const docs = await similarDocsWithProgress(doc1, .1, (progress) => {
+            res.write(`progress:${progress}`)
+        })
+        res.write(`json:${JSON.stringify(docs.slice(0, 100))}`);
+        res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

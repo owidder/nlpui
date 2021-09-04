@@ -4,6 +4,8 @@ const {createReadlineInterface} = require("./fileUtil");
 
 const vectors = {};
 
+const numberOfVectors = () => Object.keys(vectors).length
+
 const computeCosineBetweenVectors = (vector1, vector2) => {
     if(vector1.length === vector2.length) {
         return math.multiply(vector1, vector2) / (math.norm(vector1) * math.norm(vector2));
@@ -72,4 +74,36 @@ const similarDocs = (doc1, threshold = 0) => {
     })
 }
 
-module.exports = {initVectors, cosine, similarDocs, hasVector}
+const _similarDocsWithProgressRecursive = (doc1, threshold, progressCallback, docList, index, resultList, resolve) => {
+    if(index < docList.length) {
+        const doc2 = docList[index];
+        let newResultList = resultList;
+        if(doc1 !== doc2) {
+            const _cosine = cosine(doc1, doc2);
+            if(_cosine > threshold) {
+                newResultList = [...resultList, {document: doc2, cosine: _cosine}]
+            }
+        }
+        const recursiveCall = () => _similarDocsWithProgressRecursive(doc1, threshold, progressCallback, docList, index+1, newResultList, resolve);
+        if(index % 100 == 0) {
+            setTimeout(() => {
+                progressCallback(`${index}/${docList.length}`);
+                recursiveCall();
+            })
+        } else {
+            recursiveCall();
+        }
+    } else {
+        setTimeout(() => {
+            resolve(sortDocsWithCosines(resultList))
+        })
+    }
+}
+
+const similarDocsWithProgress = (doc1, threshold, progressCallback) => {
+    return new Promise(resolve => {
+        _similarDocsWithProgressRecursive(doc1, threshold, progressCallback, Object.keys(vectors), 0, [], resolve);
+    })
+}
+
+module.exports = {initVectors, cosine, similarDocs, hasVector, numberOfVectors, similarDocsWithProgress}
