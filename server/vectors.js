@@ -89,7 +89,7 @@ const _similarDocsWithProgressRecursive = (doc1, threshold, progressCallback, do
             setTimeout(() => {
                 progressCallback(`${index}/${docList.length}`);
                 recursiveCall();
-            }, 1)
+            })
         } else {
             recursiveCall();
         }
