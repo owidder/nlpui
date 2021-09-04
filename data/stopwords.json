@@ -49,5 +49,8 @@
     ],
     "metafresh/code": [
         "request"
+    ],
+    "axelor-open-suite/axelor-docusign": [
+        "select"
     ]
 }
