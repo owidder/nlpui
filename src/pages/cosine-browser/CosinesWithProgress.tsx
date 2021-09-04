@@ -23,6 +23,19 @@ const JSON_PREFIX = "json:";
 export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState("");
+    const [partial, setPartial] = useState("");
+
+    const jsonTry = (content: string) => {
+        try {
+            const json = partial.length > 0 ? partial + content : content;
+            const _cosineValues = JSON.parse(json);
+            const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
+            setCosineValues([{document, cosine: 1}, ...sortedCosineValues]);
+            setPartial("");
+        } catch (e) {
+            setPartial(partial + content);
+        }
+    }
 
     useEffect(() => {
         callStreamApi(`/api/cosineValuesWithProgress?doc1=${document}`, content => {
@@ -30,9 +43,9 @@ export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
                 setProgress(content.substr(PROGRESS_PREFIX.length))
             } else if(content.startsWith(JSON_PREFIX)) {
                 setProgress("");
-                const _cosineValues = JSON.parse(content.substr(JSON_PREFIX.length));
-                const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine)
-                setCosineValues([{document, cosine: 1}, ...sortedCosineValues])
+                jsonTry(content.substr(JSON_PREFIX.length));
+            } else {
+                jsonTry(content);
             }
         })
     }, [document])
@@ -55,7 +68,9 @@ export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
         return <ProgressBar max={Number(max)} current={Number(current)}/>
     } else if(cosineValues && cosineValues.length > 0) {
         return showCosines;
+    } else if(partial && partial.length > 0) {
+        return <span>{partial}</span>
     } else {
-        return <span></span>
+        return <span>WAITING!!!</span>
     }
 }
