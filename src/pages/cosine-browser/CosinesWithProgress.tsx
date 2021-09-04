@@ -1,8 +1,10 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
+import * as _ from "lodash";
 
 import {callStreamApi} from "../../util/fetchUtil";
- import {srcPathFromPath} from "../srcFromPath";
+import {srcPathFromPath} from "../srcFromPath";
+import {ProgressBar} from "./ProgressBar";
 
 import "../styles.scss"
 
@@ -28,7 +30,9 @@ export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
                 setProgress(content.substr(PROGRESS_PREFIX.length))
             } else if(content.startsWith(JSON_PREFIX)) {
                 setProgress("");
-                setCosineValues(JSON.parse(content.substr(JSON_PREFIX.length)));
+                const _cosineValues = JSON.parse(content.substr(JSON_PREFIX.length));
+                const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine)
+                setCosineValues([{document, cosine: 1}, ...sortedCosineValues])
             }
         })
     }, [document])
@@ -45,10 +49,10 @@ export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
             })}
         </div>
 
-    const showProgress = <div>{progress}</div>
+    const [current, max] = progress.split("/");
 
     if(progress && progress.length > 0) {
-        return showProgress;
+        return <ProgressBar max={Number(max)} current={Number(current)}/>
     } else if(cosineValues && cosineValues.length > 0) {
         return showCosines;
     } else {

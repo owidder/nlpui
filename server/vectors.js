@@ -95,7 +95,7 @@ const _similarDocsWithProgressRecursive = (doc1, threshold, progressCallback, do
         }
     } else {
         setTimeout(() => {
-            resolve(sortDocsWithCosines(resultList))
+            resolve(resultList)
         })
     }
 }
