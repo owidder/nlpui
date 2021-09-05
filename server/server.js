@@ -4,7 +4,7 @@ const commandLineArgs = require('command-line-args');
 const path = require("path");
 const fs = require("fs");
 
-const {initVectors, cosine, similarDocs, similarDocsWithProgress} = require("./vectors");
+const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
 const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType} = require("./serverFunctions")
@@ -164,7 +164,7 @@ router.get("/cosineValues", async (req, res) => {
 router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const docs = await similarDocsWithProgress(doc1, .1, (progress) => {
+        const docs = await similarDocsFromFileWithProgress(doc1, .1, (progress) => {
             res.write(`progress:${progress}`)
         })
         res.write(`json:${JSON.stringify(docs.slice(0, 100))}`);
@@ -217,7 +217,7 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-initVectors(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
+initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
     stopwords = readStopwords();
     unstemDict = readUnstemDict();
     reversedUnstemDict = createReversedDict(unstemDict);

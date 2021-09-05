@@ -63,10 +63,10 @@ export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
             })}
         </div>
 
-    const [current, max] = progress.split("/");
+    const [message, current, max] = progress.split("/");
 
     if(progress && progress.length > 0) {
-        return <ProgressBar max={Number(max)} current={Number(current)}/>
+        return <ProgressBar message={message} max={Number(max)} current={Number(current)}/>
     } else if(cosineValues && cosineValues.length > 0) {
         return showCosines;
     } else {
