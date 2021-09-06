@@ -105,4 +105,21 @@ function readAggFolder(relFolder, basePath) {
     })
 }
 
-module.exports = {readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync}
+function readSubAggFolders(relFolder, basePath) {
+    const subAggs = {};
+    const absFolder = path.join(basePath, relFolder);
+    return new Promise(async resolve => {
+        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            for(f of filesAndSubfolders) {
+                const subFolder = path.join(relFolder, f);
+                const type = await getPathType(subFolder, basePath);
+                if(type === "folder") {
+                    subAggs[f] = await readAggFolder(subFolder, basePath);
+                }
+            }
+            resolve(subAggs)
+        });
+    })
+}
+
+module.exports = {readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync, readSubAggFolders}

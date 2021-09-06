@@ -7,7 +7,7 @@ const fs = require("fs");
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType} = require("./serverFunctions")
+const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
@@ -76,15 +76,31 @@ const filterStopwords = (path, wordsAndValues) => {
     return filteredWordsAndValues
 }
 
+const  filterStopwordsAndUnstem = (path, wordsAndValues) => {
+    const filteredWordsAndValues = filterStopwords(path, wordsAndValues);
+    return  filteredWordsAndValues.map(wav => {
+        return {...wav, word: unstem(wav.word)}
+    })
+}
+
 router.get("/agg/folder/*", async function (req, res) {
    try {
        const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
-       const filteredWordsAndValues = filterStopwords(relFolder, wordsAndValues);
-       const unstemmed = filteredWordsAndValues.map(wav => {
-           return {...wav, word: unstem(wav.word)}
-       })
-       res.json(unstemmed);
+       res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
+   } catch(e) {
+       res.status(500).json({error: e.toString()});
+   }
+});
+
+router.get("/subAgg/folder/*", async function (req, res) {
+   try {
+       const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
+       const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath);
+       const filteredSubAgg = Object.keys(subAgg).reduce((_f, folder) => {
+           return {..._f, [folder]: filterStopwordsAndUnstem(path.join(relFolder, folder), subAgg[folder])}
+       }, {});
+       res.json(filteredSubAgg);
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
@@ -129,26 +145,6 @@ router.get("/cosine", (req, res) => {
 
 router.get("/config", (req, res) => {
     res.json({editStopwords: cliOptions.stopwordspath != null})
-})
-
-const _streamRecursive = (res, max, ctr) => {
-    if(ctr < max) {
-        setTimeout(() => {
-            res.write(`ctr:${ctr}/${max}`);
-            _streamRecursive(res, max, ctr+1);
-            console.log(`ctr = ${ctr}`);
-        }, 1000)
-    } else {
-        setTimeout(() => {
-            res.write(`json:${JSON.stringify({time: Date.now()})}`)
-            res.status(200).send()
-        })
-    }
-}
-
-router.get("/stream", (req, res) => {
-    const max = req.query.max;
-    _streamRecursive(res, max, 0)
 })
 
 router.get("/cosineValues", async (req, res) => {
