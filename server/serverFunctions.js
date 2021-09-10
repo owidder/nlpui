@@ -94,7 +94,7 @@ function readAggFolder(relFolder, basePath) {
             readLineInterface.on("line", line => {
                 if(lineNo++ < 20) {
                     const wordAndValue = line.split("\t");
-                    wordsAndValues.push({word: wordAndValue[0], value: wordAndValue[1]});
+                    wordsAndValues.push({word: wordAndValue[0], value: Number(wordAndValue[1])});
                 }
             }).on("close", () => {
                 resolve(wordsAndValues)
