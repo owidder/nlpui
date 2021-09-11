@@ -106,30 +106,44 @@ function readAggFolder(relFolder, basePath) {
 }
 
 function _readSubAggFoldersRecursive(relFolder, basePath) {
-    const subAggs = {};
+    let subAggs = undefined;
+    let subCtrSum = 0;
     const absFolder = path.join(basePath, relFolder);
-    return new Promise(async resolve => {
-        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            for(const f of filesAndSubfolders) {
-                const subFolder = path.join(relFolder, f);
-                const type = await getPathType(subFolder, basePath);
-                if(type === "folder") {
-                    const aggValues = await readAggFolder(subFolder, basePath);
-                    const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
-                    const words = filteredUnstemmed.map(wav => wav.word);
-                    const children = await _readSubAggFoldersRecursive(subFolder, basePath);
-                    subAggs[f] = {words, children};
+    return new Promise(async (resolve, reject) => {
+        try {
+            fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+                let ctr = 0;
+                for (const f of filesAndSubfolders) {
+                    const subFolder = path.join(relFolder, f);
+                    const type = await getPathType(subFolder, basePath);
+                    if (type === "folder") {
+                        const aggValues = await readAggFolder(subFolder, basePath);
+                        const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
+                        const words = filteredUnstemmed.map(wav => wav.word);
+                        const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath);
+                        subCtrSum += subCtr;
+                        subAggs = subAggs ? subAggs : {}
+                        subAggs[f] = {value: subCtr, words, children};
+                    } else {
+                        ctr++;
+                    }
                 }
-            }
-            resolve(subAggs)
-        });
+                resolve([subAggs, ctr + subCtrSum])
+            });
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
 function readSubAggFolders(relFolder, basePath) {
-    return new Promise(async resolve => {
-        const subAggs = await _readSubAggFoldersRecursive(relFolder, basePath);
-        resolve(subAggs)
+    return new Promise(async (resolve, reject) => {
+        try {
+            const [subAggs] = await _readSubAggFoldersRecursive(relFolder, basePath, 0);
+            resolve(subAggs)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 

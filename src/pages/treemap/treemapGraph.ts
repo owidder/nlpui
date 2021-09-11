@@ -3,7 +3,9 @@ import {v4 as uuidv4} from "uuid";
 
 export interface Tree {
     name: string
-    children: {name: string, value: number}[] | Tree[]
+    words: string[]
+    value: number
+    children?: Tree[]
 }
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number) => {
@@ -28,7 +30,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     const y = d3.scaleLinear().rangeRound([0, height]);
 
     const svg = d3.select(selector).append("svg")
-        .attr("viewBox", [0.5, -30.5, width, height + 30])
+        .attr("viewBox", [0.5, -30.5, width, height + 30].join(" "))
         .style("font", "10px sans-serif");
 
     const treemapData = treemap(data);
@@ -100,7 +102,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .call(t => group0.transition(t).remove()
                 .call(position, d.parent))
             .call(t => group1.transition(t)
-                .attrTween("opacity", () => d3.interpolate(0, 1))
+                .attrTween("opacity", () => {
+                    return (n: number) => String(d3.interpolate(0, 1)(n));
+                })
                 .call(position, d));
     }
 
@@ -115,7 +119,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         svg.transition()
             .duration(750)
             .call(t => group0.transition(t).remove()
-                .attrTween("opacity", () => d3.interpolate(1, 0))
+                .attrTween("opacity", () => {
+                    return (n: number) => String(d3.interpolate(1, 0)(n));
+                })
                 .call(position, d))
             .call(t => group1.transition(t)
                 .call(position, d.parent));
