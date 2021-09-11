@@ -105,20 +105,30 @@ function readAggFolder(relFolder, basePath) {
     })
 }
 
-function readSubAggFolders(relFolder, basePath) {
+function _readSubAggFoldersRecursive(relFolder, basePath) {
     const subAggs = {};
     const absFolder = path.join(basePath, relFolder);
     return new Promise(async resolve => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            for(f of filesAndSubfolders) {
+            for(const f of filesAndSubfolders) {
                 const subFolder = path.join(relFolder, f);
                 const type = await getPathType(subFolder, basePath);
                 if(type === "folder") {
-                    subAggs[f] = await readAggFolder(subFolder, basePath);
+                    const aggFolder = await readAggFolder(subFolder, basePath);
+                    const words = aggFolder.map(wav => wav.word);
+                    const children = await _readSubAggFoldersRecursive(subFolder, basePath);
+                    subAggs[f] = {words, children};
                 }
             }
             resolve(subAggs)
         });
+    })
+}
+
+function readSubAggFolders(relFolder, basePath) {
+    return new Promise(async resolve => {
+        const subAggs = await _readSubAggFoldersRecursive(relFolder, basePath);
+        resolve(subAggs)
     })
 }
 

@@ -15,8 +15,6 @@ const cliOptionsConfig = [
     {name: "stopwordspath", alias: "p", type: String},
 ]
 
-const flare = require("../src/pages/treemap/flare.json.js");
-
 const cliOptions = commandLineArgs(cliOptionsConfig);
 
 const app = express();
@@ -84,10 +82,6 @@ const  filterStopwordsAndUnstem = (path, wordsAndValues) => {
         return {...wav, word: unstem(wav.word)}
     })
 }
-
-router.get("/flare", (req, res) => {
-    res.json(flare);
-})
 
 router.get("/agg/folder/*", async function (req, res) {
    try {
