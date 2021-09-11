@@ -114,8 +114,8 @@ function _readSubAggFoldersRecursive(relFolder, basePath) {
                 const subFolder = path.join(relFolder, f);
                 const type = await getPathType(subFolder, basePath);
                 if(type === "folder") {
-                    const aggFolder = await readAggFolder(subFolder, basePath);
-                    const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggFolder);
+                    const aggValues = await readAggFolder(subFolder, basePath);
+                    const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
                     const words = filteredUnstemmed.map(wav => wav.word);
                     const children = await _readSubAggFoldersRecursive(subFolder, basePath);
                     subAggs[f] = {words, children};
@@ -140,13 +140,12 @@ const saveStopwords = (stopwordspath) => {
     fs.writeFileSync(stopwordspath, stopwordsStr);
 }
 
-// type wordsOrWordsAndValues = {word: string, value: number}[] | string[]
-const filterStopwords = (path, wordsOrWordsAndValues) => {
-    let filteredWordsAndValues = [...wordsOrWordsAndValues]
+const filterStopwords = (path, wordsAndValues) => {
+    let filteredWordsAndValues = [...wordsAndValues]
     for(const _path in stopwords) {
-        filteredWordsAndValues = filteredWordsAndValues.filter(wowav => {
+        filteredWordsAndValues = filteredWordsAndValues.filter(wav => {
             if(_path == "." || path.startsWith(_path)) {
-                return !stopwords[_path].includes(wowav.word ? wowav.word : wowav)
+                return !stopwords[_path].includes(wav.word)
             }
 
             return true
@@ -156,11 +155,10 @@ const filterStopwords = (path, wordsOrWordsAndValues) => {
     return filteredWordsAndValues
 }
 
-// type wordsOrWordsAndValues = {word: string, value: number}[] | string[]
-const filterStopwordsAndUnstem = (path, wordsOrWordsAndValues) => {
-    const filteredWordsAndValues = filterStopwords(path, wordsOrWordsAndValues);
-    return  filteredWordsAndValues.map(wowav => {
-        return wowav.word ? {...wowav, word: unstem(wowav.word)} : unstem(wowav)
+const filterStopwordsAndUnstem = (path, wordsAndValues) => {
+    const filteredWordsAndValues = filterStopwords(path, wordsAndValues);
+    return  filteredWordsAndValues.map(wav => {
+        return {...wav, word: unstem(wav.word)}
     })
 }
 

@@ -39,10 +39,7 @@ router.get("/subAgg/folder/*", async function (req, res) {
    try {
        const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
        const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath);
-       const filteredSubAgg = Object.keys(subAgg).reduce((_f, folder) => {
-           return {..._f, [folder]: filterStopwordsAndUnstem(path.join(relFolder, folder), subAgg[folder])}
-       }, {});
-       res.json(filteredSubAgg);
+       res.json(subAgg);
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
