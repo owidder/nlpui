@@ -106,8 +106,7 @@ function readAggFolder(relFolder, basePath) {
 }
 
 function _readSubAggFoldersRecursive(relFolder, basePath) {
-    let subAggs = undefined;
-    let subCtrSum = 0;
+    let _children = undefined;
     const absFolder = path.join(basePath, relFolder);
     return new Promise(async (resolve, reject) => {
         try {
@@ -121,14 +120,15 @@ function _readSubAggFoldersRecursive(relFolder, basePath) {
                         const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
                         const words = filteredUnstemmed.map(wav => wav.word);
                         const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath);
-                        subCtrSum += subCtr;
-                        subAggs = subAggs ? subAggs : {}
-                        subAggs[f] = {value: subCtr, words, children};
+                        _children = _children ? _children : []
+                        _children.push({name: f, value: subCtr, words, children});
                     } else {
-                        ctr++;
+                        if(f != "_.csv") {
+                            ctr++;
+                        }
                     }
                 }
-                resolve([subAggs, ctr + subCtrSum])
+                resolve([_children, ctr])
             });
         } catch (e) {
             reject(e)
@@ -139,8 +139,8 @@ function _readSubAggFoldersRecursive(relFolder, basePath) {
 function readSubAggFolders(relFolder, basePath) {
     return new Promise(async (resolve, reject) => {
         try {
-            const [subAggs] = await _readSubAggFoldersRecursive(relFolder, basePath, 0);
-            resolve(subAggs)
+            const [children] = await _readSubAggFoldersRecursive(relFolder, basePath, 0);
+            resolve({name: "root", children})
         } catch (e) {
             reject(e)
         }
