@@ -2,12 +2,12 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
-const fs = require("fs");
 
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders} = require("./serverFunctions")
+const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
@@ -24,64 +24,6 @@ const rootFolder = __dirname + "/../build";
 app.use("/", express.static(rootFolder));
 
 const server = require("http").createServer(app);
-
-const saveStopwords = () => {
-    const stopwordsStr = JSON.stringify(stopwords, null, 4);
-    fs.writeFileSync(cliOptions.stopwordspath, stopwordsStr);
-}
-
-const readStopwords = () => {
-    if(fs.existsSync(cliOptions.stopwordspath)) {
-        const stopwordsStr = fs.readFileSync(cliOptions.stopwordspath);
-        return JSON.parse(stopwordsStr);
-    }
-
-    return {}
-}
-
-let stopwords;
-let unstemDict;
-let reversedUnstemDict;
-
-const readUnstemDict = () => {
-    const unstemDictPath = path.join(cliOptions.datapath, "unstem_dict.json");
-    if(fs.existsSync(unstemDictPath)) {
-        const unstemDictJson = fs.readFileSync(unstemDictPath);
-        return JSON.parse(unstemDictJson);
-    }
-
-    return {}
-}
-
-const createReversedDict = (dict) => {
-    return Object.keys(dict).reduce((_rev, word) => {
-        return {..._rev, [dict[word]]: word}
-    }, {})
-}
-
-const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
-
-const filterStopwords = (path, wordsAndValues) => {
-    let filteredWordsAndValues = [...wordsAndValues]
-    for(const _path in stopwords) {
-        filteredWordsAndValues = filteredWordsAndValues.filter(wav => {
-            if(_path == "." || path.startsWith(_path)) {
-                return !stopwords[_path].includes(wav.word)
-            }
-
-            return true
-        })
-    }
-
-    return filteredWordsAndValues
-}
-
-const  filterStopwordsAndUnstem = (path, wordsAndValues) => {
-    const filteredWordsAndValues = filterStopwords(path, wordsAndValues);
-    return  filteredWordsAndValues.map(wav => {
-        return {...wav, word: unstem(wav.word)}
-    })
-}
 
 router.get("/agg/folder/*", async function (req, res) {
    try {
@@ -195,7 +137,7 @@ router.post("/setStopword", async (req, res) => {
                     stopwords[path].push(stemmed)
                 }
             }
-            saveStopwords();
+            saveStopwords(cliOptions.stopwordspath);
             res.json({status: "ok"})
         } else {
             res.status(409).json({error: "stopwords editing not enabled"});
@@ -214,9 +156,8 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
-    stopwords = readStopwords();
-    unstemDict = readUnstemDict();
-    reversedUnstemDict = createReversedDict(unstemDict);
+    initStopwords(cliOptions.stopwordspath);
+    initUnstemDict(cliOptions.datapath);
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });
