@@ -5,6 +5,11 @@ const TFIDF_EXTENSION = "tfidf.csv";
 
 const {createReadlineInterface} = require("./fileUtil");
 
+let stopwords = {};
+let unstemDict;
+let reversedUnstemDict;
+let numberOfFiles = 0;
+
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -136,6 +141,42 @@ function _readSubAggFoldersRecursive(relFolder, basePath) {
     })
 }
 
+function _countFilesRecursive(relFolder, basePath) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const absFolder = path.join(basePath, relFolder);
+            fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+                let ctr = 0;
+                for (const f of filesAndSubfolders) {
+                    const subFolder = path.join(relFolder, f);
+                    const type = await getPathType(subFolder, basePath);
+                    if (type === "folder") {
+                        ctr += await _countFilesRecursive(subFolder, basePath)
+                    } else {
+                        if(f != "_.csv") {
+                            ctr++;
+                        }
+                    }
+                }
+                resolve(ctr)
+            });
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+function initNumberOfFiles(relFolder, basePath) {
+    return new Promise(async resolve => {
+        numberOfFiles = await _countFilesRecursive(relFolder, basePath);
+        resolve(numberOfFiles);
+    })
+}
+
+function getNumberOfFiles() {
+    return numberOfFiles;
+}
+
 function readSubAggFolders(relFolder, basePath) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -146,8 +187,6 @@ function readSubAggFolders(relFolder, basePath) {
         }
     })
 }
-
-let stopwords = {};
 
 const saveStopwords = (stopwordspath) => {
     const stopwordsStr = JSON.stringify(stopwords, null, 4);
@@ -183,9 +222,6 @@ const initStopwords = (stopwordspath) => {
     }
 }
 
-let unstemDict;
-let reversedUnstemDict;
-
 const readUnstemDict = (datapath) => {
     const unstemDictPath = path.join(datapath, "unstem_dict.json");
     if(fs.existsSync(unstemDictPath)) {
@@ -211,5 +247,5 @@ const initUnstemDict = (datapath) => {
 
 module.exports = {
     readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync, readSubAggFolders,
-    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem
+    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles
 }

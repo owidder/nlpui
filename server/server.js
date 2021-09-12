@@ -7,7 +7,7 @@ const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = 
 const {readFeatures} = require("./tfidf");
 
 const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem} = require("./serverFunctions")
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
@@ -40,6 +40,14 @@ router.get("/subAgg/folder/*", async function (req, res) {
        const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
        const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath);
        res.json(subAgg);
+   } catch(e) {
+       res.status(500).json({error: e.toString()});
+   }
+});
+
+router.get("/numberOfFiles", async function (req, res) {
+   try {
+       res.json({numberOfFiles: getNumberOfFiles()});
    } catch(e) {
        res.status(500).json({error: e.toString()});
    }
@@ -152,9 +160,10 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(() => {
+initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => {
     initStopwords(cliOptions.stopwordspath);
     initUnstemDict(cliOptions.datapath);
+    await initNumberOfFiles("tfidf/", cliOptions.datapath);
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });
