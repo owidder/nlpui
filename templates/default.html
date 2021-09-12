@@ -12,24 +12,25 @@
 
     <style>
         .topline {
-            font-size: small;
-        }
-
-        .topline {
             margin-left: 1em;
             margin-right: 1em;
             display: flex;
             flex-direction: row;
-            justify-content: space-between;
+            justify-content: end;
+            position: relative;
+        }
+
+        #container {
+            z-index: 0;
         }
 
     </style>
 </head>
 <body>
+<div id="container"></div>
 <div class="topline">
     <div class="homelink"><a href="/cosine-browser/cosine-browser.html">Home</a></div>
 </div>
-<div id="container"></div>
 
 <script>
 </script>

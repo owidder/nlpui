@@ -3,6 +3,8 @@ import {useEffect} from "react";
 import {callApi} from "../../util/fetchUtil";
 import {showTreemap, Tree} from "./treemapGraph";
 
+import "./tree.scss"
+
 interface TreemapProps {
     path: string
     width: number
