@@ -110,7 +110,16 @@ function readAggFolder(relFolder, basePath) {
     })
 }
 
-function _readSubAggFoldersRecursive(relFolder, basePath) {
+const waitForCallback = (callback) => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            callback();
+            resolve();
+        }, 10)
+    })
+}
+
+function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, totalCtr) {
     let _children = undefined;
     const absFolder = path.join(basePath, relFolder);
     return new Promise(async (resolve, reject) => {
@@ -124,11 +133,14 @@ function _readSubAggFoldersRecursive(relFolder, basePath) {
                         const aggValues = await readAggFolder(subFolder, basePath);
                         const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
                         const words = filteredUnstemmed.map(wav => wav.word);
-                        const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath);
+                        const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath, progressCallback, totalCtr);
                         _children = _children ? _children : []
                         _children.push({name: f, value: subCtr, words, children});
                     } else {
                         if(f != "_.csv") {
+                            if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
+                                await waitForCallback(() => progressCallback(totalCtr.ctr));
+                            }
                             ctr++;
                         }
                     }
@@ -177,10 +189,10 @@ function getNumberOfFiles() {
     return numberOfFiles;
 }
 
-function readSubAggFolders(relFolder, basePath) {
+function readSubAggFolders(relFolder, basePath, progressCallback) {
     return new Promise(async (resolve, reject) => {
         try {
-            const [children] = await _readSubAggFoldersRecursive(relFolder, basePath, 0);
+            const [children] = await _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, {ctr: 0});
             resolve({name: "root", children})
         } catch (e) {
             reject(e)

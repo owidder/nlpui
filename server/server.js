@@ -2,12 +2,15 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
+const LZUTF8 = require("lzutf8");
 
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 
-const {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles} = require("./serverFunctions")
+const {
+    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles
+} = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
@@ -26,31 +29,54 @@ app.use("/", express.static(rootFolder));
 const server = require("http").createServer(app);
 
 router.get("/agg/folder/*", async function (req, res) {
-   try {
-       const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
-       const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
-       res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
-   } catch(e) {
-       res.status(500).json({error: e.toString()});
-   }
+    try {
+        const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
+        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
+        res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
 });
 
+const writeAndWait = (res, content) => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            res.write(content);
+            resolve();
+        })
+    }, 1)
+}
+
 router.get("/subAgg/folder/*", async function (req, res) {
-   try {
-       const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
-       const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath);
-       res.json(subAgg);
-   } catch(e) {
-       res.status(500).json({error: e.toString()});
-   }
+    let totalProgress = 0;
+    try {
+        await writeAndWait(res, `number-of-files:${getNumberOfFiles()};`);
+        await writeAndWait(res, "progress-text:Reading aggregated tfidf;");
+        const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
+        const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath, async (progress) => {
+            await writeAndWait(res, `progress:${totalProgress + Number(progress)};`);
+        });
+        const data = JSON.stringify(subAgg);
+        const lz = await new Promise((resolve, reject) => {
+            LZUTF8.compressAsync(data, {outputEncoding: "Base64"}, (result, error) => {
+                if(error) reject(error);
+                resolve(result)
+            })
+        })
+
+        await writeAndWait(res, `jsonz:${lz};`);
+        res.status(200).send();
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
 });
 
 router.get("/numberOfFiles", async function (req, res) {
-   try {
-       res.json({numberOfFiles: getNumberOfFiles()});
-   } catch(e) {
-       res.status(500).json({error: e.toString()});
-   }
+    try {
+        res.json({numberOfFiles: getNumberOfFiles()});
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
 });
 
 router.get("/src/folder2/*", async function (req, res) {
@@ -132,13 +158,13 @@ router.get("/features", async (req, res) => {
 
 router.post("/setStopword", async (req, res) => {
     try {
-        if(cliOptions.stopwordspath != null) {
+        if (cliOptions.stopwordspath != null) {
             const {path, word} = req.body;
             const stemmed = reversedUnstemDict[word] ? reversedUnstemDict[word] : word;
-            if(stopwords[path] == undefined) {
+            if (stopwords[path] == undefined) {
                 stopwords[path] = [stemmed]
             } else {
-                if(!stopwords[path].includes(stemmed)) {
+                if (!stopwords[path].includes(stemmed)) {
                     stopwords[path].push(stemmed)
                 }
             }
@@ -147,7 +173,7 @@ router.post("/setStopword", async (req, res) => {
         } else {
             res.status(409).json({error: "stopwords editing not enabled"});
         }
-    } catch(e) {
+    } catch (e) {
         res.status(500).json({error: e.toString()});
     }
 })

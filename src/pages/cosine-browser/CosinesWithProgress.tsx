@@ -4,7 +4,7 @@ import * as _ from "lodash";
 
 import {callStreamApi} from "../../util/fetchUtil";
 import {srcPathFromPath} from "../srcFromPath";
-import {ProgressBar} from "./ProgressBar";
+import {ProgressBar} from "../../progress/ProgressBar";
 
 import "../styles.scss"
 
