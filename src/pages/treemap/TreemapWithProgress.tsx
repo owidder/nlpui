@@ -1,9 +1,7 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
-import {callStreamApi} from "../../util/fetchUtil";
 import {showTreemap} from "./treemapGraph";
-import {StreamedTypedContent, TypedContent} from "../stream/StreamedTypedContent";
-import * as LZUTF8 from "lzutf8";
+import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 
 import "./tree.scss"
 import {ProgressBar} from "../../progress/ProgressBar";
@@ -19,46 +17,10 @@ export const TreemapWithProgress = ({path, width, height}: TreemapWithProgressPr
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
-    const streamedTypedContent = new StreamedTypedContent();
-
     useEffect(() => {
-        callStreamApi(`/api/subAgg/folder/${path}`, (text: string) => {
-            const typedContentList: TypedContent[] = streamedTypedContent.parse(text);
-
-            typedContentList.forEach(({type, content}) => {
-                switch (type) {
-                    case "progress":
-                        setProgress(Number(content));
-                        break
-
-                    case "progress-text":
-                        setProgressText(content);
-                        break
-
-                    case "number-of-files":
-                        setNumberOfFiles(Number(content));
-                        break
-
-                    case "jsonz":
-                        LZUTF8.decompressAsync(content, {inputEncoding: "Base64"}, (result, error) => {
-                            if (error) {
-                                window.alert(`cannot unzip: ${error.message}`)
-                            } else {
-                                const tree = JSON.parse(result);
-                                setProgress(0);
-                                setProgressText("");
-                                setNumberOfFiles(0);
-                                showTreemap("#treemap", tree, width, height)
-                            }
-                        })
-                        break
-
-                    default:
-                        window.alert(`type: ${type}, content: ${content}`)
-                }
-            });
-        })
-
+        streamContentWithProgress(`/api/subAgg/folder/${path}`,
+            setProgress, setNumberOfFiles, setProgressText,
+            tree => showTreemap("#treemap", tree, width, height));
     }, [])
 
     return <div id="treemap">
