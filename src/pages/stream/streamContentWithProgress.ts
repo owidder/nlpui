@@ -6,7 +6,7 @@ declare type NumberCallback = (content: number) => void;
 declare type StringCallback = (content: string) => void;
 declare type AnyCallback = (content: any) => void;
 
-export const streamContentWithProgress = (uri: string, progressCallback: NumberCallback, numberOfFilesCallback: NumberCallback, progressTextCallback: StringCallback, jsonCallback: AnyCallback) => {
+export const streamContentWithProgress = (uri: string, progressCallback: NumberCallback, maxProgressCallback: NumberCallback, progressTextCallback: StringCallback, jsonCallback: AnyCallback) => {
 
     const streamedTypedContent = new StreamedTypedContent();
 
@@ -23,8 +23,8 @@ export const streamContentWithProgress = (uri: string, progressCallback: NumberC
                     progressTextCallback(content);
                     break
 
-                case "number-of-files":
-                    numberOfFilesCallback(Number(content));
+                case "max-progress":
+                    maxProgressCallback(Number(content));
                     break
 
                 case "jsonz":
@@ -32,11 +32,11 @@ export const streamContentWithProgress = (uri: string, progressCallback: NumberC
                         if (error) {
                             window.alert(`cannot unzip: ${error.message}`)
                         } else {
-                            const tree = JSON.parse(result);
+                            const object = JSON.parse(result);
                             progressCallback(0);
                             progressTextCallback("");
-                            numberOfFilesCallback(0);
-                            jsonCallback(tree);
+                            maxProgressCallback(0);
+                            jsonCallback(object);
                         }
                     })
                     break
