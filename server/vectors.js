@@ -31,6 +31,8 @@ const initVectorspath = (_vectorspath) => {
 }
 
 const findVector = (doc, progressCallback) => {
+    progressCallback("progress-text", "Finding vector");
+    progressCallback("max-progress", numberOfVectors);
     let lineCtr = 0;
     return new Promise((resolve, reject) => {
         const rl = createReadlineInterface(vectorspath);
@@ -43,7 +45,7 @@ const findVector = (doc, progressCallback) => {
                 resolve(parts.slice(1).map(Number));
             }
             if(++lineCtr % 100 == 0) {
-                progressCallback(`Finding vector/${lineCtr}/${numberOfVectors}`);
+                progressCallback("progress", lineCtr);
             }
         }).on("close", () => {
             if(!found) {
@@ -55,6 +57,8 @@ const findVector = (doc, progressCallback) => {
 
 const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback) => {
     const doc1Vector = await findVector(doc1, progressCallback);
+    progressCallback("max-progress", numberOfVectors);
+    progressCallback("progress-text", "Compution cosines");
     const resultList = [];
     let lineCtr = 0;
     return new Promise(resolve => {
@@ -69,7 +73,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback
                 }
             }
             if(++lineCtr % 100 == 0) {
-                progressCallback(lineCtr);
+                progressCallback("progress", lineCtr);
             }
         }).on("close", () => {
             resolve(resultList);

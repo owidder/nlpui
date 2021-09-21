@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
 
-const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors} = require("./vectors");
+const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
 const {lzData} = require("./lz");
 
@@ -127,13 +127,13 @@ router.get("/cosineValues", async (req, res) => {
 
 router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
-        await writeAndWait(res, `max-progress:${getNumberOfVectors()};`);
-        await writeAndWait(res, "progress-text:Computing cosines;");
         const doc1 = req.query.doc1;
-        const docs = await similarDocsFromFileWithProgress(doc1, .1, (progress) => {
-            res.write(`progress:${progress};`)
+        const docs = await similarDocsFromFileWithProgress(doc1, .1, async (type, content) => {
+            await writeAndWait(res, `${type}:${content};`)
         })
-        res.write(`json:${JSON.stringify(docs.slice(0, 100))}`);
+        const data = JSON.stringify(docs.slice(0, 100));
+        const lz = await lzData(data);
+        res.write(`jsonz:${lz};`);
         res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});
