@@ -2,10 +2,10 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
-const LZUTF8 = require("lzutf8");
 
-const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
+const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors} = require("./vectors");
 const {readFeatures} = require("./tfidf");
+const {lzData} = require("./lz");
 
 const {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
@@ -57,12 +57,7 @@ router.get("/subAgg/folder/*", async function (req, res) {
             await writeAndWait(res, `progress:${totalProgress + Number(progress)};`);
         });
         const data = JSON.stringify(subAgg);
-        const lz = await new Promise((resolve, reject) => {
-            LZUTF8.compressAsync(data, {outputEncoding: "Base64"}, (result, error) => {
-                if(error) reject(error);
-                resolve(result)
-            })
-        })
+        const lz = await lzData(data);
 
         await writeAndWait(res, `jsonz:${lz};`);
         res.status(200).send();
@@ -132,9 +127,11 @@ router.get("/cosineValues", async (req, res) => {
 
 router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
+        await writeAndWait(res, `max-progress:${getNumberOfVectors()};`);
+        await writeAndWait(res, "progress-text:Computing cosines;");
         const doc1 = req.query.doc1;
         const docs = await similarDocsFromFileWithProgress(doc1, .1, (progress) => {
-            res.write(`progress:${progress}`)
+            res.write(`progress:${progress};`)
         })
         res.write(`json:${JSON.stringify(docs.slice(0, 100))}`);
         res.status(200).send();

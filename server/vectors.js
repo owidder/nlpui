@@ -12,6 +12,11 @@ const computeCosineBetweenVectors = (vector1, vector2) => {
 
 let vectorspath;
 let numberOfVectors;
+
+const getNumberOfVectors = () => {
+    return numberOfVectors;
+}
+
 const initVectorspath = (_vectorspath) => {
     vectorspath = _vectorspath;
     numberOfVectors = 0;
@@ -64,7 +69,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback
                 }
             }
             if(++lineCtr % 100 == 0) {
-                progressCallback(`Computing cosines/${lineCtr}/${numberOfVectors}`);
+                progressCallback(lineCtr);
             }
         }).on("close", () => {
             resolve(resultList);
@@ -72,4 +77,4 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback
     })
 }
 
-module.exports = {initVectorspath, similarDocsFromFileWithProgress}
+module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors}

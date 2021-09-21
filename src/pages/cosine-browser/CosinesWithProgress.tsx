@@ -2,9 +2,9 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import * as _ from "lodash";
 
-import {callStreamApi} from "../../util/fetchUtil";
 import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
+import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 
 import "../styles.scss"
 
@@ -17,57 +17,42 @@ interface CosineValue {
     cosine: number
 }
 
-const PROGRESS_PREFIX = "progress:";
-const JSON_PREFIX = "json:";
-
 export const CosinesWithProgress = ({document}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
-    const [progress, setProgress] = useState("");
-
-    let partial = "";
-
-    const jsonTry = (content: string) => {
-        try {
-            const json = partial.length > 0 ? partial + content : content;
-            const _cosineValues = JSON.parse(json);
-            const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
-            setCosineValues([{document, cosine: 1}, ...sortedCosineValues]);
-            partial = "";
-        } catch (e) {
-            partial = partial + content;
-        }
-    }
+    const [progress, setProgress] = useState(0);
+    const [progressText, setProgressText] = useState("");
+    const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        callStreamApi(`/api/cosineValuesWithProgress?doc1=${document}`, content => {
-            if(content.startsWith(PROGRESS_PREFIX)) {
-                setProgress(content.substr(PROGRESS_PREFIX.length))
-            } else if(content.startsWith(JSON_PREFIX)) {
-                setProgress("");
-                jsonTry(content.substr(JSON_PREFIX.length));
-            } else {
-                jsonTry(content);
-            }
-        })
+        streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${document}`,
+            setProgress,
+            setNumberOfFiles,
+            setProgressText,
+            _cosineValues => {
+                const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
+                setCosineValues([{document, cosine: 1}, ...sortedCosineValues]);
+            })
     }, [document])
 
     const showCosines = <div className="list">
-            {cosineValues.map((cosineValue, index) => {
-                return <div className="listrow" key={index}>
-                    <div className="cell index">{index}</div>
-                    <div className="cell string">
-                        <a className="pointer" href={srcPathFromPath(cosineValue.document)} target="_blank">{cosineValue.document}</a>
-                    </div>
-                    <div className="cell"><a target="_blank" href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a></div>
+        {cosineValues.map((cosineValue, index) => {
+            return <div className="listrow" key={index}>
+                <div className="cell index">{index}</div>
+                <div className="cell string">
+                    <a className="pointer" href={srcPathFromPath(cosineValue.document)}
+                       target="_blank">{cosineValue.document}</a>
                 </div>
-            })}
-        </div>
+                <div className="cell"><a target="_blank"
+                                         href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a>
+                </div>
+            </div>
+        })}
+    </div>
 
-    const [message, current, max] = progress.split("/");
 
-    if(progress && progress.length > 0) {
-        return <ProgressBar message={message} max={Number(max)} current={Number(current)}/>
-    } else if(cosineValues && cosineValues.length > 0) {
+    if (progress > 0 && progressText.length > 0 && numberOfFiles > 0) {
+        return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
+    } else if (cosineValues && cosineValues.length > 0) {
         return showCosines;
     } else {
         return <span>WAITING!!!</span>
