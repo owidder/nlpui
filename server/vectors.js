@@ -1,4 +1,6 @@
 var math = require('mathjs');
+const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require("./stream");
+const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
 
@@ -30,22 +32,22 @@ const initVectorspath = (_vectorspath) => {
     })
 }
 
-const findVector = (doc, progressCallback) => {
-    progressCallback("progress-text", "Finding vector");
-    progressCallback("max-progress", numberOfVectors);
+const findVector = async (doc, res) => {
+    await writeProgressText(res, "Finding vector");
+    await writeMaxProgress(res, numberOfVectors);
     let lineCtr = 0;
     return new Promise((resolve, reject) => {
         const rl = createReadlineInterface(vectorspath);
         let found = false;
-        rl.on("line", line => {
+        rl.on("line", async line => {
             const parts = line.split("\t");
             if(doc === parts[0]) {
                 found = true;
                 rl.close();
                 resolve(parts.slice(1).map(Number));
             }
-            if(++lineCtr % 100 == 0) {
-                progressCallback("progress", lineCtr);
+            if(++lineCtr % randomNumberBetween(100, 110) == 0) {
+                await writeProgress(res, lineCtr);
             }
         }).on("close", () => {
             if(!found) {
@@ -55,14 +57,14 @@ const findVector = (doc, progressCallback) => {
     })
 }
 
-const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback) => {
-    const doc1Vector = await findVector(doc1, progressCallback);
-    progressCallback("max-progress", numberOfVectors);
-    progressCallback("progress-text", "Compution cosines");
+const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) => {
+    const doc1Vector = await findVector(doc1, res);
+    await writeMaxProgress(res, numberOfVectors);
+    await writeProgressText(res, "Computing cosines");
     const resultList = [];
     let lineCtr = 0;
-    return new Promise(resolve => {
-        createReadlineInterface(vectorspath).on("line", line => {
+    return new Promise(() => {
+        createReadlineInterface(vectorspath).on("line", async line => {
             const parts = line.split("\t");
             const doc2 = parts[0];
             if(doc1 !== doc2) {
@@ -72,11 +74,11 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, progressCallback
                     resultList.push({document: doc2, cosine})
                 }
             }
-            if(++lineCtr % 100 == 0) {
-                progressCallback("progress", lineCtr);
+            if(++lineCtr % randomNumberBetween(100, 110) == 0) {
+                 await writeProgress(res, lineCtr);
             }
-        }).on("close", () => {
-            resolve(resultList);
+        }).on("close", async () => {
+            await writeJsonz(res, JSON.stringify(resultList.slice(0, maxDocs)));
         })
     })
 }

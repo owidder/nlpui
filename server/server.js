@@ -5,7 +5,7 @@ const path = require("path");
 
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
-const {lzData} = require("./lz");
+const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require("./stream");
 
 const {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
@@ -38,28 +38,17 @@ router.get("/agg/folder/*", async function (req, res) {
     }
 });
 
-const writeAndWait = (res, content) => {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            res.write(content);
-            resolve();
-        })
-    }, 1)
-}
-
 router.get("/subAgg/folder/*", async function (req, res) {
     let totalProgress = 0;
     try {
-        await writeAndWait(res, `max-progress:${getNumberOfFiles()};`);
-        await writeAndWait(res, "progress-text:Reading aggregated tfidf;");
+        await writeMaxProgress(res, getNumberOfFiles());
+        await writeProgressText(res, "Reading aggregated tfidf");
         const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
         const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath, async (progress) => {
-            await writeAndWait(res, `progress:${totalProgress + Number(progress)};`);
+            await writeProgress(res, totalProgress + Number(progress));
         });
-        const data = JSON.stringify(subAgg);
-        const lz = await lzData(data);
 
-        await writeAndWait(res, `jsonz:${lz};`);
+        await writeJsonz(res, JSON.stringify(subAgg));
         res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});
@@ -128,12 +117,7 @@ router.get("/cosineValues", async (req, res) => {
 router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const docs = await similarDocsFromFileWithProgress(doc1, .1, async (type, content) => {
-            await writeAndWait(res, `${type}:${content};`)
-        })
-        const data = JSON.stringify(docs.slice(0, 100));
-        const lz = await lzData(data);
-        res.write(`jsonz:${lz};`);
+        await similarDocsFromFileWithProgress(doc1, .1, res, 100);
         res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});
