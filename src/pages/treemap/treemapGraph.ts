@@ -1,10 +1,11 @@
+// based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
 
 export interface Tree {
     name: string
-    words: string[]
-    value: number
+    words?: string[]
+    value?: number
     children?: Tree[]
 }
 
@@ -70,13 +71,27 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === root ? "bold" : null)
             .selectAll("tspan")
-            .data(d => (d === root ? _name(d) : d.data.name).split(/(?=[A-Z][^A-Z])/g).concat(format(d.value)))
+            .data(d => d === root ? [_name(d), format(d.value)] : [d.data.name, ...d.data.words, format(d.value)])
             .join("tspan")
             .attr("x", 3)
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1 ? 1 : 0) * 0.3 + 1.1 + i * 0.9}em`)
             .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
-            .attr("font-weight", (d, i, nodes) => i === nodes.length - 1 ? "normal" : null)
-            .text(d => d);
+            .attr("font-weight", (d, i, nodes) => {
+                switch (i) {
+                    case 0:
+                        return "bolder"
+
+                    case nodes.length-1:
+                        return "lighter"
+
+                    default:
+                        return "normal"
+
+                }
+            })
+            .text(d => {
+                return d
+            });
 
         group.call(position, root);
     }
