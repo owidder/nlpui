@@ -44,7 +44,7 @@ router.get("/subAgg/folder/*", async function (req, res) {
         await writeMaxProgress(res, getNumberOfFiles());
         await writeProgressText(res, "Reading aggregated tfidf");
         const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
-        const subAgg = await readSubAggFolders(`tfidf/${relFolder}`, cliOptions.datapath, async (progress) => {
+        const subAgg = await readSubAggFolders(relFolder, cliOptions.datapath, async (progress) => {
             await writeProgress(res, totalProgress + Number(progress));
         });
 

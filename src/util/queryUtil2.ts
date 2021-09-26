@@ -1,5 +1,3 @@
-import {stringify} from "query-string";
-
 const queryString = require('query-string');
 
 const getHashParamMap = () => {
@@ -47,4 +45,10 @@ export const setHashValue = (name: string, value: string | number) => {
     const hashParamMap = getHashParamMap();
     const newHashParamMap = {...hashParamMap, [name]: value};
     window.location.hash = queryString.stringify(newHashParamMap);
+}
+
+export const removeHashName = (name: string) => {
+    const hashParamMap = getHashParamMap();
+    delete hashParamMap[name];
+    window.location.hash = queryString.stringify(hashParamMap);
 }

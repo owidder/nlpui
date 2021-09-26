@@ -9,7 +9,7 @@ export interface Tree {
     children?: Tree[]
 }
 
-export const showTreemap = (selector: string, data: Tree, width: number, height: number) => {
+export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string) => {
     const tile = (node, x0, y0, x1, y1) => {
         d3.treemapBinary(node, 0, 0, width, height);
         for (const child of node.children) {
@@ -39,18 +39,20 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     let group = svg.append("g")
         .call(render, treemapData);
 
-    function render(group, root) {
+    function render(group, _root) {
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
         const format = d3.format(",d");
 
+        newZoomtoCallback(_name(_root));
+
         const node = group
             .selectAll("g")
-            .data(root.children.concat(root))
+            .data(_root.children.concat(_root))
             .join("g");
 
-        node.filter(d => d === root ? d.parent : d.children)
+        node.filter(d => d === _root ? d.parent : d.children)
             .attr("cursor", "pointer")
-            .on("click", (event, d) => d === root ? zoomout(root) : zoomin(d));
+            .on("click", (event, d) => d === _root ? zoomout(_root) : zoomin(d));
 
         node.append("title")
             .text(d => {
@@ -59,7 +61,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         node.append("rect")
             .attr("id", d => (d.leafUid = `leaf-${uuidv4()}`))
-            .attr("fill", d => d === root ? "#fff" : d.children ? "#ccc" : "#ddd")
+            .attr("fill", d => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd")
             .attr("stroke", "#fff");
 
         node.append("clipPath")
@@ -69,9 +71,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         node.append("text")
             .attr("clip-path", d => d.clipUid)
-            .attr("font-weight", d => d === root ? "bold" : null)
+            .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
-            .data(d => d === root ? [_name(d), format(d.value)] : [d.data.name, ...d.data.words, format(d.value)])
+            .data(d => d === _root ? [_name(d), format(d.value)] : [d.data.name, ...d.data.words, format(d.value)])
             .join("tspan")
             .attr("x", 3)
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1 ? 1 : 0) * 0.3 + 1.1 + i * 0.9}em`)
@@ -93,15 +95,15 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 return d
             });
 
-        group.call(position, root);
+        group.call(position, _root);
     }
 
-    function position(group, root) {
+    function position(group, _root) {
         group.selectAll("g")
-            .attr("transform", d => d === root ? `translate(0,-30)` : `translate(${x(d.x0)},${y(d.y0)})`)
+            .attr("transform", d => d === _root ? `translate(0,-30)` : `translate(${x(d.x0)},${y(d.y0)})`)
             .select("rect")
-            .attr("width", d => d === root ? width : x(d.x1) - x(d.x0))
-            .attr("height", d => d === root ? 30 : y(d.y1) - y(d.y0));
+            .attr("width", d => d === _root ? width : x(d.x1) - x(d.x0))
+            .attr("height", d => d === _root ? 30 : y(d.y1) - y(d.y0));
     }
 
     // When zooming in, draw the new nodes on top, and fade them in.

@@ -192,8 +192,8 @@ function getNumberOfFiles() {
 function readSubAggFolders(relFolder, basePath, progressCallback) {
     return new Promise(async (resolve, reject) => {
         try {
-            const [children] = await _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, {ctr: 0});
-            resolve({name: "root", children})
+            const [children] = await _readSubAggFoldersRecursive(`tfidf/${relFolder}`, basePath, progressCallback, {ctr: 0});
+            resolve({name: (relFolder.length > 0 ? relFolder : "."), children})
         } catch (e) {
             reject(e)
         }

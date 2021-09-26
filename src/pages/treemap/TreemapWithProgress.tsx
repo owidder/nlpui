@@ -2,25 +2,35 @@ import * as React from "react";
 import {useEffect, useState} from "react";
 import {showTreemap} from "./treemapGraph";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
+import {setHashValue, removeHashName} from "../../util/queryUtil2"
 
 import "./tree.scss"
 import {ProgressBar} from "../../progress/ProgressBar";
 
 interface TreemapWithProgressProps {
-    path: string
+    root: string
+    zoomto: string
     width: number
     height: number
 }
 
-export const TreemapWithProgress = ({path, width, height}: TreemapWithProgressProps) => {
+const newZoomtoCallback = (newZoomto: string) => {
+    if(newZoomto != "." && newZoomto.length > 0) {
+        setHashValue("zoomto", newZoomto.startsWith("./") ? newZoomto.substr(2) : newZoomto)
+    } else {
+        removeHashName("zoomto")
+    }
+}
+
+export const TreemapWithProgress = ({root, width, height, zoomto}: TreemapWithProgressProps) => {
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        streamContentWithProgress(`/api/subAgg/folder/${path}`,
+        streamContentWithProgress(`/api/subAgg/folder/${root}`,
             setProgress, setNumberOfFiles, setProgressText,
-            tree => showTreemap("#treemap", tree, width, height));
+            tree => showTreemap("#treemap", tree, width, height, newZoomtoCallback, zoomto));
     }, [])
 
     return <div id="treemap">
