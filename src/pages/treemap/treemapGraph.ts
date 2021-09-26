@@ -37,13 +37,21 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     const treemapData = treemap(data);
 
     let group = svg.append("g")
-        .call(render, treemapData);
+        .call(render, treemapData, zoomto);
 
-    function render(group, _root) {
+    function render(group, _root, _zoomto?: string) {
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
         const format = d3.format(",d");
 
-        newZoomtoCallback(_name(_root));
+        const zoomtoOneLevel = (d) => {
+            const partsOfZoomto = _zoomto.split("/");
+            const firstPartOfZoomto = partsOfZoomto[0];
+            if(d.data.name == firstPartOfZoomto) {
+                setTimeout(() => {
+                    zoomin(d, partsOfZoomto.slice(1).join("/"))
+                }, 10)
+            }
+        }
 
         const node = group
             .selectAll("g")
@@ -52,7 +60,20 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         node.filter(d => d === _root ? d.parent : d.children)
             .attr("cursor", "pointer")
-            .on("click", (event, d) => d === _root ? zoomout(_root) : zoomin(d));
+            .on("click", (event, d) => {
+                if(d === _root) {
+                    newZoomtoCallback(_name(_root).split("/").slice(0, -1).join("/"));
+                    return zoomout(_root)
+                } else {
+                    newZoomtoCallback(_name(d));
+                    return zoomin(d)
+                }
+            })
+            .each(d => {
+                if(_zoomto) {
+                    zoomtoOneLevel(d)
+                }
+            });
 
         node.append("title")
             .text(d => {
@@ -107,9 +128,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     }
 
     // When zooming in, draw the new nodes on top, and fade them in.
-    function zoomin(d) {
+    function zoomin(d, _zoomto?: string) {
         const group0 = group.attr("pointer-events", "none");
-        const group1 = group = svg.append("g").call(render, d);
+        const group1 = group = svg.append("g").call(render, d, _zoomto);
 
         x.domain([d.x0, d.x1]);
         y.domain([d.y0, d.y1]);

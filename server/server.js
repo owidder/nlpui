@@ -38,17 +38,26 @@ router.get("/agg/folder/*", async function (req, res) {
     }
 });
 
+let totalSubAgg;
+
 router.get("/subAgg/folder/*", async function (req, res) {
+    const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
+
     let totalProgress = 0;
     try {
-        await writeMaxProgress(res, getNumberOfFiles());
-        await writeProgressText(res, "Reading aggregated tfidf");
-        const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
-        const subAgg = await readSubAggFolders(relFolder, cliOptions.datapath, async (progress) => {
-            await writeProgress(res, totalProgress + Number(progress));
-        });
+        let subAggToReturn;
 
-        await writeJsonz(res, JSON.stringify(subAgg));
+        if(relFolder.length == 0) {
+            subAggToReturn = totalSubAgg;
+        } else {
+            await writeMaxProgress(res, getNumberOfFiles());
+            await writeProgressText(res, "Reading aggregated tfidf");
+            subAggToReturn = await readSubAggFolders(relFolder, cliOptions.datapath, async (progress) => {
+                await writeProgress(res, totalProgress + Number(progress));
+            });
+        }
+
+        await writeJsonz(res, JSON.stringify(subAggToReturn));
         res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});
@@ -171,6 +180,9 @@ initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => 
     initStopwords(cliOptions.stopwordspath);
     initUnstemDict(cliOptions.datapath);
     await initNumberOfFiles("tfidf/", cliOptions.datapath);
+    totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
+        console.log(progress);
+    });
     server.listen(port, function () {
         console.log(`server for nlpui is listening on port ${port}, folder: ${rootFolder}`)
     });
