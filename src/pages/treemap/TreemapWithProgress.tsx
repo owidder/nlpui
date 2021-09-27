@@ -8,7 +8,6 @@ import "./tree.scss"
 import {ProgressBar} from "../../progress/ProgressBar";
 
 interface TreemapWithProgressProps {
-    root: string
     zoomto: string
     width: number
     height: number
@@ -22,13 +21,13 @@ const newZoomtoCallback = (newZoomto: string) => {
     }
 }
 
-export const TreemapWithProgress = ({root, width, height, zoomto}: TreemapWithProgressProps) => {
+export const TreemapWithProgress = ({width, height, zoomto}: TreemapWithProgressProps) => {
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        streamContentWithProgress(`/api/subAgg/folder/${root}`,
+        streamContentWithProgress(`/api/subAgg/folder/`,
             setProgress, setNumberOfFiles, setProgressText,
             tree => showTreemap("#treemap", tree, width, height, newZoomtoCallback, zoomto));
     }, [])

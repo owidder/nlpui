@@ -6,7 +6,6 @@ import {TreemapWithProgress} from "./TreemapWithProgress"
 
 import "materialize-css/dist/css/materialize.css"
 
-const root = getHashParamValue("root", ".");
 const zoomto = getHashParamValue("zoomto", "");
 
-ReactDOM.render(<TreemapWithProgress root={root} zoomto={zoomto} width={window.innerWidth} height={window.innerHeight}/>, document.getElementById("container"))
+ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight}/>, document.getElementById("container"))
