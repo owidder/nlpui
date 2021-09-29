@@ -34,9 +34,14 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         .attr("viewBox", [0.5, -30.5, width, height + 30].join(" "))
         .style("font", "10px sans-serif");
 
+    const svgTreemap = svg.append("g").attr("class", "treemap");
+    const divTooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     const treemapData = treemap(data);
 
-    let group = svg.append("g")
+    let group = svgTreemap.append("g")
         .call(render, treemapData, zoomto);
 
     function render(group, _root, _zoomto?: string) {
@@ -75,15 +80,23 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }
             });
 
-        node.append("title")
-            .text(d => {
-                return `${_name(d)}\n${format(d.value)}`;
-            });
-
         node.append("rect")
             .attr("id", d => (d.leafUid = `leaf-${uuidv4()}`))
             .attr("fill", d => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd")
-            .attr("stroke", "#fff");
+            .attr("stroke", "#fff")
+            .on("mouseover", () => {
+                divTooltip.style("opacity", 1);
+            })
+            .on("mousemove", (event: MouseEvent, d) => {
+                setTimeout(() => {
+                    const {pageX, pageY} = event;
+                    divTooltip.html(d.data.words.join("<br>"));
+                    divTooltip.style('transform', `translate(${pageX}px, ${pageY}px)`);
+                }, 1000)
+            })
+            .on("mouseout", () => {
+                divTooltip.style("opacity", 0);
+            });
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -130,12 +143,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     // When zooming in, draw the new nodes on top, and fade them in.
     function zoomin(d, _zoomto?: string) {
         const group0 = group.attr("pointer-events", "none");
-        const group1 = group = svg.append("g").call(render, d, _zoomto);
+        const group1 = group = svgTreemap.append("g").call(render, d, _zoomto);
 
         x.domain([d.x0, d.x1]);
         y.domain([d.y0, d.y1]);
 
-        svg.transition()
+        svgTreemap.transition()
             .duration(750)
             .call(t => group0.transition(t).remove()
                 .call(position, d.parent))
@@ -149,12 +162,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     // When zooming out, draw the old nodes on top, and fade them out.
     function zoomout(d) {
         const group0 = group.attr("pointer-events", "none");
-        const group1 = group = svg.insert("g", "*").call(render, d.parent);
+        const group1 = group = svgTreemap.insert("g", "*").call(render, d.parent);
 
         x.domain([d.parent.x0, d.parent.x1]);
         y.domain([d.parent.y0, d.parent.y1]);
 
-        svg.transition()
+        svgTreemap.transition()
             .duration(750)
             .call(t => group0.transition(t).remove()
                 .attrTween("opacity", () => {
@@ -165,5 +178,5 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 .call(position, d.parent));
     }
 
-    return svg.node();
+    return svgTreemap.node();
 }

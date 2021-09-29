@@ -8,4 +8,6 @@ import "materialize-css/dist/css/materialize.css"
 
 const zoomto = getHashParamValue("zoomto", "");
 
+document.querySelector(".homelink a").setAttribute("href", "/treemap/treemap.html");
+
 ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight}/>, document.getElementById("container"))
