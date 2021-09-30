@@ -46,6 +46,10 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
     function render(group, _root, _zoomto?: string) {
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
+        const _path = d => {
+            const name = _name(d);
+            return name.startsWith("./") ? name.substr(2) : name
+        }
         const format = d3.format(",d");
 
         const zoomtoOneLevel = (d) => {
@@ -105,7 +109,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 const {pageX, pageY} = event;
                 switchOnTooltip(pageX, pageY, d);
                 divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
-                divTooltip.html(d.data.words.join("<br>"));
+                divTooltip.html([`<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: xx-large">${d.data.name}</span></a>`, ...d.data.words, "<small>rightclick again to close</small>"].join("<br>"));
             }
         }
 
