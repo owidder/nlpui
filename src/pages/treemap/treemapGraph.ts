@@ -80,23 +80,40 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }
             });
 
+        const switchOnTooltip = (pageX: number, pageY: number, d) => {
+            divTooltip.property("data", d);
+            svg.select(`#${d.leafUid}`).attr("fill", "beige");
+            divTooltip
+                .style("opacity", 1)
+                .style('transform', `translate(${pageX}px, ${pageY}px)`);
+        }
+        const switchOffTooltip = () => {
+            const d = divTooltip.property("data");
+            svg.select(`#${d.leafUid}`).attr("fill", lowlight(d));
+            divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
+        }
+
+        const isTooltipOn = () => divTooltip.style("opacity") == "1";
+
+        const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
+
+        const handleTooltip = (event: MouseEvent, d) => {
+            event.preventDefault();
+            if(isTooltipOn()) {
+                switchOffTooltip();
+            } else {
+                const {pageX, pageY} = event;
+                switchOnTooltip(pageX, pageY, d);
+                divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
+                divTooltip.html(d.data.words.join("<br>"));
+            }
+        }
+
         node.append("rect")
             .attr("id", d => (d.leafUid = `leaf-${uuidv4()}`))
-            .attr("fill", d => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd")
+            .attr("fill", lowlight)
             .attr("stroke", "#fff")
-            .on("mouseover", () => {
-                divTooltip.style("opacity", 1);
-            })
-            .on("mousemove", (event: MouseEvent, d) => {
-                setTimeout(() => {
-                    const {pageX, pageY} = event;
-                    divTooltip.html(d.data.words.join("<br>"));
-                    divTooltip.style('transform', `translate(${pageX}px, ${pageY}px)`);
-                }, 1000)
-            })
-            .on("mouseout", () => {
-                divTooltip.style("opacity", 0);
-            });
+            .on("contextmenu", handleTooltip)
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -104,6 +121,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("href", d => `#${d.clipUid}`);
 
         node.append("text")
+            .on("contextmenu", handleTooltip)
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
