@@ -7,8 +7,10 @@
 }
 
 .tooltip {
-  width: 100px;
-  height: 100px;
   position: relative;
+  background: white;
+  display: table;
+  border: 3px solid darkgray;
+  padding: 1em;
 }
 
