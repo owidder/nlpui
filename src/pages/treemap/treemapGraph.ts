@@ -109,8 +109,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 const {pageX, pageY} = event;
                 switchOnTooltip(pageX, pageY, d);
                 divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
-                const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: xx-large; text-decoration: underline">${d.data.name}</span></a>`;
-                const list = `<ol>${d.data.words.map(w => "<li>" + w + "</li>")}</ol>`;
+                const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
+                const list = `<ol>${d.data.words.map(w => "<li>" + w + "</li>").join("\n")}</ol>`;
                 const listFoot = "<small>rightclick again to close</small>";
                 divTooltip.html([listHead, list, listFoot].join("<br>"));
             }
