@@ -5,6 +5,7 @@ import {v4 as uuidv4} from "uuid";
 export interface Tree {
     name: string
     words?: string[]
+    tfidfValues?: number[]
     value?: number
     children?: Tree[]
 }
@@ -110,7 +111,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 switchOnTooltip(pageX, pageY, d);
                 divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
                 const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
-                const list = `<ol>${d.data.words.map(w => "<li>" + w + "</li>").join("\n")}</ol>`;
+                const list = `<ol>${d.data.words.map((w, i) => "<li>" + w + " <small>[" + Math.round((d.data.tfidfValues[i] + Number.EPSILON) * 100) / 100 + "]</small> </li>").join("\n")}</ol>`;
                 const listFoot = "<small>rightclick again to close</small>";
                 divTooltip.html([listHead, list, listFoot].join("<br>"));
             }

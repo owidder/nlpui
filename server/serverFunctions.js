@@ -133,9 +133,10 @@ function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, tota
                         const aggValues = await readAggFolder(subFolder, basePath);
                         const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
                         const words = filteredUnstemmed.map(wav => wav.word);
+                        const tfidfValues = filteredUnstemmed.map(wav => wav.value);
                         const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath, progressCallback, totalCtr);
                         _children = _children ? _children : []
-                        _children.push({name: f, value: subCtr, words, children});
+                        _children.push({name: f, value: subCtr, words, children, tfidfValues});
                     } else {
                         if(f != "_.csv") {
                             if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
