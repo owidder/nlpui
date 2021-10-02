@@ -2,6 +2,8 @@
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
 
+import {cancelableClick} from "../../util/cancelableClick";
+
 export interface Tree {
     name: string
     words?: string[]
@@ -68,22 +70,27 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .data(_root.children.concat(_root))
             .join("g");
 
+        const ccNode = cancelableClick();
+
         node.filter(d => d === _root ? d.parent : d.children)
             .attr("cursor", "pointer")
-            .on("click", (event, d) => {
-                if(d === _root) {
-                    newZoomtoCallback(_name(_root).split("/").slice(0, -1).join("/"));
-                    return zoomout(_root)
-                } else {
-                    newZoomtoCallback(_name(d));
-                    return zoomin(d)
-                }
-            })
+            .call(ccNode)
             .each(d => {
                 if(_zoomto) {
                     zoomtoOneLevel(d)
                 }
             });
+
+        ccNode.on("click", (event, d) => {
+            event.preventDefault();
+            if(d === _root) {
+                newZoomtoCallback(_name(_root).split("/").slice(0, -1).join("/"));
+                return zoomout(_root)
+            } else {
+                newZoomtoCallback(_name(d));
+                return zoomin(d)
+            }
+        })
 
         const switchOnTooltip = (pageX: number, pageY: number, d) => {
             divTooltip.property("data", d);
@@ -121,7 +128,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("id", d => (d.leafUid = `leaf-${uuidv4()}`))
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
-            .on("contextmenu", handleTooltip)
+            .on("dblclick", handleTooltip)
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -129,7 +136,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("href", d => `#${d.clipUid}`);
 
         node.append("text")
-            .on("contextmenu", handleTooltip)
+            .on("dblclick", handleTooltip)
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
