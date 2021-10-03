@@ -88,6 +88,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             });
 
         const switchOnTooltip = (pageX: number, pageY: number, d) => {
+            switchOffTooltip();
             divTooltip.property("data", d);
             svg.select(`#${d.leafUid}`).attr("fill", "beige");
             divTooltip
@@ -96,8 +97,10 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
         const switchOffTooltip = () => {
             const d = divTooltip.property("data");
-            svg.select(`#${d.leafUid}`).attr("fill", lowlight(d));
-            divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
+            if(d) {
+                svg.select(`#${d.leafUid}`).attr("fill", lowlight(d));
+                divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
+            }
         }
 
         const isTooltipOn = () => divTooltip.style("opacity") == "1";
@@ -106,7 +109,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const handleTooltip = (event: MouseEvent, d) => {
             event.preventDefault();
-            if(isTooltipOn()) {
+            if(isTooltipOn() && divTooltip.property("data") === d) {
                 switchOffTooltip();
             } else {
                 const {pageX, pageY} = event;
