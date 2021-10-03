@@ -107,6 +107,16 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
 
+        const _doListEffectRecursive = async (targetElement, head: string, foot: string, list: [string], i: number) => {
+            if(i < list.length) {
+                setTimeout(() => {
+                    const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
+                    targetElement.html([head, ol, foot].join("<br>"));
+                    _doListEffectRecursive(targetElement, head, foot, list, i+1)
+                }, 10)
+            }
+        }
+
         const handleTooltip = (event: MouseEvent, d) => {
             event.preventDefault();
             if(isTooltipOn() && divTooltip.property("data") === d) {
@@ -116,9 +126,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 switchOnTooltip(pageX, pageY, d);
                 divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
                 const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
-                const list = `<ol>${d.data.words.map((w, i) => "<li>" + w + " <small>[" + Math.round((d.data.tfidfValues[i] + Number.EPSILON) * 100) / 100 + "]</small> </li>").join("\n")}</ol>`;
+                const list = d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`);
                 const listFoot = "<small>rightclick again to close</small>";
-                divTooltip.html([listHead, list, listFoot].join("<br>"));
+                _doListEffectRecursive(divTooltip, listHead, listFoot, list, 0);
             }
         }
 
