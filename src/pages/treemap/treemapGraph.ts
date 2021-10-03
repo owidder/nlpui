@@ -107,13 +107,15 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
 
-        const _doListEffectRecursive = async (targetElement, head: string, foot: string, list: [string], i: number) => {
-            if(i < list.length) {
-                setTimeout(() => {
-                    const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-                    targetElement.html([head, ol, foot].join("<br>"));
-                    _doListEffectRecursive(targetElement, head, foot, list, i+1)
-                }, 10)
+        const doListEffect = async (targetElement, head: string, foot: string, list: [string]) => {
+            for(let i = 0; i < list.length; i++) {
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
+                        targetElement.html([head, ol, foot].join("<br>"));
+                        resolve()
+                    }, 10)
+                })
             }
         }
 
@@ -128,7 +130,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
                 const list = d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`);
                 const listFoot = "<small>rightclick again to close</small>";
-                _doListEffectRecursive(divTooltip, listHead, listFoot, list, 0);
+                doListEffect(divTooltip, listHead, listFoot, list);
             }
         }
 
