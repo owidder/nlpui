@@ -1,6 +1,7 @@
 // based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
+import {createTooltip, handleTooltip as new_handleTooltip, switchOffTooltip} from "../../util/tooltip";
 
 export interface Tree {
     name: string
@@ -36,9 +37,6 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         .style("font", "10px sans-serif");
 
     const svgTreemap = svg.append("g").attr("class", "treemap");
-    const divTooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     const treemapData = treemap(data);
 
@@ -46,12 +44,45 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         .call(render, treemapData, zoomto);
 
     function render(group, _root, _zoomto?: string) {
+        const format = d3.format(",d");
+
+        const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
+
+        const colorTooltipOn = (leafUid: string) => {
+            svg.select(`#${leafUid}`).attr("fill", "beige");
+        }
+
+        const colorTooltipOff = (leafUid: string, d) => {
+            svg.select(`#${leafUid}`).attr("fill", lowlight(d));
+        }
+
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
+
         const _path = d => {
             const name = _name(d);
             return name.startsWith("./") ? name.substr(2) : name
         }
-        const format = d3.format(",d");
+
+        const doListEffect = async (targetElement, head: string, foot: string, list: [string]) => {
+            for(let i = 0; i < list.length; i++) {
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
+                        targetElement.html([head, ol, foot].join("<br>"));
+                        resolve()
+                    }, 10)
+                })
+            }
+        }
+
+        const renderTooltip = (_: string, d) => {
+            const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
+            const list = d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`);
+            const listFoot = "<small>rightclick again to close</small>";
+            doListEffect(tooltip.divTooltip, listHead, listFoot, list);
+        }
+
+        const tooltip = createTooltip(colorTooltipOn, colorTooltipOff, renderTooltip);
 
         const zoomtoOneLevel = (d) => {
             const partsOfZoomto = _zoomto.split("/");
@@ -66,13 +97,14 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         const node = group
             .selectAll("g")
             .data(_root.children.concat(_root))
-            .join("g");
+            .join("g")
+            .each(d => d.leafUid = `leaf-${uuidv4()}`);
 
         node.filter(d => d === _root ? d.parent : d.children)
             .attr("cursor", "pointer")
             .on("click", (event, d) => {
                 event.preventDefault();
-                switchOffTooltip();
+                switchOffTooltip(tooltip);
                 if(d === _root) {
                     newZoomtoCallback(_name(_root).split("/").slice(0, -1).join("/"));
                     return zoomout(_root)
@@ -87,58 +119,11 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }
             });
 
-        const switchOnTooltip = (pageX: number, pageY: number, d) => {
-            switchOffTooltip();
-            divTooltip.property("data", d);
-            svg.select(`#${d.leafUid}`).attr("fill", "beige");
-            divTooltip
-                .style("opacity", 1)
-                .style('transform', `translate(${pageX}px, ${pageY}px)`);
-        }
-        const switchOffTooltip = () => {
-            const d = divTooltip.property("data");
-            if(d) {
-                svg.select(`#${d.leafUid}`).attr("fill", lowlight(d));
-                divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
-            }
-        }
-
-        const isTooltipOn = () => divTooltip.style("opacity") == "1";
-
-        const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
-
-        const doListEffect = async (targetElement, head: string, foot: string, list: [string]) => {
-            for(let i = 0; i < list.length; i++) {
-                await new Promise(resolve => {
-                    setTimeout(() => {
-                        const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-                        targetElement.html([head, ol, foot].join("<br>"));
-                        resolve()
-                    }, 10)
-                })
-            }
-        }
-
-        const handleTooltip = (event: MouseEvent, d) => {
-            event.preventDefault();
-            if(isTooltipOn() && divTooltip.property("data") === d) {
-                switchOffTooltip();
-            } else {
-                const {pageX, pageY} = event;
-                switchOnTooltip(pageX, pageY, d);
-                divTooltip.on("mouseover", () => switchOnTooltip(pageX, pageY, d));
-                const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
-                const list = d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`);
-                const listFoot = "<small>rightclick again to close</small>";
-                doListEffect(divTooltip, listHead, listFoot, list);
-            }
-        }
-
         node.append("rect")
-            .attr("id", d => (d.leafUid = `leaf-${uuidv4()}`))
+            .attr("id", d  => d.leafUid)
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
-            .on("contextmenu", handleTooltip)
+            .on("contextmenu", (event: MouseEvent, d) => new_handleTooltip(tooltip, event, d.leafUid, d))
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -146,7 +131,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("href", d => `#${d.clipUid}`);
 
         node.append("text")
-            .on("contextmenu", handleTooltip)
+            .on("contextmenu", (event: MouseEvent, d) => new_handleTooltip(tooltip, event, d.leafUid, d))
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
