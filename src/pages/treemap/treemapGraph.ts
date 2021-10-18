@@ -1,7 +1,7 @@
 // based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
-import {createTooltip, handleTooltip as new_handleTooltip, switchOffTooltip} from "../../util/tooltip";
+import {createTooltip, handleTooltip, switchOffTooltip} from "../../util/tooltip";
 
 export interface Tree {
     name: string
@@ -123,7 +123,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("id", d  => d.leafUid)
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
-            .on("contextmenu", (event: MouseEvent, d) => new_handleTooltip(tooltip, event, d.leafUid, d))
+            .on("contextmenu", (event: MouseEvent, d) => handleTooltip(tooltip, event, d.leafUid, d))
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -131,7 +131,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("href", d => `#${d.clipUid}`);
 
         node.append("text")
-            .on("contextmenu", (event: MouseEvent, d) => new_handleTooltip(tooltip, event, d.leafUid, d))
+            .on("contextmenu", (event: MouseEvent, d) => handleTooltip(tooltip, event, d.leafUid, d))
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
