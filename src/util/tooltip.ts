@@ -6,7 +6,7 @@ import "./tooltip.scss";
 export type TooltipSelection = Selection<HTMLDivElement, any, HTMLElement, any>;
 type TooltipCallback = (uid: string, d: any) => void;
 
-interface Tooltip {
+export interface Tooltip {
     divTooltip: TooltipSelection;
     onCallback: TooltipCallback;
     offCallback: TooltipCallback;

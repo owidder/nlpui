@@ -109,7 +109,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 </div>
                 <div className={gridClass(10)}>
                     {this.state.currentPathType == "file" ? <CosinesWithProgress
-                        document={this.state.currentPath}
+                        doc={this.state.currentPath}
                     /> : <WordCloud path={this.state.currentPath}/>}
                 </div>
             </div>
