@@ -6,14 +6,10 @@ import {callApi} from "../../util/fetchUtil";
 import "../styles.scss"
 import "../directory.scss";
 import {srcPathFromPath} from "../srcFromPath";
+import {Feature} from "../Feature";
 
 interface FeatureTableProps {
     documentPath: string
-}
-
-interface Feature {
-    feature: string
-    value: number
 }
 
 export const FeatureTable = ({documentPath}: FeatureTableProps) => {

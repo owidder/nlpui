@@ -13,6 +13,12 @@ export interface Tooltip {
     renderCallback: TooltipCallback;
 }
 
+interface Event {
+    pageX: number;
+    pageY: number;
+    preventDefault: () => void
+}
+
 export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipCallback, renderCallback: TooltipCallback): Tooltip => {
     const divTooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
@@ -42,13 +48,12 @@ export const switchOffTooltip = (tooltip: Tooltip) => {
 
 const isTooltipOn = (divTooltip: TooltipSelection) => divTooltip.style("opacity") == "1";
 
-export const handleTooltip = (tooltip: Tooltip, event: MouseEvent, uid: string, d: any) => {
+export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     event.preventDefault();
     if(isTooltipOn(tooltip.divTooltip) && tooltip.divTooltip.property("uid") === uid) {
         switchOffTooltip(tooltip);
     } else {
         const {pageX, pageY} = event;
-        console.log(`x: ${pageX} / y: ${pageY}`)
         const on = () => switchOnTooltip(tooltip, pageX, pageY, uid, d);
         on();
         tooltip.divTooltip.on("mouseover", on);
