@@ -5,7 +5,7 @@ import * as _ from "lodash";
 import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
-import {handleTooltip, createTooltip, Tooltip} from "../../util/tooltip";
+import {handleTooltip, createTooltip, Tooltip, doListEffect, TooltipSelection} from "../../util/tooltip";
 import {Feature} from "../Feature";
 
 import "../styles.scss"
@@ -37,16 +37,21 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             })
     }, [doc])
 
-    const renderTooltip = (documentPath: string, d: {features?: Feature[]}) => {
-        const log = (features: Feature[]) => features.map(f => `${f.feature}: ${f.value}`).join("\n");
+    const _render = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
+        const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${documentPath}"><span style="font-size: small; text-decoration: underline">${documentPath}</span></a>`;
+        const list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
+        doListEffect(divTooltip, listHead, "", list);
+    }
+
+    const renderTooltip = (documentPath: string, d: {features?: Feature[]}, divTooltip: TooltipSelection) => {
         if(!d.features) {
             d.features = [];
             callApi(`/api/features?doc1=${documentPath}`).then((_features: Feature[]) => {
                 d.features = _features;
-                console.log(`loaded: ${log(_features)}`);
+                _render(documentPath, _features, divTooltip);
             })
         } else {
-            //console.log(`cached: ${log(d.features)}`);
+            _render(documentPath, d.features, divTooltip);
         }
     }
 

@@ -1,7 +1,7 @@
 // based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
-import {createTooltip, handleTooltip, switchOffTooltip} from "../../util/tooltip";
+import {createTooltip, handleTooltip, switchOffTooltip, doListEffect} from "../../util/tooltip";
 
 export interface Tree {
     name: string
@@ -61,18 +61,6 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         const _path = d => {
             const name = _name(d);
             return name.startsWith("./") ? name.substr(2) : name
-        }
-
-        const doListEffect = async (targetElement, head: string, foot: string, list: [string]) => {
-            for(let i = 0; i < list.length; i++) {
-                await new Promise(resolve => {
-                    setTimeout(() => {
-                        const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-                        targetElement.html([head, ol, foot].join("<br>"));
-                        resolve()
-                    }, 10)
-                })
-            }
         }
 
         const renderTooltip = (_: string, d) => {

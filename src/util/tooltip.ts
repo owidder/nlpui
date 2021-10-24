@@ -4,7 +4,7 @@ import {Selection} from "d3-selection/index";
 import "./tooltip.scss";
 
 export type TooltipSelection = Selection<HTMLDivElement, any, HTMLElement, any>;
-type TooltipCallback = (uid: string, d: any) => void;
+type TooltipCallback = (uid: string, d: any, divTooltip: TooltipSelection) => void;
 
 export interface Tooltip {
     divTooltip: TooltipSelection;
@@ -31,7 +31,7 @@ const switchOnTooltip = (tooltip: Tooltip, pageX: number, pageY: number, uid: st
     switchOffTooltip(tooltip);
     tooltip.divTooltip.property("uid", uid);
     tooltip.divTooltip.property("data", d);
-    tooltip.onCallback(uid, d);
+    tooltip.onCallback(uid, d, tooltip.divTooltip);
     tooltip.divTooltip
         .style("opacity", 1)
         .style('transform', `translate(${pageX}px, ${pageY}px)`);
@@ -41,7 +41,7 @@ export const switchOffTooltip = (tooltip: Tooltip) => {
     const d = tooltip.divTooltip.property("data");
     const uid = tooltip.divTooltip.property("uid");
     if(d && uid) {
-        tooltip.offCallback(uid, d);
+        tooltip.offCallback(uid, d, tooltip.divTooltip);
         tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
     }
 }
@@ -57,6 +57,18 @@ export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: an
         const on = () => switchOnTooltip(tooltip, pageX, pageY, uid, d);
         on();
         tooltip.divTooltip.on("mouseover", on);
-        tooltip.renderCallback(uid, d);
+        tooltip.renderCallback(uid, d, tooltip.divTooltip);
+    }
+}
+
+export const doListEffect = async (targetElement, head: string, foot: string, list: string[]) => {
+    for(let i = 0; i < list.length; i++) {
+        await new Promise(resolve => {
+            setTimeout(() => {
+                const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
+                targetElement.html([head, ol, foot].join("<br>"));
+                resolve()
+            }, 10)
+        })
     }
 }
