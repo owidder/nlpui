@@ -29,26 +29,53 @@ export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipC
 
 const switchOnTooltip = (tooltip: Tooltip, pageX: number, pageY: number, uid: string, d: any) => {
     switchOffTooltip(tooltip);
-    tooltip.divTooltip.property("uid", uid);
-    tooltip.divTooltip.property("data", d);
+    setTooltipData(tooltip, uid, d);
     tooltip.onCallback(uid, d, tooltip.divTooltip);
+    showTooltip(tooltip);
+    _moveTooltip(tooltip, pageX, pageY);
+}
+
+const _moveTooltip = (tooltip: Tooltip, pageX: number, pageY: number) => {
     tooltip.divTooltip
-        .style("opacity", 1)
         .style('transform', `translate(${pageX}px, ${pageY}px)`);
 }
 
 export const switchOffTooltip = (tooltip: Tooltip) => {
+    console.log("switchOff");
     const d = tooltip.divTooltip.property("data");
     const uid = tooltip.divTooltip.property("uid");
     if(d && uid) {
         tooltip.offCallback(uid, d, tooltip.divTooltip);
-        tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
     }
+    hideTooltip(tooltip);
 }
 
 const isTooltipOn = (divTooltip: TooltipSelection) => divTooltip.style("opacity") == "1";
 
-export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
+export const moveTooltip = (tooltip: Tooltip, event: Event) => {
+    event.preventDefault();
+    const {pageX, pageY} = event;
+    console.log(`move: ${pageX} / ${pageY}`);
+    _moveTooltip(tooltip, pageX+10, pageY+10);
+}
+
+export const showTooltip = (tooltip: Tooltip) => {
+    console.log("showTooltip")
+    tooltip.divTooltip.style("opacity", 1);
+}
+
+export const hideTooltip = (tooltip: Tooltip) => {
+    console.log("hideTooltip")
+    tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
+}
+
+export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
+    tooltip.divTooltip.property("uid", uid);
+    tooltip.divTooltip.property("data", d);
+    tooltip.renderCallback(uid, d, tooltip.divTooltip);
+}
+
+export const toggleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     event.preventDefault();
     if(isTooltipOn(tooltip.divTooltip) && tooltip.divTooltip.property("uid") === uid) {
         switchOffTooltip(tooltip);

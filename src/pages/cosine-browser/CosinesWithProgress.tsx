@@ -1,11 +1,12 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
 import * as _ from "lodash";
+import * as d3 from "d3";
 
 import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
-import {handleTooltip, createTooltip, Tooltip, doListEffect, TooltipSelection} from "../../util/tooltip";
+import {createTooltip, Tooltip, doListEffect, TooltipSelection, moveTooltip, showTooltip, hideTooltip, setTooltipData} from "../../util/tooltip";
 import {Feature} from "../Feature";
 
 import "../styles.scss"
@@ -37,28 +38,40 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             })
     }, [doc])
 
-    const _render = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
+    const renderTooltip = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
         const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${documentPath}"><span style="font-size: small; text-decoration: underline">${documentPath}</span></a>`;
         const list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
         doListEffect(divTooltip, listHead, "", list);
     }
 
-    const renderTooltip = (documentPath: string, d: {features?: Feature[]}, divTooltip: TooltipSelection) => {
+    const enter = (tooltip: Tooltip, d: {document: string, features?: Feature[]}) => {
         if(!d.features) {
-            d.features = [];
-            callApi(`/api/features?doc1=${documentPath}`).then((_features: Feature[]) => {
-                d.features = _features;
-                _render(documentPath, _features, divTooltip);
+            callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
+                d.features = features;
+                setTooltipData(tooltip, d.document, features);
             })
         } else {
-            _render(documentPath, d.features, divTooltip);
+            setTooltipData(tooltip, d.document, d.features);
         }
     }
 
+    const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
+        d3.selectAll(".list")
+            .on("mouseenter", () => showTooltip(tooltip))
+            .on("mouseleave", () => hideTooltip(tooltip));
+
+        d3.select(".list").selectAll((".listrow"))
+            .data(cosineValues, (_, i) => cosineValues[i].document)
+            .on("mousemove", (event) => moveTooltip(tooltip, event))
+            .on("mouseenter", (event, d) => enter(tooltip, d))
+            .on("mouseleave", () => console.log("LR:ML"));
+    }
+
     const showCosines = (tooltip: Tooltip) => {
+        setTimeout(() => handleList(tooltip, cosineValues), 10);
         return <div className="list">
             {cosineValues.map((cosineValue, index) => {
-                return <div className="listrow" key={index} onMouseMove={(event) => handleTooltip(tooltip, event, cosineValue.document, cosineValue)}>
+                return <div className="listrow" key={index}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
                         <a className="pointer" href={srcPathFromPath(cosineValue.document)}
