@@ -69,13 +69,21 @@ export const hideTooltip = (tooltip: Tooltip) => {
     tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
 }
 
+export const toggleTooltip = (tooltip: Tooltip) => {
+    if(isTooltipOn(tooltip.divTooltip)) {
+        hideTooltip(tooltip);
+    } else {
+        showTooltip(tooltip);
+    }
+}
+
 export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
     tooltip.divTooltip.property("uid", uid);
     tooltip.divTooltip.property("data", d);
     tooltip.renderCallback(uid, d, tooltip.divTooltip);
 }
 
-export const toggleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
+export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     event.preventDefault();
     if(isTooltipOn(tooltip.divTooltip) && tooltip.divTooltip.property("uid") === uid) {
         switchOffTooltip(tooltip);
