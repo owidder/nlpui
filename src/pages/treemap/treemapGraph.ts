@@ -1,7 +1,14 @@
 // based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
-import {createTooltip, switchOffTooltip, doListEffect, toggleTooltip, moveTooltip,setTooltipData} from "../../util/tooltip";
+import {
+    createTooltip,
+    switchOffTooltip,
+    doListEffect,
+    moveTooltip,
+    setTooltipData,
+    showTooltip
+} from "../../util/tooltip";
 
 export interface Tree {
     name: string
@@ -83,6 +90,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
 
         const node = group
+            .on("mouseenter", () => showTooltip(tooltip))
             .selectAll("g")
             .data(_root.children.concat(_root))
             .join("g")
@@ -111,12 +119,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("id", d  => d.leafUid)
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
-            .on("contextmenu", (event: MouseEvent) => {
-                event.preventDefault();
-                toggleTooltip(tooltip)
-            })
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(tooltip, d.leafUid, d))
-            .on("mousemove", (event: MouseEvent) => moveTooltip(tooltip, event))
+            .on("mousemove", (event: MouseEvent) => setTimeout(() => moveTooltip(tooltip, event), 50))
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -124,12 +128,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("href", d => `#${d.clipUid}`);
 
         node.append("text")
-            .on("contextmenu", (event: MouseEvent) => {
-                event.preventDefault();
-                toggleTooltip(tooltip)
-            })
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(tooltip, d.leafUid, d))
-            .on("mousemove", (event: MouseEvent) => moveTooltip(tooltip, event))
+            .on("mousemove", (event: MouseEvent) => setTimeout(() => moveTooltip(tooltip, event), 50))
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
@@ -151,8 +151,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
                 }
             })
-            .text(d => {
-                return d
+            .html(d => {
+                return `<a href="#">${d}</a>`
             });
 
         group.call(position, _root);
