@@ -24,7 +24,12 @@ export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipC
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    return {divTooltip, onCallback, offCallback, renderCallback}
+    const tooltip: Tooltip = {divTooltip, onCallback, offCallback, renderCallback};
+
+    d3.select(".tooltip")
+        .on("mouseenter", () => showTooltip(tooltip));
+
+    return tooltip
 }
 
 const switchOnTooltip = (tooltip: Tooltip, pageX: number, pageY: number, uid: string, d: any) => {
@@ -78,9 +83,11 @@ export const toggleTooltip = (tooltip: Tooltip) => {
 }
 
 export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
-    tooltip.divTooltip.property("uid", uid);
-    tooltip.divTooltip.property("data", d);
-    tooltip.renderCallback(uid, d, tooltip.divTooltip);
+    if(tooltip.divTooltip.property("uid") != uid) {
+        tooltip.divTooltip.property("uid", uid);
+        tooltip.divTooltip.property("data", d);
+        tooltip.renderCallback(uid, d, tooltip.divTooltip);
+    }
 }
 
 export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
