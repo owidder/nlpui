@@ -78,7 +78,8 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) =>
                  await writeProgress(res, lineCtr);
             }
         }).on("close", async () => {
-            await writeJsonz(res, JSON.stringify(resultList.slice(0, maxDocs)));
+            const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
+            await writeJsonz(res, JSON.stringify(sortedResultList.slice(0, maxDocs)));
         })
     })
 }

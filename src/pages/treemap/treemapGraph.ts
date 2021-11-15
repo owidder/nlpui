@@ -91,7 +91,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const node = group
             .on("mouseenter", () => showTooltip(tooltip))
-            .on("mouseleave", () => hideTooltip(tooltip))
+            //.on("mouseleave", () => hideTooltip(tooltip))
             .selectAll("g")
             .data(_root.children.concat(_root))
             .join("g")
