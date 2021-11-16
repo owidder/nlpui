@@ -21,6 +21,10 @@ interface CosineValue {
     cosine: number
 }
 
+let moveTooltipDelayTimeout;
+let hideTooltipDelayTimeout;
+let setTooltipDataDelayTimeout;
+
 export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
@@ -45,25 +49,46 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     }
 
     const enter = (tooltip: Tooltip, d: {document: string, features?: Feature[]}) => {
+        if(setTooltipDataDelayTimeout) {
+            clearTimeout(setTooltipDataDelayTimeout)
+        }
         if(!d.features) {
-            callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
-                d.features = features;
-                setTooltipData(tooltip, d.document, features);
-            })
+            setTooltipDataDelayTimeout = setTimeout(() => {
+                if(setTooltipDataDelayTimeout) {
+                    callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
+                        d.features = features;
+                        setTooltipData(tooltip, d.document, features);
+                    })
+                }
+            }, 10);
         } else {
-            setTooltipData(tooltip, d.document, d.features);
+            setTooltipDataDelayTimeout = setTimeout(() => {
+                if(setTooltipDataDelayTimeout) {
+                    setTooltipData(tooltip, d.document, d.features)
+                }
+            }, 100);
         }
     }
 
     const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
         d3.selectAll(".list")
             .on("mouseenter", () => showTooltip(tooltip))
-            .on("mouseleave", () => hideTooltip(tooltip));
+            .on("mouseleave", () => {
+                hideTooltipDelayTimeout = setTimeout(() => {
+                    if(hideTooltipDelayTimeout) {
+                        hideTooltip(tooltip)
+                    }
+                }, 300);
+            });
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                setTimeout(() => moveTooltip(tooltip, event), 100)
+                moveTooltipDelayTimeout = setTimeout(() => {
+                    if(moveTooltipDelayTimeout) {
+                        moveTooltip(tooltip, event)
+                    }
+                }, 300)
             })
             .on("mouseenter", (event, d) => enter(tooltip, d))
     }
@@ -90,7 +115,21 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
     } else if (cosineValues && cosineValues.length > 0) {
         const tooltip = createTooltip(() => {}, () => {}, renderTooltip);
-        tooltip.divTooltip.on("mouseenter", () => showTooltip(tooltip));
+        tooltip.divTooltip.on("mouseenter", () => {
+            if(moveTooltipDelayTimeout) {
+                clearTimeout(moveTooltipDelayTimeout);
+                moveTooltipDelayTimeout = undefined;
+            }
+            if(hideTooltipDelayTimeout) {
+                clearTimeout(hideTooltipDelayTimeout);
+                hideTooltipDelayTimeout = undefined;
+            }
+            if(setTooltipDataDelayTimeout) {
+                clearTimeout(setTooltipDataDelayTimeout);
+                setTooltipDataDelayTimeout = undefined;
+            }
+            showTooltip(tooltip)
+        });
         return showCosines(tooltip);
     } else {
         return <span>WAITING!!!</span>

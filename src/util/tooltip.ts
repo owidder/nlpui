@@ -69,7 +69,6 @@ export const showTooltip = (tooltip: Tooltip) => {
 }
 
 export const hideTooltip = (tooltip: Tooltip) => {
-    console.log("hideTooltip")
     tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
 }
 
