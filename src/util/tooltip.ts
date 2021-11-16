@@ -60,7 +60,6 @@ const isTooltipOn = (divTooltip: TooltipSelection) => divTooltip.style("opacity"
 export const moveTooltip = (tooltip: Tooltip, event: Event) => {
     event.preventDefault();
     const {pageX, pageY} = event;
-    console.log(`move: ${pageX} / ${pageY}`);
     _moveTooltip(tooltip, pageX+10, pageY+10);
 }
 

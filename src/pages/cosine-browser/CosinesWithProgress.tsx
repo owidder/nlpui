@@ -66,7 +66,6 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
                 setTimeout(() => moveTooltip(tooltip, event), 100)
             })
             .on("mouseenter", (event, d) => enter(tooltip, d))
-            .on("mouseleave", () => console.log("LR:ML"));
     }
 
     const showCosines = (tooltip: Tooltip) => {
