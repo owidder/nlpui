@@ -62,7 +62,9 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
-            .on("mousemove", (event) => moveTooltip(tooltip, event))
+            .on("mousemove", (event) => {
+                setTimeout(() => moveTooltip(tooltip, event), 100)
+            })
             .on("mouseenter", (event, d) => enter(tooltip, d))
             .on("mouseleave", () => console.log("LR:ML"));
     }
@@ -89,6 +91,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
     } else if (cosineValues && cosineValues.length > 0) {
         const tooltip = createTooltip(() => {}, () => {}, renderTooltip);
+        tooltip.divTooltip.on("mouseenter", () => showTooltip(tooltip));
         return showCosines(tooltip);
     } else {
         return <span>WAITING!!!</span>
