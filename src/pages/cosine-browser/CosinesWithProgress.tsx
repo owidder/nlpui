@@ -28,6 +28,8 @@ let renderTooltipDelayTimeout;
 let firstEnter = true;
 
 const _moveTooltip = (event, tooltip) => {
+    showTooltip(tooltip);
+    console.log(`moveTooltip: ${event.x} / ${event.y}`)
     moveTooltipDelayTimeout = setTimeout(() => {
         if(moveTooltipDelayTimeout) {
             moveTooltip(tooltip, event)
@@ -106,11 +108,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                moveTooltipDelayTimeout = setTimeout(() => {
-                    if(moveTooltipDelayTimeout) {
-                        moveTooltip(tooltip, event)
-                    }
-                }, 500)
+                _moveTooltip(event, tooltip);
             })
             .on("mouseenter", (event, d) => enter(tooltip, d))
     }
