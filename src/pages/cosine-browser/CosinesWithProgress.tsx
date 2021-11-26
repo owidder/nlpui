@@ -21,22 +21,6 @@ interface CosineValue {
     cosine: number
 }
 
-let moveTooltipDelayTimeout;
-let hideTooltipDelayTimeout;
-let setTooltipDataDelayTimeout;
-let renderTooltipDelayTimeout;
-let firstEnter = true;
-
-const _moveTooltip = (event, tooltip) => {
-    showTooltip(tooltip);
-    console.log(`moveTooltip: ${event.x} / ${event.y}`)
-    moveTooltipDelayTimeout = setTimeout(() => {
-        if(moveTooltipDelayTimeout) {
-            moveTooltip(tooltip, event)
-        }
-    }, 500)
-}
-
 export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
@@ -55,60 +39,35 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     }, [doc])
 
     const renderTooltip = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
-        if(renderTooltipDelayTimeout) {
-            clearTimeout(renderTooltipDelayTimeout);
-            renderTooltipDelayTimeout = undefined;
-        }
-        renderTooltipDelayTimeout = setTimeout(() => {
-            const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${documentPath}"><span style="font-size: small; text-decoration: underline">${documentPath}</span></a>`;
-            const list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
-            doListEffect(divTooltip, listHead, "", list);
-        }, 300)
+        const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${documentPath}"><span style="font-size: small; text-decoration: underline">${documentPath}</span></a>`;
+        const list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
+        doListEffect(divTooltip, listHead, "", list);
     }
 
     const enter = (tooltip: Tooltip, d: {document: string, features?: Feature[]}) => {
-        if(setTooltipDataDelayTimeout) {
-            clearTimeout(setTooltipDataDelayTimeout)
-        }
         if(!d.features) {
-            setTooltipDataDelayTimeout = setTimeout(() => {
-                if(setTooltipDataDelayTimeout) {
-                    callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
-                        d.features = features;
-                        setTooltipData(tooltip, d.document, features);
-                    })
-                }
-            }, 10);
+            callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
+                d.features = features;
+                setTooltipData(tooltip, d.document, features);
+            })
         } else {
-            setTooltipDataDelayTimeout = setTimeout(() => {
-                if(setTooltipDataDelayTimeout) {
-                    setTooltipData(tooltip, d.document, d.features)
-                }
-            }, 100);
+            setTooltipData(tooltip, d.document, d.features)
         }
     }
 
     const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
-                showTooltip(tooltip);
-                if(firstEnter) {
-                    firstEnter = false;
-                    _moveTooltip(event, tooltip);
-                }
+                moveTooltip(tooltip, event);
             })
             .on("mouseleave", () => {
-                hideTooltipDelayTimeout = setTimeout(() => {
-                    if(hideTooltipDelayTimeout) {
-                        hideTooltip(tooltip)
-                    }
-                }, 300);
+                hideTooltip(tooltip)
             });
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                _moveTooltip(event, tooltip);
+                moveTooltip( tooltip, event);
             })
             .on("mouseenter", (event, d) => enter(tooltip, d))
     }
@@ -136,18 +95,6 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     } else if (cosineValues && cosineValues.length > 0) {
         const tooltip = createTooltip(() => {}, () => {}, renderTooltip);
         tooltip.divTooltip.on("mouseenter", () => {
-            if(moveTooltipDelayTimeout) {
-                clearTimeout(moveTooltipDelayTimeout);
-                moveTooltipDelayTimeout = undefined;
-            }
-            if(hideTooltipDelayTimeout) {
-                clearTimeout(hideTooltipDelayTimeout);
-                hideTooltipDelayTimeout = undefined;
-            }
-            if(setTooltipDataDelayTimeout) {
-                clearTimeout(setTooltipDataDelayTimeout);
-                setTooltipDataDelayTimeout = undefined;
-            }
             showTooltip(tooltip)
         });
         return showCosines(tooltip);
