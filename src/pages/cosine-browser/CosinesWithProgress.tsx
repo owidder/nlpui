@@ -49,9 +49,11 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
                 d.features = features;
                 setTooltipData(tooltip, d.document, features);
+                showTooltip(tooltip);
             })
         } else {
             setTooltipData(tooltip, d.document, d.features)
+            showTooltip(tooltip);
         }
     }
 

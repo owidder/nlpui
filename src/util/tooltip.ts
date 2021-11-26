@@ -64,7 +64,6 @@ export const moveTooltip = (tooltip: Tooltip, event: Event) => {
 }
 
 export const showTooltip = (tooltip: Tooltip) => {
-    console.log("showTooltip")
     tooltip.divTooltip.style("opacity", 1);
 }
 
