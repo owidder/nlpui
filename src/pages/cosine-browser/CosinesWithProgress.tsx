@@ -6,7 +6,7 @@ import * as d3 from "d3";
 import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
-import {createTooltip, Tooltip, doListEffect, TooltipSelection, moveTooltip, showTooltip, hideTooltip, setTooltipData} from "../../util/tooltip";
+import {createTooltip, Tooltip, doListEffect, TooltipSelection, moveTooltip, showTooltip, hideTooltip, setTooltipData, Event} from "../../util/tooltip";
 import {Feature} from "../Feature";
 
 import "../styles.scss"
@@ -19,6 +19,20 @@ interface CosinesWithProgressProps {
 interface CosineValue {
     document: string
     cosine: number
+}
+
+let pinned = false;
+
+const moveTooltipIfUnpinned = (tooltip: Tooltip, event: Event) => {
+    if(!pinned) {
+        moveTooltip(tooltip, event);
+    }
+}
+
+const setTooltipDataIfUnpinned = (tooltip: Tooltip, uid: string, d: any) => {
+    if(!pinned) {
+        setTooltipData(tooltip, uid, d)
+    }
 }
 
 export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
@@ -48,11 +62,11 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         if(!d.features) {
             callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
                 d.features = features;
-                setTooltipData(tooltip, d.document, features);
+                setTooltipDataIfUnpinned(tooltip, d.document, features);
                 showTooltip(tooltip);
             })
         } else {
-            setTooltipData(tooltip, d.document, d.features)
+            setTooltipDataIfUnpinned(tooltip, d.document, d.features)
             showTooltip(tooltip);
         }
     }
@@ -60,16 +74,20 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
-                moveTooltip(tooltip, event);
+                moveTooltipIfUnpinned(tooltip, event);
             })
             .on("mouseleave", () => {
                 hideTooltip(tooltip)
-            });
+            })
+            .on("contextmenu", (event) => {
+                event.preventDefault();
+                pinned = !pinned;
+            })
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                moveTooltip( tooltip, event);
+                moveTooltipIfUnpinned( tooltip, event);
             })
             .on("mouseenter", (event, d) => enter(tooltip, d))
     }

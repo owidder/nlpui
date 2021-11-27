@@ -13,7 +13,7 @@ export interface Tooltip {
     renderCallback: TooltipCallback;
 }
 
-interface Event {
+export interface Event {
     pageX: number;
     pageY: number;
     preventDefault: () => void
