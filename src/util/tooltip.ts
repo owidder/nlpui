@@ -27,17 +27,17 @@ export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipC
     const tooltip: Tooltip = {divTooltip, onCallback, offCallback, renderCallback};
 
     d3.select(".tooltip")
-        .on("mouseenter", () => showTooltip(tooltip));
+        .on("mouseenter", (event) => showTooltip(tooltip, event));
 
     return tooltip
 }
 
-const switchOnTooltip = (tooltip: Tooltip, pageX: number, pageY: number, uid: string, d: any) => {
+const switchOnTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     switchOffTooltip(tooltip);
     setTooltipData(tooltip, uid, d);
     tooltip.onCallback(uid, d, tooltip.divTooltip);
-    showTooltip(tooltip);
-    _moveTooltip(tooltip, pageX, pageY);
+    showTooltip(tooltip, event);
+    _moveTooltip(tooltip, event.pageX, event.pageY);
 }
 
 const _moveTooltip = (tooltip: Tooltip, pageX: number, pageY: number) => {
@@ -63,19 +63,31 @@ export const moveTooltip = (tooltip: Tooltip, event: Event) => {
     _moveTooltip(tooltip, pageX+15, pageY+15);
 }
 
-export const showTooltip = (tooltip: Tooltip) => {
-    tooltip.divTooltip.style("opacity", 1);
+export const showTooltip = (tooltip: Tooltip, event: Event) => {
+    console.log("showTooltip")
+    const style = tooltip.divTooltip.style("opacity", 1);
+/*
+    setTimeout(() => {
+        const rect = tooltip.divTooltip.node().getBoundingClientRect();
+        if(rect.right < 0) {
+            console.log(`showTooltip: ${event.pageX} / ${event.pageY}`)
+            style.style("transform", `translate(${event.pageX}px, ${event.pageY}px)`);
+        }
+    }, 10)
+*/
 }
 
 export const hideTooltip = (tooltip: Tooltip) => {
-    tooltip.divTooltip.style("opacity", 0).style('transform', `translate(-1000px, -1000px)`);
+    console.log("hideTooltip")
+    tooltip.divTooltip.style("opacity", 0)
+        // .style("transform", "translate(-1000px, -1000px)");
 }
 
-export const toggleTooltip = (tooltip: Tooltip) => {
+export const toggleTooltip = (tooltip: Tooltip, event: Event) => {
     if(isTooltipOn(tooltip.divTooltip)) {
         hideTooltip(tooltip);
     } else {
-        showTooltip(tooltip);
+        showTooltip(tooltip, event);
     }
 }
 
@@ -92,8 +104,7 @@ export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: an
     if(isTooltipOn(tooltip.divTooltip) && tooltip.divTooltip.property("uid") === uid) {
         switchOffTooltip(tooltip);
     } else {
-        const {pageX, pageY} = event;
-        const on = () => switchOnTooltip(tooltip, pageX, pageY, uid, d);
+        const on = () => switchOnTooltip(tooltip, event, uid, d);
         on();
         tooltip.divTooltip.on("mouseover", on);
         tooltip.renderCallback(uid, d, tooltip.divTooltip);

@@ -58,16 +58,16 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         doListEffect(divTooltip, listHead, "", list);
     }
 
-    const enter = (tooltip: Tooltip, d: {document: string, features?: Feature[]}) => {
+    const enter = (tooltip: Tooltip, event: Event, d: {document: string, features?: Feature[]}) => {
         if(!d.features) {
             callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
                 d.features = features;
                 setTooltipDataIfUnpinned(tooltip, d.document, features);
-                showTooltip(tooltip);
+                showTooltip(tooltip, event);
             })
         } else {
             setTooltipDataIfUnpinned(tooltip, d.document, d.features)
-            showTooltip(tooltip);
+            showTooltip(tooltip, event);
         }
     }
 
@@ -89,7 +89,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             .on("mousemove", (event) => {
                 moveTooltipIfUnpinned( tooltip, event);
             })
-            .on("mouseenter", (event, d) => enter(tooltip, d))
+            .on("mouseenter", (event, d) => enter(tooltip, event, d))
     }
 
     const showCosines = (tooltip: Tooltip) => {
@@ -114,8 +114,8 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
     } else if (cosineValues && cosineValues.length > 0) {
         const tooltip = createTooltip(() => {}, () => {}, renderTooltip);
-        tooltip.divTooltip.on("mouseenter", () => {
-            showTooltip(tooltip)
+        tooltip.divTooltip.on("mouseenter", (event) => {
+            showTooltip(tooltip, event)
         });
         return showCosines(tooltip);
     } else {
