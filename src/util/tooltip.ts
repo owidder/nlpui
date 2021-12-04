@@ -99,14 +99,7 @@ export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: an
     }
 }
 
-export const doListEffect = async (targetElement, head: string, foot: string, list: string[]) => {
-    for(let i = 0; i < list.length; i++) {
-        await new Promise(resolve => {
-            setTimeout(() => {
-                const ol = `<ol>${list.slice(0, i).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-                targetElement.html([head, ol, foot].join("<br>"));
-                resolve()
-            }, 10)
-        })
-    }
+export const doListEffect = async (targetElement, head: string, foot: string, list: string[], listEnd?: string) => {
+    const ol = `<ol>${(listEnd ? [...list, listEnd] : list).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
+    targetElement.html([head, ol, foot].join("<br>"));
 }

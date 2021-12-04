@@ -1,5 +1,19 @@
 .listrow {
   &.selected {
-    background-color: lightblue;
+    background-color: lightgrey;
   }
+}
+
+.tooltip-link {
+  font-size: small;
+  text-decoration: underline;
+}
+
+.tooltip-title {
+  font-size: small;
+  font-weight: bolder;
+}
+
+.fakelink {
+  cursor: pointer;
 }

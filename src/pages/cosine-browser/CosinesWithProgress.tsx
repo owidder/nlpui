@@ -33,6 +33,7 @@ interface CosineValue {
 }
 
 let pinned = false;
+let shortlist = true;
 
 const moveTooltipIfUnpinned = (tooltip: Tooltip, event: Event) => {
     if (!pinned) {
@@ -63,13 +64,34 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             })
     }, [doc])
 
-    const tooltipLink = (href: string, text: string) => `<a target="_blank" href="${href}"><span style="font-size: small; text-decoration: underline">${text}</span></a>`
+    const tooltipLink = (href: string, text: string) => `<a target="_blank" href="${href}"><span class="tooltip-link">${text}</span></a>`;
+
+    let showAllListener;
 
     const renderTooltip = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
-        const listHead = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents");
-        const list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
-        const listFood = tooltipLink(srcPathFromPath(documentPath), "Show source");
-        doListEffect(divTooltip, listHead, listFood, list);
+        if(showAllListener) {
+            document.removeEventListener("showall", showAllListener);
+        }
+        showAllListener = () => {
+            console.log("show all");
+            shortlist = false;
+            renderTooltip(documentPath, features, divTooltip);
+        };
+        document.addEventListener("showall", showAllListener)
+
+        const listHead = `<span class="tooltip-title">${documentPath}</span><br/>`;
+        let list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
+        let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents")
+            + "<br/>"
+            + tooltipLink(srcPathFromPath(documentPath), "Show source");
+
+        let listEnd;
+        if(shortlist && list.length > 3) {
+            list = list.slice(0, 3);
+            listEnd = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
+        }
+
+        doListEffect(divTooltip, listHead, listFood, list, listEnd);
     }
 
     const enter = (tooltip: Tooltip, event: Event, d: { document: string, features?: Feature[] }) => {
@@ -105,6 +127,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
                 moveTooltipIfUnpinned(tooltip, event);
             })
             .on("mouseenter", function(event, d) {
+                shortlist = true;
                 d3.select(this).classed("selected", true);
                 enter(tooltip, event, d);
             })
