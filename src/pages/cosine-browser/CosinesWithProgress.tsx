@@ -20,6 +20,7 @@ import {
 import {Feature} from "../Feature";
 
 import "../styles.scss"
+import "./cosines.scss"
 import {callApi} from "../../util/fetchUtil";
 
 interface CosinesWithProgressProps {
@@ -103,7 +104,13 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             .on("mousemove", (event) => {
                 moveTooltipIfUnpinned(tooltip, event);
             })
-            .on("mouseenter", (event, d) => enter(tooltip, event, d))
+            .on("mouseenter", function(event, d) {
+                d3.select(this).classed("selected", true);
+                enter(tooltip, event, d);
+            })
+            .on("mouseleave", function () {
+                d3.select(this).classed("selected", false)
+            })
     }
 
     const showCosines = (tooltip: Tooltip) => {
