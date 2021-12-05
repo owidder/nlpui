@@ -86,6 +86,9 @@ export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
         tooltip.renderCallback(uid, d, tooltip.divTooltip);
     }
 }
+export const redrawTooltip = (tooltip: Tooltip) => {
+    tooltip.renderCallback(tooltip.divTooltip.property("uid"), tooltip.divTooltip.property("data"), tooltip.divTooltip);
+}
 
 export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     event.preventDefault();

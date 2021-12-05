@@ -15,7 +15,8 @@ import {
     showTooltip,
     hideTooltip,
     setTooltipData,
-    Event
+    Event,
+    redrawTooltip
 } from "../../util/tooltip";
 import {Feature} from "../Feature";
 
@@ -39,6 +40,7 @@ const moveTooltipIfUnpinned = (tooltip: Tooltip, event: Event) => {
     if (!pinned) {
         moveTooltip(tooltip, event);
     }
+    redrawTooltip(tooltip);
 }
 
 const setTooltipDataIfUnpinned = (tooltip: Tooltip, uid: string, d: any) => {
@@ -79,15 +81,14 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         };
         document.addEventListener("showall", showAllListener)
 
-        const listHead = `<span class="tooltip-title">${documentPath}</span><br/>`;
-        let list = features.map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
+        const listHead = `<span class="tooltip-headtext">right click to ${pinned ? "unpin" : "pin"}</span><br/><span class="tooltip-title">${documentPath}</span><br/>`;
+        let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
         let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents")
             + "<br/>"
             + tooltipLink(srcPathFromPath(documentPath), "Show source");
 
         let listEnd;
-        if(shortlist && list.length > 3) {
-            list = list.slice(0, 3);
+        if(shortlist && list.length < features.length) {
             listEnd = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
         }
 
