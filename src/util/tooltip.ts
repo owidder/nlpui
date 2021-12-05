@@ -11,6 +11,9 @@ export interface Tooltip {
     onCallback: TooltipCallback;
     offCallback: TooltipCallback;
     renderCallback: TooltipCallback;
+    pinned: boolean;
+    pinMessage: string;
+    unpinMessage: string;
 }
 
 export interface Event {
@@ -19,12 +22,14 @@ export interface Event {
     preventDefault: () => void
 }
 
-export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipCallback, renderCallback: TooltipCallback): Tooltip => {
+export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipCallback, renderCallback: TooltipCallback, _pinMessage?: string, _unpinMessage?: string): Tooltip => {
     const divTooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    const tooltip: Tooltip = {divTooltip, onCallback, offCallback, renderCallback};
+    const pinMessage = _pinMessage === undefined ? "right click to pin" : _pinMessage;
+    const unpinMessage = _unpinMessage === undefined ? "right click to unpin" : _unpinMessage;
+    const tooltip: Tooltip = {pinned: false, divTooltip, onCallback, offCallback, renderCallback, pinMessage, unpinMessage};
 
     d3.select(".tooltip")
         .on("mouseenter", () => showTooltip(tooltip));
@@ -60,7 +65,9 @@ const isTooltipOn = (divTooltip: TooltipSelection) => divTooltip.style("opacity"
 export const moveTooltip = (tooltip: Tooltip, event: Event) => {
     event.preventDefault();
     const {pageX, pageY} = event;
-    _moveTooltip(tooltip, pageX+15, pageY+15);
+    if(!tooltip.pinned) {
+        _moveTooltip(tooltip, pageX+15, pageY+15);
+    }
 }
 
 export const showTooltip = (tooltip: Tooltip) => {
@@ -88,6 +95,11 @@ export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
 }
 export const redrawTooltip = (tooltip: Tooltip) => {
     tooltip.renderCallback(tooltip.divTooltip.property("uid"), tooltip.divTooltip.property("data"), tooltip.divTooltip);
+}
+
+export const togglePinTooltip = (tooltip: Tooltip) => {
+    tooltip.pinned = !tooltip.pinned;
+    redrawTooltip(tooltip);
 }
 
 export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
