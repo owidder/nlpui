@@ -10,13 +10,12 @@ import {
     createTooltip,
     Tooltip,
     doListEffect,
-    TooltipSelection,
     moveTooltip,
     showTooltip,
     hideTooltip,
     setTooltipData,
     Event,
-    redrawTooltip
+    togglePinTooltip,
 } from "../../util/tooltip";
 import {Feature} from "../Feature";
 
@@ -33,21 +32,7 @@ interface CosineValue {
     cosine: number
 }
 
-let pinned = false;
 let shortlist = true;
-
-const moveTooltipIfUnpinned = (tooltip: Tooltip, event: Event) => {
-    if (!pinned) {
-        moveTooltip(tooltip, event);
-    }
-    redrawTooltip(tooltip);
-}
-
-const setTooltipDataIfUnpinned = (tooltip: Tooltip, uid: string, d: any) => {
-    if (!pinned) {
-        setTooltipData(tooltip, uid, d)
-    }
-}
 
 export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
@@ -70,18 +55,20 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
 
     let showAllListener;
 
-    const renderTooltip = (documentPath: string, features: Feature[], divTooltip: TooltipSelection) => {
+    const renderTooltip = (documentPath: string, features: Feature[], tooltip: Tooltip) => {
+        if (!features) return;
+
         if(showAllListener) {
             document.removeEventListener("showall", showAllListener);
         }
         showAllListener = () => {
             console.log("show all");
             shortlist = false;
-            renderTooltip(documentPath, features, divTooltip);
+            renderTooltip(documentPath, features, tooltip);
         };
         document.addEventListener("showall", showAllListener)
 
-        const listHead = `<span class="tooltip-headtext">right click to ${pinned ? "unpin" : "pin"}</span><br/><span class="tooltip-title">${documentPath}</span><br/>`;
+        const listHead = `<span class="tooltip-title">${documentPath}</span>`;
         let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
         let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents")
             + "<br/>"
@@ -92,18 +79,18 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             listEnd = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
         }
 
-        doListEffect(divTooltip, listHead, listFood, list, listEnd);
+        doListEffect(tooltip, listHead, listFood, list, listEnd);
     }
 
     const enter = (tooltip: Tooltip, event: Event, d: { document: string, features?: Feature[] }) => {
         if (!d.features) {
             callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
                 d.features = features;
-                setTooltipDataIfUnpinned(tooltip, d.document, features);
+                setTooltipData(tooltip, d.document, features);
                 showTooltip(tooltip);
             })
         } else {
-            setTooltipDataIfUnpinned(tooltip, d.document, d.features)
+            setTooltipData(tooltip, d.document, d.features)
             showTooltip(tooltip);
         }
     }
@@ -111,21 +98,21 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
-                moveTooltipIfUnpinned(tooltip, event);
+                moveTooltip(tooltip, event);
             })
             .on("mouseleave", () => {
                 hideTooltip(tooltip)
             })
             .on("contextmenu", (event) => {
                 event.preventDefault();
-                pinned = !pinned;
-                moveTooltipIfUnpinned(tooltip, event);
+                togglePinTooltip(tooltip);
+                moveTooltip(tooltip, event);
             })
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                moveTooltipIfUnpinned(tooltip, event);
+                moveTooltip(tooltip, event);
             })
             .on("mouseenter", function(event, d) {
                 shortlist = true;
@@ -160,11 +147,6 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     } else if (cosineValues && cosineValues.length > 0) {
         const tooltip = createTooltip(() => {
         }, () => {}, renderTooltip);
-        tooltip.divTooltip
-            .on("mouseenter", () => {
-                showTooltip(tooltip)
-            })
-            .on("mouseleave", () => pinned = false)
         return showCosines(tooltip);
     } else {
         return <span>WAITING!!!</span>

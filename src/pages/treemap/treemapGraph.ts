@@ -7,7 +7,7 @@ import {
     doListEffect,
     moveTooltip,
     setTooltipData,
-    showTooltip, hideTooltip
+    showTooltip, hideTooltip, togglePinTooltip
 } from "../../util/tooltip";
 
 export interface Tree {
@@ -50,7 +50,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     let group = svgTreemap.append("g")
         .call(render, treemapData, zoomto);
 
-    function render(group, _root, _zoomto?: string) {
+    function render(group, _root, _zoomto?: string, event?: MouseEvent) {
         const format = d3.format(",d");
 
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
@@ -72,13 +72,13 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const renderTooltip = (_: string, d) => {
             const listHead = `<a target="_blank" href="/cosine-browser/cosine-browser.html#path=${_path(d)}"><span style="font-size: small; text-decoration: underline">${_path(d)}</span></a>`;
-            const list = d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`);
+            const list = d.data.words ? d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`) : [];
             const listFoot = "<small>rightclick again to close</small>";
-            doListEffect(tooltip.divTooltip, listHead, listFoot, list);
+            doListEffect(tooltip, listHead, listFoot, list);
         }
 
         const tooltip = createTooltip(colorTooltipOn, colorTooltipOff, renderTooltip);
-        tooltip.divTooltip.on("mouseenter", () => showTooltip(tooltip));
+        if(event) moveTooltip(tooltip, event);
 
         const zoomtoOneLevel = (d) => {
             const partsOfZoomto = _zoomto.split("/");
@@ -122,7 +122,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(tooltip, d.leafUid, d))
-            .on("mousemove", (event: MouseEvent) => setTimeout(() => moveTooltip(tooltip, event), 50))
+            .on("mousemove", (event: MouseEvent) => moveTooltip(tooltip, event))
+            .on("contextmenu", (event: MouseEvent) => {
+                event.preventDefault();
+                togglePinTooltip(tooltip);
+                moveTooltip(tooltip, event);
+            })
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))

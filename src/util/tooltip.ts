@@ -4,7 +4,7 @@ import {Selection} from "d3-selection/index";
 import "./tooltip.scss";
 
 export type TooltipSelection = Selection<HTMLDivElement, any, HTMLElement, any>;
-type TooltipCallback = (uid: string, d: any, divTooltip: TooltipSelection) => void;
+type TooltipCallback = (uid: string, d: any, tooltip: Tooltip) => void;
 
 export interface Tooltip {
     divTooltip: TooltipSelection;
@@ -14,6 +14,7 @@ export interface Tooltip {
     pinned: boolean;
     pinMessage: string;
     unpinMessage: string;
+    inFocus?: boolean;
 }
 
 export interface Event {
@@ -23,6 +24,7 @@ export interface Event {
 }
 
 export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipCallback, renderCallback: TooltipCallback, _pinMessage?: string, _unpinMessage?: string): Tooltip => {
+    d3.selectAll(".tooltip").remove();
     const divTooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
@@ -31,8 +33,19 @@ export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipC
     const unpinMessage = _unpinMessage === undefined ? "right click to unpin" : _unpinMessage;
     const tooltip: Tooltip = {pinned: false, divTooltip, onCallback, offCallback, renderCallback, pinMessage, unpinMessage};
 
-    d3.select(".tooltip")
-        .on("mouseenter", () => showTooltip(tooltip));
+    d3.selectAll(".tooltip")
+        .on("mouseenter", () => {
+            console.log("set inFocus to true")
+            tooltip.inFocus = true;
+            showTooltip(tooltip);
+            redrawTooltip(tooltip);
+        })
+        .on("mouseleave", () => {
+            console.log("set inFocus to false")
+            tooltip.inFocus = false;
+            unpinTooltip(tooltip);
+            redrawTooltip(tooltip);
+        })
 
     return tooltip
 }
@@ -40,7 +53,7 @@ export const createTooltip = (onCallback: TooltipCallback, offCallback: TooltipC
 const switchOnTooltip = (tooltip: Tooltip, event: Event, uid: string, d: any) => {
     switchOffTooltip(tooltip);
     setTooltipData(tooltip, uid, d);
-    tooltip.onCallback(uid, d, tooltip.divTooltip);
+    tooltip.onCallback(uid, d, tooltip);
     showTooltip(tooltip);
     _moveTooltip(tooltip, event.pageX, event.pageY);
 }
@@ -55,7 +68,7 @@ export const switchOffTooltip = (tooltip: Tooltip) => {
     const d = tooltip.divTooltip.property("data");
     const uid = tooltip.divTooltip.property("uid");
     if(d && uid) {
-        tooltip.offCallback(uid, d, tooltip.divTooltip);
+        tooltip.offCallback(uid, d, tooltip);
     }
     hideTooltip(tooltip);
 }
@@ -87,18 +100,23 @@ export const toggleTooltip = (tooltip: Tooltip) => {
 }
 
 export const setTooltipData = (tooltip: Tooltip, uid: string, d: any) => {
-    if(tooltip.divTooltip.property("uid") != uid) {
+    if(!tooltip.pinned && tooltip.divTooltip.property("uid") != uid) {
         tooltip.divTooltip.property("uid", uid);
         tooltip.divTooltip.property("data", d);
-        tooltip.renderCallback(uid, d, tooltip.divTooltip);
+        tooltip.renderCallback(uid, d, tooltip);
     }
 }
 export const redrawTooltip = (tooltip: Tooltip) => {
-    tooltip.renderCallback(tooltip.divTooltip.property("uid"), tooltip.divTooltip.property("data"), tooltip.divTooltip);
+    tooltip.renderCallback(tooltip.divTooltip.property("uid"), tooltip.divTooltip.property("data"), tooltip);
 }
 
 export const togglePinTooltip = (tooltip: Tooltip) => {
     tooltip.pinned = !tooltip.pinned;
+    redrawTooltip(tooltip);
+}
+
+export const unpinTooltip = (tooltip: Tooltip) => {
+    tooltip.pinned = false;
     redrawTooltip(tooltip);
 }
 
@@ -110,11 +128,12 @@ export const handleTooltip = (tooltip: Tooltip, event: Event, uid: string, d: an
         const on = () => switchOnTooltip(tooltip, event, uid, d);
         on();
         tooltip.divTooltip.on("mouseover", on);
-        tooltip.renderCallback(uid, d, tooltip.divTooltip);
+        tooltip.renderCallback(uid, d, tooltip);
     }
 }
 
-export const doListEffect = async (targetElement, head: string, foot: string, list: string[], listEnd?: string) => {
+export const doListEffect = async (tooltip: Tooltip, head: string, foot: string, list: string[], listEnd?: string) => {
+    const headtext = tooltip.inFocus ? undefined : `<span class="tooltip-headtext">${tooltip.pinned ? tooltip.unpinMessage : tooltip.pinMessage}</span>`;
     const ol = `<ol>${(listEnd ? [...list, listEnd] : list).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-    targetElement.html([head, ol, foot].join("<br>"));
+    tooltip.divTooltip.html([headtext, head, ol, foot].join("<br>"));
 }
