@@ -8,7 +8,6 @@ import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import {
     createTooltip,
-    Tooltip,
     doListEffect,
     moveTooltip,
     showTooltip,
@@ -16,6 +15,7 @@ import {
     setTooltipData,
     Event,
     togglePinTooltip,
+    tooltipLink
 } from "../../util/tooltip";
 import {Feature} from "../Feature";
 
@@ -51,11 +51,9 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             })
     }, [doc])
 
-    const tooltipLink = (href: string, text: string) => `<a target="_blank" href="${href}"><span class="tooltip-link">${text}</span></a>`;
-
     let showAllListener;
 
-    const renderTooltip = (documentPath: string, features: Feature[], tooltip: Tooltip) => {
+    const renderTooltip = (documentPath: string, features: Feature[]) => {
         if (!features) return;
 
         if(showAllListener) {
@@ -64,7 +62,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         showAllListener = () => {
             console.log("show all");
             shortlist = false;
-            renderTooltip(documentPath, features, tooltip);
+            renderTooltip(documentPath, features);
         };
         document.addEventListener("showall", showAllListener)
 
@@ -79,53 +77,53 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             listEnd = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
         }
 
-        doListEffect(tooltip, listHead, listFood, list, listEnd);
+        doListEffect(listHead, listFood, list, listEnd);
     }
 
-    const enter = (tooltip: Tooltip, event: Event, d: { document: string, features?: Feature[] }) => {
+    const enter = (event: Event, d: { document: string, features?: Feature[] }) => {
         if (!d.features) {
             callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
                 d.features = features;
-                setTooltipData(tooltip, d.document, features);
-                showTooltip(tooltip);
+                setTooltipData(d.document, features);
+                showTooltip();
             })
         } else {
-            setTooltipData(tooltip, d.document, d.features)
-            showTooltip(tooltip);
+            setTooltipData(d.document, d.features)
+            showTooltip();
         }
     }
 
-    const handleList = (tooltip: Tooltip, cosineValues: CosineValue[]) => {
+    const handleList = (cosineValues: CosineValue[]) => {
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
-                moveTooltip(tooltip, event);
+                moveTooltip(event);
             })
             .on("mouseleave", () => {
-                hideTooltip(tooltip)
+                hideTooltip()
             })
             .on("contextmenu", (event) => {
                 event.preventDefault();
-                togglePinTooltip(tooltip);
-                moveTooltip(tooltip, event);
+                togglePinTooltip();
+                moveTooltip(event);
             })
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
             .on("mousemove", (event) => {
-                moveTooltip(tooltip, event);
+                moveTooltip(event);
             })
             .on("mouseenter", function(event, d) {
                 shortlist = true;
                 d3.select(this).classed("selected", true);
-                enter(tooltip, event, d);
+                enter(event, d);
             })
             .on("mouseleave", function () {
                 d3.select(this).classed("selected", false)
             })
     }
 
-    const showCosines = (tooltip: Tooltip) => {
-        setTimeout(() => handleList(tooltip, cosineValues), 10);
+    const showCosines = () => {
+        setTimeout(() => handleList(cosineValues), 10);
         return <div className="list">
             {cosineValues.map((cosineValue, index) => {
                 return <div className="listrow" key={index}>
@@ -145,9 +143,8 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     if (progress > 0 && progressText.length > 0 && numberOfFiles > 0) {
         return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
     } else if (cosineValues && cosineValues.length > 0) {
-        const tooltip = createTooltip(() => {
-        }, () => {}, renderTooltip);
-        return showCosines(tooltip);
+        createTooltip(renderTooltip);
+        return showCosines();
     } else {
         return <span>WAITING!!!</span>
     }
