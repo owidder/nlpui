@@ -101,11 +101,6 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             .on("mouseleave", () => {
                 hideTooltip()
             })
-            .on("contextmenu", (event) => {
-                event.preventDefault();
-                togglePinTooltip();
-                moveTooltip(event);
-            })
 
         d3.select(".list").selectAll((".listrow"))
             .data(cosineValues, (_, i) => cosineValues[i].document)
@@ -120,6 +115,12 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             .on("mouseleave", function () {
                 d3.select(this).classed("selected", false)
             })
+            .on("contextmenu", (event, d: any) => {
+                event.preventDefault();
+                togglePinTooltip();
+                enter(event, d);
+                moveTooltip(event);
+            })
     }
 
     const showCosines = () => {
@@ -129,8 +130,7 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
-                        <a className="pointer" href={srcPathFromPath(cosineValue.document)}
-                           target="_blank">{cosineValue.document}</a>
+                        <span className="document-path">{cosineValue.document}</span>
                     </div>
                     <div className="cell"><a target="_blank"
                                              href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a>

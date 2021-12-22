@@ -68,7 +68,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             doListEffect(listHead, listFoot, list);
         }
 
-        createTooltip(renderTooltip);
+        createTooltip(renderTooltip, "Right click on tree map to pin", "Right click on tree map to unpin");
         if(event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {
@@ -116,9 +116,10 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("stroke", "#fff")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(d.leafUid, d))
             .on("mousemove", (event: MouseEvent) => moveTooltip(event))
-            .on("contextmenu", (event: MouseEvent) => {
+            .on("contextmenu", (event: MouseEvent, d) => {
                 event.preventDefault();
                 togglePinTooltip();
+                setTooltipData(d.leafUid, d)
                 moveTooltip(event);
             })
 

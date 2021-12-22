@@ -4,7 +4,6 @@ import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
-import {srcPathFromPath} from "../srcFromPath";
 
 const _path = require("path");
 
@@ -95,7 +94,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         return <div className="directory">
-            <a target="_blank" href={srcPathFromPath(this.state.currentPath)}><h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"}</h5></a>
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"}</h5>
             <div className="margins row">
                 <div className={gridClass(2)}>
                     {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}

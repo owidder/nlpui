@@ -41,7 +41,6 @@ export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: str
         .on("mouseleave", () => {
             console.log("set inFocus to false")
             tooltip.inFocus = false;
-            unpinTooltip();
             redrawTooltip();
         })
 
