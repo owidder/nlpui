@@ -6,7 +6,7 @@ const writeAndWait = (res, content) => {
         setTimeout(() => {
             console.log(`write: ${content}`);
             res.write(content);
-            res.flush();
+            res.end();
             resolve();
         })
     }, 1)
