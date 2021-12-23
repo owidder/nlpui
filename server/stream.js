@@ -1,8 +1,10 @@
 const {lzData} = require("./lz");
 
 const writeAndWait = (res, content) => {
+    console.log(`writeAndWait: ${res} / ${content}`);
     return new Promise(resolve => {
         setTimeout(() => {
+            console.log(`write: ${content}`);
             res.write(content);
             resolve();
         })

@@ -126,6 +126,7 @@ router.get("/cosineValues", async (req, res) => {
 router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
+        console.log(`cosineValuesWithProgress: ${doc1}`);
         await similarDocsFromFileWithProgress(doc1, .1, res, 100);
         res.status(200).send();
     } catch (e) {

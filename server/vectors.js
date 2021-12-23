@@ -33,6 +33,7 @@ const initVectorspath = (_vectorspath) => {
 }
 
 const findVector = async (doc, res) => {
+    console.log(`findVector: ${doc}`);
     await writeProgressText(res, "Finding vector");
     await writeMaxProgress(res, numberOfVectors);
     let lineCtr = 0;
@@ -58,6 +59,7 @@ const findVector = async (doc, res) => {
 }
 
 const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) => {
+    console.log(`similarDocsFromFileWithProgress: ${doc1}`);
     const doc1Vector = await findVector(doc1, res);
     await writeMaxProgress(res, numberOfVectors);
     await writeProgressText(res, "Computing cosines");
