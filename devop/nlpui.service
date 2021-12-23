@@ -5,7 +5,7 @@ After=network-online.target
 [Service]
 Restart=on-failure
 WorkingDirectory=/root/dev/nlpui
-ExecStart=/root/.nvm/versions/node/v16.8.0/bin/node /root/dev/nlpui/server/server.js --datapath /root/dev/nlpui/data/_all/antlr --port 80 --stopwordspath /root/dev/nlpui/data/stopwords.json
+ExecStart=/root/.nvm/versions/node/v16.8.0/bin/node /root/dev/nlpui/server/server.js --datapath /root/dev/nlpui/data/_all/antlr --port 5000 --stopwordspath /root/dev/nlpui/data/stopwords.json
 
 [Install]
 WantedBy=multi-user.target
