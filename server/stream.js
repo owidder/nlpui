@@ -1,12 +1,6 @@
 const {lzData} = require("./lz");
 
 const writeAndWait = (res, content) => {
-    res.set({
-        'Content-Type': 'text/event-stream',
-        'Connection': 'keep-alive',
-        'Cache-Control': 'no-cache',
-        'X-Accel-Buffering': 'no'
-    });
     console.log(`writeAndWait: ${JSON.stringify(res.getHeaders())} / ${content}`);
     return new Promise(resolve => {
         setTimeout(() => {
