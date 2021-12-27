@@ -1,4 +1,6 @@
-var math = require('mathjs');
+const math = require('mathjs');
+const NodeCache = require("node-cache");
+
 const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require("./stream");
 const {randomNumberBetween} = require("./miscUtil");
 
@@ -11,6 +13,8 @@ const computeCosineBetweenVectors = (vector1, vector2) => {
 
     return 0;
 }
+
+const cache = new NodeCache();
 
 let vectorspath;
 let numberOfVectors;
@@ -60,30 +64,37 @@ const findVector = async (doc, res) => {
 
 const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) => {
     console.log(`similarDocsFromFileWithProgress: ${doc1}`);
-    const doc1Vector = await findVector(doc1, res);
-    await writeMaxProgress(res, numberOfVectors);
-    await writeProgressText(res, "Computing cosines");
-    const resultList = [];
-    let lineCtr = 0;
-    return new Promise(() => {
-        createReadlineInterface(vectorspath).on("line", async line => {
-            const parts = line.split("\t");
-            const doc2 = parts[0];
-            if(doc1 !== doc2) {
-                const doc2Vector = parts.slice(1).map(Number);
-                const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
-                if(cosine > threshold) {
-                    resultList.push({document: doc2, cosine})
+    const cachedResult = cache.get(doc1);
+    if(cachedResult) {
+        return writeJsonz(res, cachedResult);
+    } else {
+        const doc1Vector = await findVector(doc1, res);
+        await writeMaxProgress(res, numberOfVectors);
+        await writeProgressText(res, "Computing cosines");
+        const resultList = [];
+        let lineCtr = 0;
+        return new Promise(() => {
+            createReadlineInterface(vectorspath).on("line", async line => {
+                const parts = line.split("\t");
+                const doc2 = parts[0];
+                if(doc1 !== doc2) {
+                    const doc2Vector = parts.slice(1).map(Number);
+                    const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
+                    if(cosine > threshold) {
+                        resultList.push({document: doc2, cosine})
+                    }
                 }
-            }
-            if(++lineCtr % randomNumberBetween(100, 110) == 0) {
-                 await writeProgress(res, lineCtr);
-            }
-        }).on("close", async () => {
-            const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
-            await writeJsonz(res, JSON.stringify(sortedResultList.slice(0, maxDocs)));
+                if(++lineCtr % randomNumberBetween(100, 110) == 0) {
+                    await writeProgress(res, lineCtr);
+                }
+            }).on("close", async () => {
+                const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
+                const result = JSON.stringify(sortedResultList.slice(0, maxDocs));
+                cache.set(doc1, result)
+                await writeJsonz(res, result);
+            })
         })
-    })
+    }
 }
 
 module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors}
