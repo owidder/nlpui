@@ -124,12 +124,14 @@ router.get("/cosineValues", async (req, res) => {
 })
 
 router.get("/cosineValuesWithProgress", async (req, res) => {
-    res.set({
-        'Content-Type': 'text/event-stream',
-        'Connection': 'keep-alive',
-        'Cache-Control': 'no-cache',
-        'X-Accel-Buffering': 'no'
-    });
+    if(req.header("x-nginx-proxy") == "true") {
+        res.set({
+            'Content-Type': 'text/event-stream',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        });
+    }
 
     try {
         const doc1 = req.query.doc1;
