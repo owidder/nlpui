@@ -1,29 +1,33 @@
 const {lzData} = require("./lz");
 
-const writeAndWait = (res, content) => {
+const writeAndWait = (eventEmitter, content) => {
     return new Promise(resolve => {
         setTimeout(() => {
-            res.write(content);
+            eventEmitter.emit("write", content);
             resolve();
         })
     }, 1)
 }
 
-const writeMaxProgress = async (res, maxProgress) => {
-    await writeAndWait(res, `max-progress:${maxProgress};`);
+const writeMaxProgress = async (eventEmitter, maxProgress) => {
+    const content = `max-progress:${maxProgress};`;
+    eventEmitter.eventsToResend.push(content);
+    await writeAndWait(eventEmitter, content);
 }
 
-const writeProgressText = async (res, progressText) => {
-    await writeAndWait(res, `progress-text:${progressText};`);
+const writeProgressText = async (eventEmitter, progressText) => {
+    const content = `progress-text:${progressText};`;
+    eventEmitter.eventsToResend.push(content);
+    await writeAndWait(eventEmitter, content);
 }
 
-const writeProgress = async (res, progress) => {
-    await writeAndWait(res, `progress:${progress};`);
+const writeProgress = async (eventEmitter, progress) => {
+    await writeAndWait(eventEmitter, `progress:${progress};`);
 }
 
-const writeJsonz = async (res, jsonStr) => {
+const writeJsonz = async (eventEmitter, jsonStr) => {
     const jsonz = await lzData(jsonStr);
-    await writeAndWait(res, `jsonz:${jsonz};`);
+    await writeAndWait(eventEmitter, `jsonz:${jsonz};`);
 }
 
 module.exports = {writeProgress, writeProgressText, writeMaxProgress, writeJsonz}

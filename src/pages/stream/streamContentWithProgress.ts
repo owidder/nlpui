@@ -20,10 +20,12 @@ export const streamContentWithProgress = (uri: string, progressCallback: NumberC
                     break
 
                 case "progress-text":
+                    console.log(`${type}: ${content}`)
                     progressTextCallback(content);
                     break
 
                 case "max-progress":
+                    console.log(`${type}: ${content}`)
                     maxProgressCallback(Number(content));
                     break
 
@@ -42,7 +44,7 @@ export const streamContentWithProgress = (uri: string, progressCallback: NumberC
                     break
 
                 default:
-                    window.alert(`type: ${type}, content: ${content}`)
+                    console.error(`type: ${type}, content: ${content}`)
             }
         });
 
