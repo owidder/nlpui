@@ -44,15 +44,19 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path}
 
-    private async gotoPath(path: string) {
+    private async gotoPath(path: string, withReload?: boolean) {
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
-        const folder = (pathType == "file" ? _path.dirname(path) : path)
-        const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
-        const folderInfo: FolderInfo = await callApi(folderUrl)
+        if(pathType === "file" && withReload) {
+            location.reload();
+        } else {
+            const folder = (pathType == "file" ? _path.dirname(path) : path)
+            const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
+            const folderInfo: FolderInfo = await callApi(folderUrl)
 
-        this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
+            this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
+        }
     }
 
     async componentDidMount() {
@@ -85,7 +89,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={pathParam(path)}
-                  onClick={() => this.gotoPath(path)}>{entry}</a>
+                  onClick={() => this.gotoPath(path, true)}>{entry}</a>
     }
 
     render() {
