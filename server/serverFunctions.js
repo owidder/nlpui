@@ -80,6 +80,7 @@ function readSrcFolder2(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            filesAndSubfolders.forEach(f => console.log(`filesAndSubfolders: ${f}`));
             const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
             const withoutTfIdfExtension = filtered.map(f => f.split(".tfidf.csv")[0]);
             if (err) reject(err);
