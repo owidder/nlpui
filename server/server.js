@@ -57,7 +57,7 @@ router.get("/subAgg/folder/*", async function (req, res) {
             });
         }
 
-        await writeJsonz(res, JSON.stringify(subAggToReturn));
+        await writeJsonz(null, JSON.stringify(subAggToReturn), res);
         res.status(200).send();
     } catch (e) {
         res.status(500).json({error: e.toString()});

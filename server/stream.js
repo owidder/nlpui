@@ -50,10 +50,14 @@ const subscribeToEventEmitter = (namespace, res, doc) => {
     return eventEmitter;
 }
 
-const writeAndWait = (eventEmitter, content) => {
+const writeAndWait = (eventEmitter, content, res) => {
     return new Promise(resolve => {
         setTimeout(() => {
-            eventEmitter.emit("write", content);
+            if(eventEmitter) {
+                eventEmitter.emit("write", content);
+            } else {
+                res.write(content);
+            }
             resolve();
         })
     }, 1)
@@ -75,9 +79,9 @@ const writeProgress = async (eventEmitter, progress) => {
     await writeAndWait(eventEmitter, `progress:${progress};`);
 }
 
-const writeJsonz = async (eventEmitter, jsonStr) => {
+const writeJsonz = async (eventEmitter, jsonStr, res) => {
     const jsonz = await lzData(jsonStr);
-    await writeAndWait(eventEmitter, `jsonz:${jsonz};`);
+    await writeAndWait(eventEmitter, `jsonz:${jsonz};`, res);
 }
 
 module.exports = {writeProgress, writeProgressText, writeMaxProgress, writeJsonz, subscribeToEventEmitter, deleteEventEmitterFromMap}
