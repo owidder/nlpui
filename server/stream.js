@@ -1,9 +1,20 @@
 const {lzData} = require("./lz");
 const events = require("events");
 
-const eventEmitterMap = {};
+const namespaceToEventEmitterMapMap = {};
 
-const deleteEventEmitterFromMap = (doc) => {
+const getEventEmitterMap = (namespace) => {
+    let eventEmitterMap = namespaceToEventEmitterMapMap[namespace];
+    if(!eventEmitterMap) {
+        eventEmitterMap = {};
+        namespaceToEventEmitterMapMap[namespace] = eventEmitterMap;
+    }
+
+    return eventEmitterMap;
+}
+
+const deleteEventEmitterFromMap = (namespace, doc) => {
+    const eventEmitterMap = getEventEmitterMap(namespace);
     delete eventEmitterMap[doc];
 }
 
@@ -17,7 +28,8 @@ class EventEmitterWithResend extends events.EventEmitter {
     isNew = true
 }
 
-const subscribeToEventEmitter = (res, doc) => {
+const subscribeToEventEmitter = (namespace, res, doc) => {
+    const eventEmitterMap = getEventEmitterMap(namespace);
     let eventEmitter = eventEmitterMap[doc];
     if(!eventEmitter) {
         eventEmitter = new EventEmitterWithResend();

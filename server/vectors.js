@@ -66,7 +66,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) =>
     console.log(`similarDocsFromFileWithProgress: ${doc1}`);
     const cachedResult = resultCache.get(doc1);
 
-    const eventEmitter = subscribeToEventEmitter(res, doc1);
+    const eventEmitter = subscribeToEventEmitter("vector", res, doc1);
 
     if(cachedResult) {
         return writeJsonz(eventEmitter, cachedResult);
@@ -96,7 +96,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) =>
                     const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
                     const result = JSON.stringify(sortedResultList.slice(0, maxDocs));
                     resultCache.set(doc1, result);
-                    deleteEventEmitterFromMap(doc1);
+                    deleteEventEmitterFromMap("vector", doc1);
                     await writeJsonz(eventEmitter, result);
                     resolve();
                 })
