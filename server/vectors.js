@@ -1,8 +1,7 @@
-const events = require("events");
 const math = require('mathjs');
 const NodeCache = require("node-cache");
 
-const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require("./stream");
+const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz, deleteEventEmitterFromMap, subscribeToEventEmitter} = require("./stream");
 const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
@@ -16,7 +15,6 @@ const computeCosineBetweenVectors = (vector1, vector2) => {
 }
 
 const resultCache = new NodeCache();
-const eventEmitterMap = {};
 
 let vectorspath;
 let numberOfVectors;
@@ -64,37 +62,6 @@ const findVector = async (doc, eventEmitter) => {
     })
 }
 
-class EventEmitterWithResend extends events.EventEmitter {
-    constructor() {
-        super();
-    }
-
-    eventsToResend = []
-
-    isNew = true
-}
-
-const subscribeToEventEmitter = (res, doc) => {
-    let eventEmitter = eventEmitterMap[doc];
-    if(!eventEmitter) {
-        eventEmitter = new EventEmitterWithResend();
-        eventEmitter.isNew = true;
-        eventEmitterMap[doc] = eventEmitter;
-    }
-
-    eventEmitter.on("write", content => {
-        res.write(content);
-    })
-
-    if(eventEmitter.eventsToResend.length > 0) {
-        eventEmitter.eventsToResend.forEach(event => {
-            res.write(event)
-        })
-    }
-
-    return eventEmitter;
-}
-
 const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) => {
     console.log(`similarDocsFromFileWithProgress: ${doc1}`);
     const cachedResult = resultCache.get(doc1);
@@ -129,7 +96,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) =>
                     const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
                     const result = JSON.stringify(sortedResultList.slice(0, maxDocs));
                     resultCache.set(doc1, result);
-                    delete eventEmitterMap[doc1];
+                    deleteEventEmitterFromMap(doc1);
                     await writeJsonz(eventEmitter, result);
                     resolve();
                 })
