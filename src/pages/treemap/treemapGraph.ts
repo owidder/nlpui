@@ -76,7 +76,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             const firstPartOfZoomto = partsOfZoomto[0];
             if(d.data.name == firstPartOfZoomto) {
                 setTimeout(() => {
-                    zoomin(d, partsOfZoomto.slice(1).join("/"))
+                    zoomin(d, partsOfZoomto.slice(1).join("/"), 10)
                 }, 10)
             }
         }
@@ -168,7 +168,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     }
 
     // When zooming in, draw the new nodes on top, and fade them in.
-    function zoomin(d, _zoomto?: string) {
+    function zoomin(d, _zoomto?: string, duration?: number) {
         const group0 = group.attr("pointer-events", "none");
         const group1 = group = svgTreemap.append("g").call(render, d, _zoomto);
 
@@ -176,7 +176,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         y.domain([d.y0, d.y1]);
 
         return svgTreemap.transition()
-            .duration(750)
+            .duration(duration ? duration : 750)
             .call(t => group0.transition(t).remove()
                 .call(position, d.parent))
             .call(t => group1.transition(t)
