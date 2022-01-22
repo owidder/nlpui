@@ -68,7 +68,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             doListEffect(listHead, listFoot, list);
         }
 
-        createTooltip(renderTooltip, "Right click on tree map to pin", "Right click on tree map to unpin");
+        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin");
         if(event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {
@@ -110,18 +110,20 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }
             });
 
+        const doContextMenu = (event: MouseEvent, d) => {
+            event.preventDefault();
+            togglePinTooltip();
+            setTooltipData(d.leafUid, d)
+            moveTooltip(event);
+        }
+
         node.append("rect")
             .attr("id", d  => d.leafUid)
             .attr("fill", lowlight)
             .attr("stroke", "#fff")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(d.leafUid, d))
             .on("mousemove", (event: MouseEvent) => moveTooltip(event))
-            .on("contextmenu", (event: MouseEvent, d) => {
-                event.preventDefault();
-                togglePinTooltip();
-                setTooltipData(d.leafUid, d)
-                moveTooltip(event);
-            })
+            .on("contextmenu", doContextMenu)
 
         node.append("clipPath")
             .attr("id", d => (d.clipUid = `clip-${uuidv4()}`))
@@ -131,6 +133,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         node.append("text")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(d.leafUid, d))
             .on("mousemove", (event: MouseEvent) => setTimeout(() => moveTooltip(event), 50))
+            .on("contextmenu", doContextMenu)
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")

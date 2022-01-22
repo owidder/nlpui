@@ -11,12 +11,14 @@
 
     <style>
         .topline {
+            top: .1em;
             margin-left: 50%;
             margin-right: 1em;
             display: flex;
             flex-direction: row;
             justify-content: end;
             position: relative;
+            z-index: 10000;
         }
 
         #container {
@@ -26,10 +28,10 @@
     </style>
 </head>
 <body>
-<div id="container"></div>
 <div class="topline">
     <div class="homelink"><a href="/cosine-browser/cosine-browser.html">Home</a></div>
 </div>
+<div id="container"></div>
 
 <script>
 </script>
