@@ -33,6 +33,7 @@ interface CosineValue {
 }
 
 let shortlist = true;
+let rootFeatures: String[] = [];
 
 export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
@@ -67,7 +68,10 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         document.addEventListener("showall", showAllListener)
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`;
-        let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => `${f.feature} <small>[${f.value.toFixed(2)}]</small>`);
+        let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
+            const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
+            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}">${f.feature} <small>[${f.value.toFixed(2)}]</small></span>`
+        });
         let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents")
             + "<br/>"
             + tooltipLink(srcPathFromPath(documentPath), "Show source");
@@ -80,20 +84,28 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         doListEffect(listHead, listFood, list, listEnd);
     }
 
-    const enter = (event: Event, d: { document: string, features?: Feature[] }) => {
-        if (!d.features) {
-            callApi(`/api/features?doc1=${d.document}`).then((features: Feature[]) => {
-                d.features = features;
-                setTooltipData(d.document, features);
-                showTooltip();
+    const readFeatures = (document: string): Promise<Feature[]> => {
+        return new Promise(resolve => {
+            callApi(`/api/features?doc1=${document}`).then((features: Feature[]) => {
+                resolve(features);
             })
+        })
+    }
+
+    const enter = async (event: Event, d: { document: string, features?: Feature[] }) => {
+        if (!d.features) {
+            const features = await readFeatures(d.document);
+            d.features = features;
+            setTooltipData(d.document, features);
+            showTooltip();
         } else {
             setTooltipData(d.document, d.features)
             showTooltip();
         }
     }
 
-    const handleList = (cosineValues: CosineValue[]) => {
+    const handleList = async (cosineValues: CosineValue[]) => {
+        rootFeatures = (await readFeatures(cosineValues[0].document)).map(f => f.feature);
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
                 moveTooltip(event);
