@@ -49,12 +49,13 @@ function getPathType(relPath, basePath) {
     })
 }
 
+const SUM_CSV = "_sum.csv";
 const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     const filtered = []
     for(const fileOrSubfolder of filesAndSubfolders) {
         const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
         if(pathType === "file") {
-            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === "_.csv")) {
+            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === SUM_CSV)) {
                 filtered.push(fileOrSubfolder)
             }
         } else {
@@ -91,9 +92,9 @@ function readSrcFolder2(relFolder, basePath) {
 function readAggFolder(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise(resolve => {
-        const absPathToFile = path.join(absFolder, "_.csv");
+        const absPathToFile = path.join(absFolder, SUM_CSV);
         if(fs.existsSync(absPathToFile)) {
-            const readLineInterface = createReadlineInterface(path.join(absFolder, "_.csv"));
+            const readLineInterface = createReadlineInterface(path.join(absFolder, SUM_CSV));
             const wordsAndValues = [];
             let lineNo = 0;
             readLineInterface.on("line", line => {
@@ -138,7 +139,7 @@ function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, tota
                         _children = _children ? _children : []
                         _children.push({name: f, value: subCtr, words, children, tfidfValues});
                     } else {
-                        if(f != "_.csv") {
+                        if(f != SUM_CSV) {
                             if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
                                 await waitForCallback(() => progressCallback(totalCtr.ctr));
                             }
@@ -166,7 +167,7 @@ function _countFilesRecursive(relFolder, basePath) {
                     if (type === "folder") {
                         ctr += await _countFilesRecursive(subFolder, basePath)
                     } else {
-                        if(f != "_.csv") {
+                        if(f != SUM_CSV) {
                             ctr++;
                         }
                     }
