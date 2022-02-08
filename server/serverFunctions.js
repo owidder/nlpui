@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const _ = require("lodash");
 
 const TFIDF_EXTENSION = "tfidf.csv";
 
@@ -9,6 +10,13 @@ let stopwords = {};
 let unstemDict;
 let reversedUnstemDict;
 let numberOfFiles = 0;
+
+const AGG_CSV = "_.csv"
+
+const SUM_INDEX = 1
+const MAX_INDEX = 2
+const COUNT_INDEX = 3
+const AVG_INDEX = 4
 
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
@@ -49,13 +57,12 @@ function getPathType(relPath, basePath) {
     })
 }
 
-const SUM_CSV = "_sum.csv";
 const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     const filtered = []
     for(const fileOrSubfolder of filesAndSubfolders) {
         const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
         if(pathType === "file") {
-            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === SUM_CSV)) {
+            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === AGG_CSV)) {
                 filtered.push(fileOrSubfolder)
             }
         } else {
@@ -92,18 +99,17 @@ function readSrcFolder2(relFolder, basePath) {
 function readAggFolder(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise(resolve => {
-        const absPathToFile = path.join(absFolder, SUM_CSV);
+        const absPathToFile = path.join(absFolder, AGG_CSV);
         if(fs.existsSync(absPathToFile)) {
-            const readLineInterface = createReadlineInterface(path.join(absFolder, SUM_CSV));
+            const readLineInterface = createReadlineInterface(absPathToFile);
             const wordsAndValues = [];
-            let lineNo = 0;
             readLineInterface.on("line", line => {
-                if(lineNo++ < 20) {
-                    const wordAndValue = line.split("\t");
-                    wordsAndValues.push({word: wordAndValue[0], value: Number(wordAndValue[1])});
-                }
+                const wordAndValues = line.split("\t");
+                const value = Number(wordAndValues[AVG_INDEX]) * Math.min(Number(wordAndValues[COUNT_INDEX]), 10)
+                wordsAndValues.push({word: wordAndValues[0], sum: wordAndValues[SUM_INDEX], count: wordAndValues[COUNT_INDEX], max: wordAndValues[MAX_INDEX], avg: wordAndValues[AVG_INDEX], value});
             }).on("close", () => {
-                resolve(wordsAndValues)
+                const heighest20 = _.sortBy(wordsAndValues, ["value"]).reverse().slice(0, 20)
+                resolve(heighest20)
             })
         } else {
             resolve([])
@@ -135,11 +141,15 @@ function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, tota
                         const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
                         const words = filteredUnstemmed.map(wav => wav.word);
                         const tfidfValues = filteredUnstemmed.map(wav => wav.value);
+                        const sumValues = filteredUnstemmed.map(wav => wav.sum);
+                        const avgValues = filteredUnstemmed.map(wav => wav.avg);
+                        const maxValues = filteredUnstemmed.map(wav => wav.max);
+                        const countValues = filteredUnstemmed.map(wav => wav.count);
                         const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath, progressCallback, totalCtr);
                         _children = _children ? _children : []
-                        _children.push({name: f, value: subCtr, words, children, tfidfValues});
+                        _children.push({name: f, value: subCtr, words, children, tfidfValues, sumValues, avgValues, maxValues, countValues});
                     } else {
-                        if(f != SUM_CSV) {
+                        if(f != AGG_CSV) {
                             if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
                                 await waitForCallback(() => progressCallback(totalCtr.ctr));
                             }
@@ -167,7 +177,7 @@ function _countFilesRecursive(relFolder, basePath) {
                     if (type === "folder") {
                         ctr += await _countFilesRecursive(subFolder, basePath)
                     } else {
-                        if(f != SUM_CSV) {
+                        if(f != AGG_CSV) {
                             ctr++;
                         }
                     }

@@ -13,6 +13,10 @@ export interface Tree {
     name: string
     words?: string[]
     tfidfValues?: number[]
+    sumValues?: number[]
+    avgValues?: number[]
+    maxValues?: number[]
+    countValues?: number[]
     value?: number
     children?: Tree[]
 }
@@ -63,7 +67,14 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const renderTooltip = (_: string, d) => {
             const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
-            const list = d.data.words ? d.data.words.map((w, i) => `${w} <small>[${Number(d.data.tfidfValues[i]).toFixed(2)}]</small>`) : [];
+            const list = d.data.words ? d.data.words.map((w, i) => {
+                const magicValue = Number(d.data.tfidfValues[i]).toFixed(2);
+                const sumValue = Number(d.data.sumValues[i]).toFixed(2);
+                const maxValue = Number(d.data.maxValues[i]).toFixed(2);
+                const avgValue = Number(d.data.avgValues[i]).toFixed(2);
+                const countValue = Number(d.data.countValues[i]);
+                return `${w} <small>[<b>${magicValue}</b>, sum: ${sumValue}, max: ${maxValue}, avg: ${avgValue}, count: ${countValue}]</small>`
+            }) : [];
             const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${_path(d)}`, "Show word cloud");
             doListEffect(listHead, listFoot, list);
         }
