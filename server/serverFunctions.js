@@ -106,7 +106,10 @@ function readAggFolder(relFolder, basePath) {
             readLineInterface.on("line", line => {
                 const wordAndValues = line.split("\t");
                 const value = Number(wordAndValues[AVG_INDEX]) * Math.min(Number(wordAndValues[COUNT_INDEX]), 10)
-                wordsAndValues.push({word: wordAndValues[0], sum: wordAndValues[SUM_INDEX], count: wordAndValues[COUNT_INDEX], max: wordAndValues[MAX_INDEX], avg: wordAndValues[AVG_INDEX], value});
+                wordsAndValues.push({word: wordAndValues[0], sum: _.round(wordAndValues[SUM_INDEX], 2),
+                    count: Number(wordAndValues[COUNT_INDEX]),
+                    max: _.round(wordAndValues[MAX_INDEX], 2),
+                    avg: _.round(wordAndValues[AVG_INDEX], 2), value});
             }).on("close", () => {
                 resolve(_.sortBy(wordsAndValues, ["value"]).reverse())
             })

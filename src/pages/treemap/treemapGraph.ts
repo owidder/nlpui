@@ -86,7 +86,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
-            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${_path(d)}`, "Show word cloud");
+            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${_path(d)}&showAttr=${showAttr}`, "Show word cloud");
             doListEffect(listHead, listFoot, list);
         }
 
@@ -159,7 +159,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("clip-path", d => d.clipUid)
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
-            .data(d => d === _root ? [_name(d), format(d.value)] : [d.data.name, ...d.data.words, format(d.value)])
+            .data(d => d === _root ? [_name(d), format(d.value)] : [d.data.name, format(d.value)])
             .join("tspan")
             .attr("x", 3)
             .attr("y", (d, i, nodes) => `${(i === nodes.length - 1 ? 1 : 0) * 0.3 + 1.1 + i * 0.9}em`)

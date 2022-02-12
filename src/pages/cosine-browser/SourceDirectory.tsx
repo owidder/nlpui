@@ -9,6 +9,7 @@ const _path = require("path");
 
 interface DirectoryProps {
     path: string
+    showAttr: string
     staticFolderCall?: boolean
     staticFileCall?: boolean
 }
@@ -29,10 +30,6 @@ interface FolderInfo {
 interface PathInfo {
     path: string
     pathType: PathType
-}
-
-const pathParam = (path: string) => {
-    return `#path=${path}`
 }
 
 const lastPartOfPath = (path: string) => {
@@ -88,7 +85,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
-                  href={pathParam(path)}
+                  href={`#path=${path}&showAttr=${this.props.showAttr}`}
                   onClick={() => this.gotoPath(path, true)}>{entry}</a>
     }
 
@@ -97,8 +94,15 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
+        const links = this.state.currentPathType == "folder" ? ["sum", "max", "avg", "count"].reduce((_links, attr, i) => {
+            const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&showAttr=${attr}`;
+            const onclick = () => setTimeout(() => window.location.reload(), 100);
+            const a = <a onClick={onclick} href={href}>{attr}</a>;
+            let link = attr == this.props.showAttr ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
+            return [..._links, link]
+        }, []) : [];
         return <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"}</h5>
+            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
             <div className="margins row">
                 <div className={gridClass(2)}>
                     {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
@@ -113,7 +117,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <div className={gridClass(10)}>
                     {this.state.currentPathType == "file" ? <CosinesWithProgress
                         doc={this.state.currentPath}
-                    /> : <WordCloud path={this.state.currentPath}/>}
+                    /> : <WordCloud path={this.state.currentPath} showAttr={this.props.showAttr}/>}
                 </div>
             </div>
             </div>

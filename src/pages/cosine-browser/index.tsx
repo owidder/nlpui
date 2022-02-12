@@ -7,5 +7,6 @@ import {SourceDirectory} from "./SourceDirectory"
 import "materialize-css/dist/css/materialize.css"
 
 const path = getHashParamValue("path", ".");
+const showAttr = getHashParamValue("showAttr", ".");
 
-ReactDOM.render(<SourceDirectory path={path} staticFolderCall={false}/>, document.getElementById("container"))
+ReactDOM.render(<SourceDirectory path={path} showAttr={showAttr} staticFolderCall={false}/>, document.getElementById("container"))
