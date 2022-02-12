@@ -108,8 +108,7 @@ function readAggFolder(relFolder, basePath) {
                 const value = Number(wordAndValues[AVG_INDEX]) * Math.min(Number(wordAndValues[COUNT_INDEX]), 10)
                 wordsAndValues.push({word: wordAndValues[0], sum: wordAndValues[SUM_INDEX], count: wordAndValues[COUNT_INDEX], max: wordAndValues[MAX_INDEX], avg: wordAndValues[AVG_INDEX], value});
             }).on("close", () => {
-                const heighest20 = _.sortBy(wordsAndValues, ["value"]).reverse().slice(0, 20)
-                resolve(heighest20)
+                resolve(_.sortBy(wordsAndValues, ["value"]).reverse())
             })
         } else {
             resolve([])

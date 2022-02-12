@@ -1,12 +1,14 @@
 // based on: https://observablehq.com/@d3/zoomable-treemap
 import * as d3 from "d3";
 import {v4 as uuidv4} from "uuid";
+import * as _ from "lodash";
+
 import {
     createTooltip,
     doListEffect,
     moveTooltip,
     setTooltipData,
-    showTooltip, hideTooltip, togglePinTooltip, tooltipLink
+    showTooltip, hideTooltip, togglePinTooltip, tooltipLink, Tooltip
 } from "../../util/tooltip";
 
 export interface Tree {
@@ -65,21 +67,30 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             return name.startsWith("./") ? name.substr(2) : name
         }
 
-        const renderTooltip = (_: string, d) => {
+        const renderTooltip = (__: string, d, tooltip: Tooltip) => {
+            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : "sum";
             const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
-            const list = d.data.words ? d.data.words.map((w, i) => {
-                const magicValue = Number(d.data.tfidfValues[i]).toFixed(2);
-                const sumValue = Number(d.data.sumValues[i]).toFixed(2);
-                const maxValue = Number(d.data.maxValues[i]).toFixed(2);
-                const avgValue = Number(d.data.avgValues[i]).toFixed(2);
-                const countValue = Number(d.data.countValues[i]);
-                return `${w} <small>[<b>${magicValue}</b>, sum: ${sumValue}, max: ${maxValue}, avg: ${avgValue}, count: ${countValue}]</small>`
-            }) : [];
+            const dataObjArray = d.data.words.map((word, i) => {
+                return {word,
+                    magic: _.round(d.data.tfidfValues[i], 2),
+                    sum: _.round(d.data.sumValues[i], 2),
+                    max: _.round(d.data.maxValues[i], 2),
+                    avg: _.round(d.data.avgValues[i], 2),
+                    count: Number(d.data.countValues[i])}
+            })
+            const best = _.sortBy(dataObjArray, [showAttr]).reverse().slice(0, 20);
+            const list = best.map(b => {
+                const valStr = ["sum", "max", "avg", "count"].reduce((_valStr, attr) => {
+                    const attr_value = `${attr}: ${b[attr]}`;
+                    return _valStr + " " + (attr == showAttr ? `<b>${attr_value}</b>` : attr_value);
+                }, "")
+                return `${b.word} <small>[${valStr}]</small>`
+            });
             const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${_path(d)}`, "Show word cloud");
             doListEffect(listHead, listFoot, list);
         }
 
-        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin");
+        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", ["sum", "max", "avg", "count"]);
         if(event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {

@@ -1,10 +1,13 @@
 import * as d3 from "d3";
 import {Selection} from "d3-selection/index";
 
+import {addEventListener, removeAllEventListeners} from "./listener";
+import {jsonStringifyWithSingleQuotes} from "./miscUtil";
+
 import "./tooltip.scss";
 
 export type TooltipSelection = Selection<HTMLDivElement, any, HTMLElement, any>;
-type TooltipCallback = (uid: string, d: any, tooltip: Tooltip) => void;
+type TooltipCallback = (uid: string, d: any, tooltip: Tooltip, selectedExtraData?: string) => void;
 
 export interface Tooltip {
     renderCallback: TooltipCallback;
@@ -12,6 +15,8 @@ export interface Tooltip {
     pinMessage: string;
     unpinMessage: string;
     inFocus?: boolean;
+    extraData?: string[]
+    selectedExtraData?: string
 }
 
 export interface Event {
@@ -20,7 +25,7 @@ export interface Event {
     preventDefault: () => void
 }
 
-export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: string, _unpinMessage?: string) => {
+export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: string, _unpinMessage?: string, extraData?: string[]) => {
     console.log("create tooltip")
     d3.selectAll(".tooltip").remove();
     d3.select("body").append("div")
@@ -29,17 +34,15 @@ export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: str
 
     const pinMessage = _pinMessage === undefined ? "right click to pin" : _pinMessage;
     const unpinMessage = _unpinMessage === undefined ? "right click to unpin" : _unpinMessage;
-    const tooltip: Tooltip = {pinned: false, renderCallback, pinMessage, unpinMessage};
+    const tooltip: Tooltip = {pinned: false, renderCallback, pinMessage, unpinMessage, extraData};
 
     d3.selectAll(".tooltip")
         .on("mouseenter", () => {
-            console.log("set inFocus to true")
             tooltip.inFocus = true;
             showTooltip();
             redrawTooltip();
         })
         .on("mouseleave", () => {
-            console.log("set inFocus to false")
             tooltip.inFocus = false;
             redrawTooltip();
         })
@@ -123,8 +126,23 @@ export const doListEffect = async (head: string, foot: string, list: string[], l
     const tooltip = currentTooltip();
     if(tooltip) {
         const headtext = tooltip.inFocus ? undefined : `<span class="tooltip-headtext">${tooltip.pinned ? tooltip.unpinMessage : tooltip.pinMessage}</span>`;
+
+        let subhead = "";
+        if(tooltip.extraData) {
+            removeAllEventListeners("switchTooltipType");
+            addEventListener("switchTooltipType", (e: {detail: {selectedExtraData: string}}) => {
+                tooltip.selectedExtraData = e.detail.selectedExtraData;
+                redrawTooltip();
+            })
+            subhead = tooltip.extraData.reduce((_subhead, selectedExtraData) => {
+                const dispatchEvent = `document.dispatchEvent(new CustomEvent('switchTooltipType', ${jsonStringifyWithSingleQuotes({detail: {selectedExtraData}})}))`;
+                const a = `<a href="#" onclick="${dispatchEvent}"><small>${selectedExtraData}</small></a>&nbsp;`;
+                return _subhead + a;
+            }, "");
+        }
+
         const ol = `<ol>${(listEnd ? [...list, listEnd] : list).map(l => "<li>" + l + "</li>").join("\n")}</ol>`;
-        d3.select(".tooltip").html([headtext, head, ol, foot].join("<br>"));
+        d3.select(".tooltip").html([headtext, subhead, head, ol, foot].join("<br>"));
     }
 }
 
