@@ -156,7 +156,7 @@ export const doListEffect = async (head: string, foot: string, list: string[], l
                 const dispatchEvent = `document.dispatchEvent(new CustomEvent('switchTooltipType', ${jsonStringifyWithSingleQuotes({detail: {selectedExtraData}})}))`;
                 const a = `<a href="#${createHash ? createHash(selectedExtraData) : ''}" onclick="${dispatchEvent}"><small>${selectedExtraData}</small></a>&nbsp;`;
                 const ba = selectedExtraData == tooltip.selectedExtraData ? `<b>${a}</b>` : a;
-                return _subhead + ba;
+                return _subhead + "&nbsp;&nbsp;&nbsp;" + ba;
             }, "");
         }
 
