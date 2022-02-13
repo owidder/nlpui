@@ -4,6 +4,7 @@ import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
+import {METRICS} from "./metrics";
 
 const _path = require("path");
 
@@ -94,7 +95,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
-        const links = this.state.currentPathType == "folder" ? ["sum", "max", "avg", "count"].reduce((_links, attr, i) => {
+        const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, attr, i) => {
             const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&showAttr=${attr}`;
             const onclick = () => setTimeout(() => window.location.reload(), 100);
             const a = <a onClick={onclick} href={href}>{attr}</a>;

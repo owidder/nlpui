@@ -47,6 +47,16 @@ export const setHashValue = (name: string, value: string | number) => {
     window.location.hash = queryString.stringify(newHashParamMap);
 }
 
+export const setHashValues = (hashValues: {[name: string]: string | number}) => {
+    for(const name in hashValues) {
+        setHashValue(name, hashValues[name])
+    }
+}
+
+export const getHashString = (hashValues: {[name: string]: string | number}) => {
+    return queryString.stringify(hashValues);
+}
+
 export const removeHashName = (name: string) => {
     const hashParamMap = getHashParamMap();
     delete hashParamMap[name];

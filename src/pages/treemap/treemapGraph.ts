@@ -10,6 +10,8 @@ import {
     setTooltipData,
     showTooltip, hideTooltip, togglePinTooltip, tooltipLink, Tooltip
 } from "../../util/tooltip";
+import {METRICS} from "../cosine-browser/metrics";
+import {getHashString} from "../../util/queryUtil2";
 
 export interface Tree {
     name: string
@@ -23,7 +25,7 @@ export interface Tree {
     children?: Tree[]
 }
 
-export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string) => {
+export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _showAttr: string) => {
     const tile = (node, x0, y0, x1, y1) => {
         d3.treemapBinary(node, 0, 0, width, height);
         for (const child of node.children) {
@@ -68,7 +70,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
 
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
-            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : "sum";
+            if(!d.data.words) return;
+
+            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : _showAttr;
+
+            console.log(`showAttr = ${showAttr}`)
+
             const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
             const dataObjArray = d.data.words.map((word, i) => {
                 return {word,
@@ -86,11 +93,13 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
-            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${_path(d)}&showAttr=${showAttr}`, "Show word cloud");
-            doListEffect(listHead, listFoot, list);
+            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({path: _path(d), showAttr})}`, "Show word cloud");
+            doListEffect(listHead, listFoot, list, undefined, METRICS, (showAttr) => {
+                return getHashString({zoomto: _path(d.parent), showAttr})
+            });
         }
 
-        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", ["sum", "max", "avg", "count"]);
+        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", _showAttr);
         if(event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {
