@@ -72,9 +72,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
             if(!d.data.words) return;
 
-            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
+            const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
-            console.log(`showAttr = ${showAttr}`)
+            console.log(`showAttr = ${currentMetric}`)
 
             const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
             const dataObjArray = d.data.words.map((word, i) => {
@@ -85,15 +85,15 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                     avg: _.round(d.data.avgValues[i], 2),
                     count: Number(d.data.countValues[i])}
             })
-            const best = _.sortBy(dataObjArray, [showAttr]).reverse().slice(0, 20);
+            const best = _.sortBy(dataObjArray, [currentMetric]).reverse().slice(0, 20);
             const list = best.map(b => {
                 const valStr = ["sum", "max", "avg", "count"].reduce((_valStr, attr) => {
                     const attr_value = `${attr}: ${b[attr]}`;
-                    return _valStr + " " + (attr == showAttr ? `<b>${attr_value}</b>` : attr_value);
+                    return _valStr + " " + (attr == currentMetric ? `<b>${attr_value}</b>` : attr_value);
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
-            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({path: _path(d), showAttr})}`, "Show word cloud");
+            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({path: _path(d), showAttr: currentMetric})}`, "Show word cloud");
             doListEffect(listHead, listFoot, list, undefined, METRICS, (showAttr) => {
                 return getHashString({zoomto: _path(d.parent), showAttr})
             });
