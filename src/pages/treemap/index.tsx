@@ -7,8 +7,8 @@ import {TreemapWithProgress} from "./TreemapWithProgress"
 import "materialize-css/dist/css/materialize.css"
 
 const zoomto = getHashParamValue("zoomto", "");
-const showAttr = getHashParamValue("showAttr", "sum")
+const currentMetric = getHashParamValue("currentMetric", "sum")
 
 document.querySelector(".homelink a").setAttribute("href", "/treemap/treemap.html");
 
-ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight} currentMetric={showAttr}/>, document.getElementById("container"))
+ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight} currentMetric={currentMetric}/>, document.getElementById("container"))
