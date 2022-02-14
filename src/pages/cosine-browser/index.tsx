@@ -10,4 +10,4 @@ import "materialize-css/dist/css/materialize.css"
 const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("showAttr", DEFAULT_METRIC);
 
-ReactDOM.render(<SourceDirectory path={path} showAttr={currentMetric} staticFolderCall={false}/>, document.getElementById("container"))
+ReactDOM.render(<SourceDirectory path={path} currentMetric={currentMetric} staticFolderCall={false}/>, document.getElementById("container"))

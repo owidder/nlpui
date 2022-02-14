@@ -10,7 +10,7 @@ const _path = require("path");
 
 interface DirectoryProps {
     path: string
-    showAttr: string
+    currentMetric: string
     staticFolderCall?: boolean
     staticFileCall?: boolean
 }
@@ -86,7 +86,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     renderLink(entry: string, path: string) {
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
-                  href={`#path=${path}&showAttr=${this.props.showAttr}`}
+                  href={`#path=${path}&showAttr=${this.props.currentMetric}`}
                   onClick={() => this.gotoPath(path, true)}>{entry}</a>
     }
 
@@ -95,11 +95,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
-        const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, attr, i) => {
-            const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&showAttr=${attr}`;
+        const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
+            const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&showAttr=${metric}`;
             const onclick = () => setTimeout(() => window.location.reload(), 100);
-            const a = <a onClick={onclick} href={href}>{attr}</a>;
-            let link = attr == this.props.showAttr ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
+            const a = <a onClick={onclick} href={href}>{metric}</a>;
+            let link = metric == this.props.currentMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
         return <div className="directory">
@@ -118,7 +118,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <div className={gridClass(10)}>
                     {this.state.currentPathType == "file" ? <CosinesWithProgress
                         doc={this.state.currentPath}
-                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.props.showAttr}/>}
+                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.props.currentMetric}/>}
                 </div>
             </div>
             </div>
