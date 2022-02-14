@@ -25,7 +25,7 @@ export interface Tree {
     children?: Tree[]
 }
 
-export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _showAttr: string) => {
+export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string) => {
     const tile = (node, x0, y0, x1, y1) => {
         d3.treemapBinary(node, 0, 0, width, height);
         for (const child of node.children) {
@@ -72,7 +72,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
             if(!d.data.words) return;
 
-            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : _showAttr;
+            const showAttr = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
             console.log(`showAttr = ${showAttr}`)
 
@@ -99,7 +99,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             });
         }
 
-        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", _showAttr);
+        createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", _currentMetric);
         if(event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {
