@@ -8,7 +8,7 @@ import {callApi} from "../../util/fetchUtil";
 
 interface WordCloudProps {
     path: string
-    showAttr: string
+    currentMetric: string
 }
 
 interface WordAndValue {
@@ -51,7 +51,7 @@ const createCloud = (path: string, editStopwords: boolean, showAttr: string) => 
     })
 }
 
-export const WordCloud = ({path, showAttr}: WordCloudProps) => {
+export const WordCloud = ({path, currentMetric}: WordCloudProps) => {
     const [switchOnEditStopwords, setSwitchOnEditStopwords] = useState(false)
 
     useEffect(() => {
@@ -69,10 +69,10 @@ export const WordCloud = ({path, showAttr}: WordCloudProps) => {
         if(paramPath && paramWord) {
             callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(status => {
                 console.log(status);
-                createCloud(path, switchOnEditStopwords, showAttr);
+                createCloud(path, switchOnEditStopwords, currentMetric);
             })
         } else {
-            createCloud(path, switchOnEditStopwords, showAttr);
+            createCloud(path, switchOnEditStopwords, currentMetric);
         }
     }, [path, switchOnEditStopwords])
 
