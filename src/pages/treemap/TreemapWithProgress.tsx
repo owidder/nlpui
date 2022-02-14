@@ -11,7 +11,7 @@ interface TreemapWithProgressProps {
     zoomto: string
     width: number
     height: number
-    showAttr: string
+    currentMetric: string
 }
 
 const newZoomtoCallback = (newZoomto: string) => {
@@ -22,7 +22,7 @@ const newZoomtoCallback = (newZoomto: string) => {
     }
 }
 
-export const TreemapWithProgress = ({width, height, zoomto, showAttr}: TreemapWithProgressProps) => {
+export const TreemapWithProgress = ({width, height, zoomto, currentMetric}: TreemapWithProgressProps) => {
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
@@ -30,7 +30,7 @@ export const TreemapWithProgress = ({width, height, zoomto, showAttr}: TreemapWi
     useEffect(() => {
         streamContentWithProgress(`/api/subAgg/folder/`,
             setProgress, setNumberOfFiles, setProgressText,
-            tree => showTreemap("#treemap", tree, width, height, newZoomtoCallback, zoomto, showAttr));
+            tree => showTreemap("#treemap", tree, width, height, newZoomtoCallback, zoomto, currentMetric));
     }, [])
 
     return <div id="treemap">

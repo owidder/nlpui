@@ -11,4 +11,4 @@ const showAttr = getHashParamValue("showAttr", "sum")
 
 document.querySelector(".homelink a").setAttribute("href", "/treemap/treemap.html");
 
-ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight} showAttr={showAttr}/>, document.getElementById("container"))
+ReactDOM.render(<TreemapWithProgress zoomto={zoomto} width={window.innerWidth} height={window.innerHeight} currentMetric={showAttr}/>, document.getElementById("container"))
