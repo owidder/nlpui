@@ -16,16 +16,16 @@ interface WordAndValue {
     value: number
 }
 
-const createCloud = (path: string, editStopwords: boolean, showAttr: string) => {
+const createCloud = (path: string, editStopwords: boolean, currentMetric: string) => {
     callApi(`/api/agg/folder/${path}`).then((_wordsAndValues: WordAndValue[]) => {
         const chart = am4core.create("wordCloud", am4plugins_wordCloud.WordCloud);
         chart.fontFamily = "Courier New";
         const series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
         series.randomness = 0;
         series.rotationThreshold = 0.5;
-        const best = _.sortBy(_wordsAndValues, [showAttr]).reverse().slice(0, 100);
+        const best = _.sortBy(_wordsAndValues, [currentMetric]).reverse().slice(0, 100);
         series.data = best.map(wav => {
-            return {tag: wav.word, count: String(wav[showAttr])}
+            return {tag: wav.word, count: String(wav[currentMetric])}
         });
         series.dataFields.word = "tag";
         series.dataFields.value = "count";
