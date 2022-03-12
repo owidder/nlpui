@@ -44,8 +44,7 @@ export const TreemapWithSpinner = ({width, height, zoomto, currentMetric}: Treem
 
     return <div id="treemap">
         {
-            loading ?
-                <ClimbingBoxLoader color="blue" css={override} loading={loading} size={100}/> : <span/>
+            loading ? <ClimbingBoxLoader color="blue" css={override} loading={loading} size={100}/> : <span/>
         }
     </div>
 }
