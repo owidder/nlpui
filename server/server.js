@@ -149,6 +149,7 @@ router.get("/features", async (req, res) => {
         const unstemmedFeatures = features.map(f => {
             return {...f, feature: unstem(f.feature)}
         })
+        unstemmedFeatures.sort((f1, f2) => f2.value - f1.value)
         res.json(unstemmedFeatures)
     } catch (e) {
         res.status(500).json({error: e.toString()});

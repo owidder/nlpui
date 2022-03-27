@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const commandLineArgs = require('command-line-args');
 
-const {readSrcFolder, getPathType} = require("./serverFunctions")
+const {readSrcFolder, getPathType, TFIDF_EXTENSION} = require("./serverFunctions")
 const {initVectors, similarDocs} = require("./vectors");
 
 const cliOptionsConfig = [
@@ -31,7 +31,7 @@ const createStaticFolderResponse = async (folderName, absPath, outPath) => {
 }
 
 const createStaticFileResponse = async (_fileName, relPath, outPath, minTfIdf) => {
-    const fileName = _fileName.split(".tfidf.csv")[0];
+    const fileName = _fileName.split(`.${TFIDF_EXTENSION}`)[0];
     const similarDocsList = await similarDocs(path.join(relPath, fileName), minTfIdf);
     const rounded = similarDocsList.map(d => {
         return {...d, cosine: Math.round((d.cosine + Number.EPSILON) * 100) / 100}

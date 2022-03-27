@@ -81,11 +81,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                     sum: _.round(d.data.sumValues[i], 2),
                     max: _.round(d.data.maxValues[i], 2),
                     avg: _.round(d.data.avgValues[i], 2),
-                    count: Number(d.data.countValues[i])}
+                    count: Number(d.data.countValues[i]),
+                    "max*count": _.round(d.data.maxValues[i] * d.data.countValues[i], 2)}
             })
-            const best = _.sortBy(dataObjArray, [currentMetric]).reverse().slice(0, 20);
+            const best = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse().slice(0, 200);
             const list = best.map(b => {
-                const valStr = ["sum", "max", "avg", "count"].reduce((_valStr, attr) => {
+                const valStr = METRICS.reduce((_valStr, attr) => {
                     const attr_value = `${attr}: ${b[attr]}`;
                     return _valStr + " " + (attr == currentMetric ? `<b>${attr_value}</b>` : attr_value);
                 }, "")

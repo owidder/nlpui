@@ -3,6 +3,7 @@ const fs = require("fs");
 const _ = require("lodash");
 
 const TFIDF_EXTENSION = "tfidf.csv";
+const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
 const {createReadlineInterface} = require("./fileUtil");
 
@@ -12,6 +13,7 @@ let reversedUnstemDict;
 let numberOfFiles = 0;
 
 const AGG_CSV = "_.csv"
+const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"]
 
 const SUM_INDEX = 1
 const MAX_INDEX = 2
@@ -62,7 +64,10 @@ const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     for(const fileOrSubfolder of filesAndSubfolders) {
         const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
         if(pathType === "file") {
-            if(!fileOrSubfolder.startsWith("__") && !fileOrSubfolder.startsWith(".") && !(fileOrSubfolder === AGG_CSV)) {
+            if(!fileOrSubfolder.startsWith("__")
+                && !fileOrSubfolder.startsWith(".")
+                && !(fileOrSubfolder === AGG_CSV || IGNORED_AGG_CSV.includes(fileOrSubfolder))
+                && IGNORED_EXTENSIONS.filter(ext => fileOrSubfolder.endsWith(ext)).length == 0) {
                 filtered.push(fileOrSubfolder)
             }
         } else {
@@ -89,7 +94,7 @@ function readSrcFolder2(relFolder, basePath) {
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
             const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
-            const withoutTfIdfExtension = filtered.map(f => f.split(".tfidf.csv")[0]);
+            const withoutTfIdfExtension = filtered.map(f => f.split(`.${TFIDF_EXTENSION}`)[0]);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(withoutTfIdfExtension));
         });
@@ -129,6 +134,7 @@ const waitForCallback = (callback) => {
 }
 
 function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, totalCtr) {
+    console.log(`_readSubAggFoldersRecursive: ${relFolder}`);
     let _children = undefined;
     const absFolder = path.join(basePath, relFolder);
     return new Promise(async (resolve, reject) => {
@@ -146,10 +152,11 @@ function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, tota
                         const sumValues = filteredUnstemmed.map(wav => wav.sum);
                         const avgValues = filteredUnstemmed.map(wav => wav.avg);
                         const maxValues = filteredUnstemmed.map(wav => wav.max);
+                        const maxCountValues = filteredUnstemmed.map(wav => (wav.max * wav.count));
                         const countValues = filteredUnstemmed.map(wav => wav.count);
                         const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath, progressCallback, totalCtr);
                         _children = _children ? _children : []
-                        _children.push({name: f, value: subCtr, words, children, tfidfValues, sumValues, avgValues, maxValues, countValues});
+                        _children.push({name: f, value: subCtr, words, children, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues});
                     } else {
                         if(f != AGG_CSV) {
                             if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
@@ -260,6 +267,7 @@ const readUnstemDict = (datapath) => {
 
 const createReversedDict = (dict) => {
     return Object.keys(dict).reduce((_rev, word) => {
+        console.log(word);
         return {..._rev, [dict[word]]: word}
     }, {})
 }
