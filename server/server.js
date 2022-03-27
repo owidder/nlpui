@@ -9,13 +9,14 @@ const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require
 
 const {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem
 } = require("./serverFunctions")
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
     {name: "stopwordspath", alias: "p", type: String},
+    {name: "reverseunstem", alias: "r", type: String}
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -160,7 +161,7 @@ router.post("/setStopword", async (req, res) => {
     try {
         if (cliOptions.stopwordspath != null) {
             const {path, word} = req.body;
-            const stemmed = reversedUnstemDict[word] ? reversedUnstemDict[word] : word;
+            const stemmed = stemFromUnstem(word);
             if (stopwords[path] == undefined) {
                 stopwords[path] = [stemmed]
             } else {
@@ -188,7 +189,7 @@ process.on('uncaughtException', function (err) {
 
 initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => {
     initStopwords(cliOptions.stopwordspath);
-    initUnstemDict(cliOptions.datapath);
+    initUnstemDict(cliOptions.datapath, cliOptions.reverseunstem);
     await initNumberOfFiles("tfidf/", cliOptions.datapath);
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);

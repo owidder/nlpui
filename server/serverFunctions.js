@@ -274,12 +274,16 @@ const createReversedDict = (dict) => {
 
 const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
 
-const initUnstemDict = (datapath) => {
+const initUnstemDict = (datapath, reverseUnstem) => {
     unstemDict = readUnstemDict(datapath);
-    reversedUnstemDict = createReversedDict(unstemDict);
+    if(reverseUnstem != null) {
+        reversedUnstemDict = createReversedDict(unstemDict);
+    }
 }
+
+const stemFromUnstem = (unstemmed) => reversedUnstemDict[unstemmed] ? reversedUnstemDict[unstemmed] : unstemmed;
 
 module.exports = {
     readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync, readSubAggFolders,
-    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles
+    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem
 }
