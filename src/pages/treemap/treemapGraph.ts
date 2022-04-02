@@ -24,6 +24,8 @@ export interface Tree {
     value?: number
     wordCountValue?: number
     maxWordCountInBranch?: number
+    wordTfidfValue?: number
+    maxWordTfidfValueInBranch?: number
     children?: Tree[]
 }
 
@@ -38,14 +40,30 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
     }
 
-    const _addWordCountInTreeRecursive = (branch: Tree, word: string): number => {
-        if(branch.children) {
+    const _addMaxWordCountInSiblingsRecursive = (siblings: Tree[]) => {
+        const maxWordCountInSiblings = siblings.reduce((_max, sibling) => _max > sibling.wordCountValue ? _max : sibling.wordCountValue, 0);
+        siblings.forEach(sibling => {
+            sibling.maxWordCountInBranch = maxWordCountInSiblings;
+            if (sibling.children) {
+                _addMaxWordCountInSiblingsRecursive(sibling.children)
+            }
+        })
+    }
+
+    const _addMaxWordTfidfInSiblingsRecursive = (siblings: Tree[]) => {
+        const maxWordTfidfInSiblings = siblings.reduce((_max, sibling) => _max > sibling.wordTfidfValue ? _max : sibling.wordTfidfValue, 0);
+        siblings.forEach(sibling => {
+            sibling.maxWordTfidfValueInBranch = maxWordTfidfInSiblings;
+            if (sibling.children) {
+                _addMaxWordTfidfInSiblingsRecursive(sibling.children)
+            }
+        })
+    }
+
+    const _addWordCountInBranchRecursive = (branch: Tree, word: string): number => {
+        if (branch.children) {
             branch.wordCountValue = branch.children.reduce((_count, child) => {
-                const wordCountOfChild = _addWordCountInTreeRecursive(child, word)
-                if(!branch.maxWordCountInBranch || branch.maxWordCountInBranch < wordCountOfChild) {
-                    branch.maxWordCountInBranch = wordCountOfChild
-                }
-                return _count + wordCountOfChild
+                return _count + _addWordCountInBranchRecursive(child, word)
             }, 0)
         } else {
             branch.wordCountValue = branch.words ? branch.words.filter(w => w === word).length : 0;
@@ -53,12 +71,36 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         return branch.wordCountValue
     }
 
-    _addWordCountInTreeRecursive(data, "Employee");
+    const _addWordTfidfInBranchRecursive = (branch: Tree, word: string): number => {
+        if (branch.children) {
+            branch.wordTfidfValue = branch.children.reduce((_count, child) => {
+                return _count + _addWordTfidfInBranchRecursive(child, word)
+            }, 0)
+        } else {
+            branch.wordTfidfValue = branch.words ?
+                branch.words.reduce((_tfidfValue, w, i) => {
+                    return w === word ? _tfidfValue + branch.tfidfValues[i] : _tfidfValue
+                }, 0)
+                : 0
+        }
+        return branch.wordTfidfValue
+    }
+
+    _addWordCountInBranchRecursive(data, "Employee");
+    if (data.children) {
+        _addMaxWordCountInSiblingsRecursive(data.children)
+    }
+
+    _addWordTfidfInBranchRecursive(data, "Employee");
+    if (data.children) {
+        _addMaxWordTfidfInSiblingsRecursive(data.children)
+    }
 
     const treemap = (data: Tree) => {
         const hierarchy = d3.hierarchy(data)
             .sum(d => d.value)
             .sort((a, b) => b.value - a.value);
+
         return d3.treemap().tile(tile)(hierarchy);
     }
 
@@ -78,10 +120,11 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
     function render(group, _root, _zoomto?: string, event?: MouseEvent) {
         const format = d3.format(",d");
+        const formatFloat = d3.format(".2f");
 
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
-        const lowlightWithWords = (d, wordCount: number, maxWordCount: number) => {
-            const alpha = wordCount / maxWordCount;
+        const lowlightWithWords = (d, value: number, maxValue: number) => {
+            const alpha = value / maxValue;
             const color = d === _root ? "#fff" : d.children ? `rgba(255, 173, 189, ${alpha})` : `rgba(249, 224, 229, ${alpha})`;
             return color
         }
@@ -94,19 +137,21 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
 
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
-            if(!d.data.words) return;
+            if (!d.data.words) return;
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
             const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
             const dataObjArray = d.data.words.map((word, i) => {
-                return {word,
+                return {
+                    word,
                     magic: _.round(d.data.tfidfValues[i], 2),
                     sum: _.round(d.data.sumValues[i], 2),
                     max: _.round(d.data.maxValues[i], 2),
                     avg: _.round(d.data.avgValues[i], 2),
                     count: Number(d.data.countValues[i]),
-                    "max*count": _.round(d.data.maxValues[i] * d.data.countValues[i], 2)}
+                    "max*count": _.round(d.data.maxValues[i] * d.data.countValues[i], 2)
+                }
             })
             const best = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse().slice(0, 200);
             const list = best.map(b => {
@@ -116,19 +161,22 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
-            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({path: _path(d), currentMetric})}`, "Show word cloud");
+            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({
+                path: _path(d),
+                currentMetric
+            })}`, "Show word cloud");
             doListEffect(listHead, listFoot, list, undefined, METRICS, (currentMetric) => {
                 return getHashString({zoomto: _path(d.parent), currentMetric})
             });
         }
 
         createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", _currentMetric);
-        if(event) moveTooltip(event);
+        if (event) moveTooltip(event);
 
         const zoomtoOneLevel = (d) => {
             const partsOfZoomto = _zoomto.split("/");
             const firstPartOfZoomto = partsOfZoomto[0];
-            if(d.data.name == firstPartOfZoomto) {
+            if (d.data.name == firstPartOfZoomto) {
                 setTimeout(() => {
                     zoomin(d, partsOfZoomto.slice(1).join("/"), 10)
                 }, 10)
@@ -148,7 +196,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .on("click", async (event: MouseEvent, d) => {
                 event.preventDefault();
                 hideTooltip();
-                if(d === _root) {
+                if (d === _root) {
                     newZoomtoCallback(_name(_root).split("/").slice(0, -1).join("/"));
                     zoomout(_root)
                     moveTooltip(event);
@@ -159,7 +207,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }
             })
             .each(d => {
-                if(_zoomto) {
+                if (_zoomto) {
                     zoomtoOneLevel(d)
                 }
             });
@@ -172,7 +220,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
 
         node.append("rect")
-            .attr("id", d  => d.leafUid)
+            .attr("id", d => d.leafUid)
             .attr("fill", d => d.data.wordCountValue > 0 ? lowlightWithWords(d, d.data.wordCountValue, d.data.maxWordCountInBranch) : lowlight(d))
             .attr("stroke", "#fff")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(d.leafUid, d))
@@ -192,7 +240,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
             .data(d => {
-                return d === _root ? [_name(d), format(d.value), format(d.data.wordCountValue)] : [d.data.name, format(d.value), format(d.data.wordCountValue)]
+                return d === _root ? [_name(d), format(d.value), formatFloat(d.data.wordTfidfValue)] : [d.data.name, format(d.value), formatFloat(d.data.wordTfidfValue)]
             })
             .join("tspan")
             .attr("x", 3)
@@ -203,7 +251,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                     case 0:
                         return "bolder"
 
-                    case nodes.length-1:
+                    case nodes.length - 1:
                         return "lighter"
 
                     default:
