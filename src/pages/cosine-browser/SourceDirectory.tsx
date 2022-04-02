@@ -5,6 +5,15 @@ import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
 import {METRICS} from "./metrics";
+import {streamContentWithProgress} from "../stream/streamContentWithProgress";
+import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
+import { css } from "@emotion/react";
+
+const override = css`
+  position: absolute;
+  top: 50vh;
+  left: 50vw;
+`;
 
 const _path = require("path");
 
@@ -21,6 +30,8 @@ interface DirectoryState {
     content: string[]
     currentPath: string
     currentPathType?: PathType
+    tree?: any
+    loading: boolean
 }
 
 interface FolderInfo {
@@ -40,7 +51,18 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true}
+
+    private readSubagg() {
+        return new Promise(resolve => {
+            const treeLoaded = (tree: any) => {
+                this.setState({loading: false, tree});
+                resolve()
+            }
+            streamContentWithProgress(`/api/subAgg/folder/`,
+                () => {}, () => {}, () => {}, treeLoaded);
+        })
+    }
 
     private async gotoPath(path: string, withReload?: boolean) {
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
@@ -58,6 +80,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     async componentDidMount() {
+        await this.readSubagg();
         this.gotoPath(this.props.path)
     }
 
@@ -102,7 +125,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             let link = metric == this.props.currentMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
-        return <div className="directory">
+        return this.state.loading ? <ClimbingBoxLoader color="blue" css={override} loading={true} size={100}/> :
+        <div className="directory">
             <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
             <div className="margins row">
                 <div className={gridClass(2)}>
