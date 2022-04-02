@@ -12,22 +12,8 @@ import {
 } from "../../util/tooltip";
 import {METRICS} from "../cosine-browser/metrics";
 import {getHashString} from "../../util/queryUtil2";
-
-export interface Tree {
-    name: string
-    words?: string[]
-    tfidfValues?: number[]
-    sumValues?: number[]
-    avgValues?: number[]
-    maxValues?: number[]
-    countValues?: number[]
-    value?: number
-    wordCountValue?: number
-    maxWordCountInBranch?: number
-    wordTfidfValue?: number
-    maxWordTfidfValueInBranch?: number
-    children?: Tree[]
-}
+import {Tree} from "../../aggTree/Tree";
+import {addMaxWordTfidf, addWordTfidf} from "../../aggTree/treeFunctions";
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string) => {
     const tile = (node, x0, y0, x1, y1) => {
@@ -91,9 +77,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         _addMaxWordCountInSiblingsRecursive(data.children)
     }
 
-    _addWordTfidfInBranchRecursive(data, "Employee");
+    addWordTfidf(data, "Employee");
     if (data.children) {
-        _addMaxWordTfidfInSiblingsRecursive(data.children)
+        addMaxWordTfidf(data.children)
     }
 
     const treemap = (data: Tree) => {
