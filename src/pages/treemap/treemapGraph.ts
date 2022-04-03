@@ -111,8 +111,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
         const lowlightWithWords = (d, value: number, maxValue: number) => {
             const alpha = value / maxValue;
-            const color = d === _root ? "#fff" : d.children ? `rgba(255, 173, 189, ${alpha})` : `rgba(249, 224, 229, ${alpha})`;
-            return color
+            return d === _root ? "#fff" : d.children ? `rgba(255, 173, 189, ${alpha})` : `rgba(249, 224, 229, ${alpha})`;
         }
 
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
@@ -207,7 +206,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         node.append("rect")
             .attr("id", d => d.leafUid)
-            .attr("fill", d => d.data.wordCountValue > 0 ? lowlightWithWords(d, d.data.wordCountValue, d.data.maxWordCountInBranch) : lowlight(d))
+            .attr("fill", d => d.data.wordTfidfValue > 0 ? lowlightWithWords(d, d.data.wordTfidfValue, d.data.maxWordTfidfValueInBranch) : lowlight(d))
             .attr("stroke", "#fff")
             .on("mouseover", (event: MouseEvent, d) => setTooltipData(d.leafUid, d))
             .on("mousemove", (event: MouseEvent) => moveTooltip(event))
