@@ -13,7 +13,7 @@ import {
 import {METRICS} from "../cosine-browser/metrics";
 import {getHashString} from "../../util/queryUtil2";
 import {Tree} from "../../aggTree/Tree";
-import {addMaxWordTfidf, addWordTfidf} from "../../aggTree/treeFunctions";
+import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string) => {
     const tile = (node, x0, y0, x1, y1) => {
@@ -26,60 +26,10 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
     }
 
-    const _addMaxWordCountInSiblingsRecursive = (siblings: Tree[]) => {
-        const maxWordCountInSiblings = siblings.reduce((_max, sibling) => _max > sibling.wordCountValue ? _max : sibling.wordCountValue, 0);
-        siblings.forEach(sibling => {
-            sibling.maxWordCountInBranch = maxWordCountInSiblings;
-            if (sibling.children) {
-                _addMaxWordCountInSiblingsRecursive(sibling.children)
-            }
-        })
-    }
-
-    const _addMaxWordTfidfInSiblingsRecursive = (siblings: Tree[]) => {
-        const maxWordTfidfInSiblings = siblings.reduce((_max, sibling) => _max > sibling.wordTfidfValue ? _max : sibling.wordTfidfValue, 0);
-        siblings.forEach(sibling => {
-            sibling.maxWordTfidfValueInBranch = maxWordTfidfInSiblings;
-            if (sibling.children) {
-                _addMaxWordTfidfInSiblingsRecursive(sibling.children)
-            }
-        })
-    }
-
-    const _addWordCountInBranchRecursive = (branch: Tree, word: string): number => {
-        if (branch.children) {
-            branch.wordCountValue = branch.children.reduce((_count, child) => {
-                return _count + _addWordCountInBranchRecursive(child, word)
-            }, 0)
-        } else {
-            branch.wordCountValue = branch.words ? branch.words.filter(w => w === word).length : 0;
-        }
-        return branch.wordCountValue
-    }
-
-    const _addWordTfidfInBranchRecursive = (branch: Tree, word: string): number => {
-        if (branch.children) {
-            branch.wordTfidfValue = branch.children.reduce((_count, child) => {
-                return _count + _addWordTfidfInBranchRecursive(child, word)
-            }, 0)
-        } else {
-            branch.wordTfidfValue = branch.words ?
-                branch.words.reduce((_tfidfValue, w, i) => {
-                    return w === word ? _tfidfValue + branch.tfidfValues[i] : _tfidfValue
-                }, 0)
-                : 0
-        }
-        return branch.wordTfidfValue
-    }
-
-    _addWordCountInBranchRecursive(data, "Employee");
-    if (data.children) {
-        _addMaxWordCountInSiblingsRecursive(data.children)
-    }
-
     addWordTfidf(data, "Employee");
+    addWordCount(data, "Employee")
     if (data.children) {
-        addMaxWordTfidf(data.children)
+        addMaxWordTfidf(data.children);
     }
 
     const treemap = (data: Tree) => {
@@ -225,7 +175,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
             .data(d => {
-                return d === _root ? [_name(d), format(d.value), formatFloat(d.data.wordTfidfValue)] : [d.data.name, format(d.value), formatFloat(d.data.wordTfidfValue)]
+                const wordValues = `${formatFloat(d.data.wordTfidfValue)} / ${format(d.data.wordCountValue)}`;
+                return d === _root ? [_name(d), format(d.value), wordValues] : [d.data.name, format(d.value), wordValues]
             })
             .join("tspan")
             .attr("x", 3)
