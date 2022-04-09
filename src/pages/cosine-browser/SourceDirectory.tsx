@@ -37,7 +37,7 @@ interface DirectoryState {
     currentPathType?: PathType
     tree?: any
     loading: boolean
-    values?: ValuesForFeature
+    valuesForFeature?: ValuesForFeature
 }
 
 interface FolderInfo {
@@ -57,13 +57,13 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, values: {}}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}}
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise(resolve => {
             streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
-                (values: ValuesForFeature) => {
-                    this.setState({values})
+                (valuesForFeature: ValuesForFeature) => {
+                    this.setState({valuesForFeature})
                     resolve()
                 })
         })
@@ -123,10 +123,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     renderLink(entry: string, path: string) {
-        const maxValue: number = Object.values(this.state.values).reduce((_max, _v) => _v > _max ? _v : _max, 0);
-        const backgroundColor = this.state.values[entry] > 0 ? wordSearchColor(this.state.values[entry], maxValue) : "white";
+        const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
+        const backgroundColor = this.state.valuesForFeature[entry] > 0 ? wordSearchColor(this.state.valuesForFeature[entry], maxValue) : "white";
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        const value = this.state.values[entry] ? `(${this.state.values[entry]})` : "";
+        const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry]})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={`#path=${path}&currentMetric=${this.props.currentMetric}`}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
