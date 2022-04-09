@@ -29,7 +29,7 @@ interface DirectoryProps {
 
 type PathType = "file" | "folder" | "NA"
 
-type ValuesForFeature = [{[fileOrFolder: string]: number}]
+type ValuesForFeature = {[fileOrFolder: string]: number}
 
 interface DirectoryState {
     content: string[]
@@ -57,7 +57,7 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, values: {}}
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise(resolve => {
@@ -123,7 +123,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     renderLink(entry: string, path: string) {
-        // @ts-ignore
         const maxValue: number = Object.values(this.state.values).reduce((_max, _v) => _v > _max ? _v : _max, 0);
         const backgroundColor = this.state.values[entry] > 0 ? wordSearchColor(this.state.values[entry], maxValue) : "white";
         const doHighlight = _path.basename(this.state.currentPath) == entry;
