@@ -8,9 +8,9 @@ const {readFeatures} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 
 const {
-    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
+    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, initStopwords,
     saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
-    readAllValuesForOneFeature
+    readAllValuesForOneFeature, typeFromPath
 } = require("./serverFunctions")
 
 const cliOptionsConfig = [
@@ -73,7 +73,8 @@ router.get("/numberOfFiles", async function (req, res) {
 router.get("/src/folder2/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder2".length + 1);
-        const entries = await readSrcFolder2(relFolder, path.join(cliOptions.datapath, "tfidf"));
+        const absFolder = path.join(cliOptions.datapath, "tfidf", relFolder);
+        const entries = await readSrcFolder2(absFolder);
         const undottedEntries = entries.filter(e => !e.startsWith("."));
         const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
         res.json({
@@ -87,7 +88,8 @@ router.get("/src/folder2/*", async function (req, res) {
 router.get("/src/pathType/*", async function (req, res) {
     try {
         const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
-        const pathType = await getPathType(relPath, path.join(cliOptions.datapath, "tfidf"));
+        const absPath = path.join(cliOptions.datapath, "tfidf", relPath);
+        const pathType = await typeFromPath(absPath);
         console.log(`pathType: ${relPath} -> ${pathType}`);
         res.json({path: relPath, pathType});
     } catch (e) {
@@ -158,7 +160,8 @@ router.get("/valuesForFeature", async (req, res) => {
     try {
         const relFolder = req.query.path;
         const feature = req.query.feature;
-        const values = await readAllValuesForOneFeature(`tfidf/${relFolder}`, cliOptions.datapath, feature);
+        const absPath = path.join(cliOptions.datapath, "tfidf", relFolder)
+        const values = await readAllValuesForOneFeature(absPath, feature);
         await writeJsonz(null, JSON.stringify(values), res);
     } catch (e) {
         res.status(500).json({error: e.toString()});
@@ -198,7 +201,7 @@ process.on('uncaughtException', function (err) {
 initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => {
     initStopwords(cliOptions.stopwordspath);
     initUnstemDict(cliOptions.datapath, cliOptions.reverseunstem);
-    await initNumberOfFiles("tfidf/", cliOptions.datapath);
+    await initNumberOfFiles(path.join(cliOptions.datapath, "tfidf"));
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);
     });

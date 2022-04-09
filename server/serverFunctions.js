@@ -34,24 +34,6 @@ function pathTypeFromStats(stats) {
     return stats.isDirectory() ? "folder" : "file";
 }
 
-function getPathTypeSync(relPath, basePath) {
-    const absPath = path.join(basePath, relPath);
-    if(fs.existsSync(absPath)) {
-        return fs.statSync(absPath).isDirectory() ? "folder" : "file";
-    } else {
-        if(fs.existsSync(`${absPath}.${TFIDF_EXTENSION}`)) {
-            return "file";
-        }
-    }
-
-    throw "unknown path"
-}
-
-function getPathType(relPath, basePath) {
-    const absPath = path.join(basePath, relPath);
-    return typeFromPath(absPath);
-}
-
 const typeFromPath = (path) => {
     return new Promise((resolve, reject) => {
         fs.stat(path, (err, stats) => {
@@ -67,10 +49,11 @@ const typeFromPath = (path) => {
     })
 }
 
-const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
+const filterFolders = async (filesAndSubfolders, absFolder) => {
     const filtered = []
     for(const fileOrSubfolder of filesAndSubfolders) {
-        const pathType = await getPathType(`${relPath}/${fileOrSubfolder}`, basePath)
+        const absFileOrSubfolder = path.join(absFolder, fileOrSubfolder);
+        const pathType = await typeFromPath(absFileOrSubfolder);
         if(pathType === "file") {
             if(!fileOrSubfolder.startsWith("__")
                 && !fileOrSubfolder.startsWith(".")
@@ -86,24 +69,12 @@ const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
     return filtered
 }
 
-function readSrcFolder(relFolder, basePath) {
-    const absFolder = path.join(basePath, relFolder);
-    return new Promise((resolve, reject) => {
-        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
-            if (err) reject(err);
-            resolve(sortNonCaseSensitive(filtered));
-        });
-    })
-}
-
 const removeTfIdfExtension = f => f.split(`.${TFIDF_EXTENSION}`)[0];
 
-function readSrcFolder2(relFolder, basePath) {
-    const absFolder = path.join(basePath, relFolder);
+function readSrcFolder2(absFolder) {
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-            const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
+            const filtered = await filterFolders(filesAndSubfolders, absFolder);
             const withoutTfIdfExtension = filtered.map(removeTfIdfExtension);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(withoutTfIdfExtension));
@@ -156,9 +127,8 @@ const readFolderValues = async (folder) => {
     return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues}
 }
 
-const readAllValuesForOneFeature = (relFolder, basePath, feature) => {
+const readAllValuesForOneFeature = (absPath, feature) => {
     return new Promise(async resolve => {
-        const absPath = path.join(basePath, relFolder);
         const absFolder = await typeFromPath(absPath) == "folder" ? absPath : path.dirname(absPath);
         const values = {};
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
@@ -221,17 +191,16 @@ function _readSubAggFoldersRecursive(folder, progressCallback, totalCtr) {
     })
 }
 
-function _countFilesRecursive(relFolder, basePath) {
+function _countFilesRecursive(absFolder) {
     return new Promise(async (resolve, reject) => {
         try {
-            const absFolder = path.join(basePath, relFolder);
             fs.readdir(absFolder, async (err, filesAndSubfolders) => {
                 let ctr = 0;
                 for (const f of filesAndSubfolders) {
-                    const subFolder = path.join(relFolder, f);
-                    const type = await getPathType(subFolder, basePath);
+                    const subFolder = path.join(absFolder, f);
+                    const type = await typeFromPath(subFolder);
                     if (type === "folder") {
-                        ctr += await _countFilesRecursive(subFolder, basePath)
+                        ctr += await _countFilesRecursive(subFolder)
                     } else {
                         if(isNoAggFile(f)) {
                             ctr++;
@@ -246,9 +215,9 @@ function _countFilesRecursive(relFolder, basePath) {
     })
 }
 
-function initNumberOfFiles(relFolder, basePath) {
+function initNumberOfFiles(absFolder) {
     return new Promise(async resolve => {
-        numberOfFiles = await _countFilesRecursive(relFolder, basePath);
+        numberOfFiles = await _countFilesRecursive(absFolder);
         resolve(numberOfFiles);
     })
 }
@@ -336,7 +305,7 @@ const initUnstemDict = (datapath, reverseUnstem) => {
 const stemFromUnstem = (unstemmed) => reversedUnstemDict[unstemmed] ? reversedUnstemDict[unstemmed] : unstemmed;
 
 module.exports = {
-    readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync, readSubAggFolders,
+    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders,
     initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
-    readAllValuesForOneFeature
+    readAllValuesForOneFeature, typeFromPath
 }
