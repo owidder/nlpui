@@ -5,11 +5,12 @@ const path = require("path");
 
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
 const {readFeatures} = require("./tfidf");
-const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz} = require("./stream");
+const {writeJsonz} = require("./stream");
 
 const {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathType, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
+    readAllValuesForOneFeature
 } = require("./serverFunctions")
 
 const cliOptionsConfig = [
@@ -44,18 +45,13 @@ let totalSubAgg;
 router.get("/subAgg/folder/*", async function (req, res) {
     const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
 
-    let totalProgress = 0;
     try {
         let subAggToReturn;
 
         if(relFolder.length == 0) {
             subAggToReturn = totalSubAgg;
         } else {
-            await writeMaxProgress(res, getNumberOfFiles());
-            await writeProgressText(res, "Reading aggregated tfidf");
-            subAggToReturn = await readSubAggFolders(relFolder, cliOptions.datapath, async (progress) => {
-                await writeProgress(res, totalProgress + Number(progress));
-            });
+            subAggToReturn = await readSubAggFolders(relFolder, cliOptions.datapath, () => {});
         }
 
         await writeJsonz(null, JSON.stringify(subAggToReturn), res);
@@ -152,6 +148,17 @@ router.get("/features", async (req, res) => {
         })
         unstemmedFeatures.sort((f1, f2) => f2.value - f1.value)
         res.json(unstemmedFeatures)
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
+})
+
+router.get("/valuesForFeature", async (req, res) => {
+    try {
+        const relFolder = req.query.path;
+        const feature = req.query.feature;
+        const values = await readAllValuesForOneFeature(`tfidf/${relFolder}`, cliOptions.datapath, feature);
+        await writeJsonz(null, JSON.stringify(values), res);
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

@@ -17,6 +17,8 @@ const override = css`
 
 const _path = require("path");
 
+const NOP = () => {}
+
 interface DirectoryProps {
     path: string
     currentMetric: string
@@ -26,12 +28,15 @@ interface DirectoryProps {
 
 type PathType = "file" | "folder" | "NA"
 
+type ValuesForFeature = [{[fileOrFolder: string]: number}]
+
 interface DirectoryState {
     content: string[]
     currentPath: string
     currentPathType?: PathType
     tree?: any
     loading: boolean
+    values?: ValuesForFeature
 }
 
 interface FolderInfo {
@@ -53,14 +58,14 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true}
 
-    private readSubagg() {
+    private readValuesForFeature(path: string, feature: string) {
         return new Promise(resolve => {
-            const treeLoaded = (tree: any) => {
-                this.setState({loading: false, tree});
-                resolve()
-            }
-            streamContentWithProgress(`/api/subAgg/folder/`,
-                () => {}, () => {}, () => {}, treeLoaded);
+            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
+                (values: ValuesForFeature) => {
+                    console.log(values)
+                    this.setState({values})
+                    resolve()
+                })
         })
     }
 
@@ -75,12 +80,23 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
             const folderInfo: FolderInfo = await callApi(folderUrl)
 
-            this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType})
+            if(pathType == "folder") {
+                await new Promise(resolve => {
+                    const treeLoaded = (tree: any) => {
+                        this.setState({tree});
+                        resolve()
+                    }
+                    streamContentWithProgress(`/api/subAgg/folder/${path}`,
+                        () => {}, () => {}, () => {}, treeLoaded);
+                })
+            }
+
+            this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, loading: false})
         }
     }
 
     async componentDidMount() {
-        await this.readSubagg();
+        this.readValuesForFeature(this.props.path, "Employee")
         this.gotoPath(this.props.path)
     }
 

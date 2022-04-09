@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
+const {readFeatures} = require("./tfidf");
+
 const TFIDF_EXTENSION = "tfidf.csv";
 const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
@@ -12,8 +14,10 @@ let unstemDict;
 let reversedUnstemDict;
 let numberOfFiles = 0;
 
-const AGG_CSV = "_.csv"
-const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"]
+const AGG_CSV = "_.csv";
+const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"];
+
+const isNoAggFile = f => !(f === AGG_CSV || IGNORED_AGG_CSV.indexOf(f) > -1);
 
 const SUM_INDEX = 1
 const MAX_INDEX = 2
@@ -45,10 +49,14 @@ function getPathTypeSync(relPath, basePath) {
 
 function getPathType(relPath, basePath) {
     const absPath = path.join(basePath, relPath);
+    return typeFromPath(absPath);
+}
+
+const typeFromPath = (path) => {
     return new Promise((resolve, reject) => {
-        fs.stat(absPath, (err, stats) => {
+        fs.stat(path, (err, stats) => {
             if (err) {
-                fs.stat(`${absPath}.${TFIDF_EXTENSION}`, (err) => {
+                fs.stat(`${path}.${TFIDF_EXTENSION}`, (err) => {
                     if(err) reject(err);
                     resolve("file");
                 })
@@ -66,7 +74,7 @@ const  filterFolders = async (filesAndSubfolders, relPath, basePath) => {
         if(pathType === "file") {
             if(!fileOrSubfolder.startsWith("__")
                 && !fileOrSubfolder.startsWith(".")
-                && !(fileOrSubfolder === AGG_CSV || IGNORED_AGG_CSV.includes(fileOrSubfolder))
+                && isNoAggFile(fileOrSubfolder)
                 && IGNORED_EXTENSIONS.filter(ext => fileOrSubfolder.endsWith(ext)).length == 0) {
                 filtered.push(fileOrSubfolder)
             }
@@ -89,12 +97,14 @@ function readSrcFolder(relFolder, basePath) {
     })
 }
 
+const removeTfIdfExtension = f => f.split(`.${TFIDF_EXTENSION}`)[0];
+
 function readSrcFolder2(relFolder, basePath) {
     const absFolder = path.join(basePath, relFolder);
     return new Promise((resolve, reject) => {
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
             const filtered = await filterFolders(filesAndSubfolders, relFolder, basePath);
-            const withoutTfIdfExtension = filtered.map(f => f.split(`.${TFIDF_EXTENSION}`)[0]);
+            const withoutTfIdfExtension = filtered.map(removeTfIdfExtension);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(withoutTfIdfExtension));
         });
@@ -133,6 +143,53 @@ const waitForCallback = (callback) => {
     })
 }
 
+const readFolderValues = async (subFolder, basePath) => {
+    const aggValues = await readAggFolder(subFolder, basePath);
+    const unstemmed = unstemWordsAndValues(aggValues);
+    const words = unstemmed.map(wav => wav.word);
+    const tfidfValues = unstemmed.map(wav => wav.value);
+    const sumValues = unstemmed.map(wav => wav.sum);
+    const avgValues = unstemmed.map(wav => wav.avg);
+    const maxValues = unstemmed.map(wav => wav.max);
+    const maxCountValues = unstemmed.map(wav => (wav.max * wav.count));
+    const countValues = unstemmed.map(wav => wav.count);
+
+    return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues}
+}
+
+const readAllValuesForOneFeature = (relFolder, basePath, feature) => {
+    return new Promise(async resolve => {
+        const absPath = path.join(basePath, relFolder);
+        const absFolder = await typeFromPath(absPath) == "folder" ? absPath : path.dirname(absPath);
+        const values = {};
+        fs.readdir(absFolder, async (err, filesAndSubfolders) => {
+            for (const f of filesAndSubfolders) {
+                if(isNoAggFile(f)) {
+                    const fileOrFolder = path.join(absFolder, f);
+                    const type = await typeFromPath(fileOrFolder);
+                    if (type === "folder") {
+                        const folderValues = await readFolderValues(fileOrFolder, basePath);
+                        const indexOfFeature = folderValues.words.findIndex(w => w === feature);
+                        if(indexOfFeature > -1) {
+                            values[f] = folderValues.tfidfValues[indexOfFeature];
+                        }
+                    } else {
+                        const fileValues = await readFeatures(fileOrFolder);
+                        const unstemmedFileValues = fileValues.map(({feature, value}) => {
+                            return {feature: unstem(feature), value}
+                        });
+                        const indexOfFeature = unstemmedFileValues.findIndex(fv => fv.feature === feature);
+                        if(indexOfFeature > -1) {
+                            values[removeTfIdfExtension(f)] = unstemmedFileValues[indexOfFeature].value;
+                        }
+                    }
+                }
+            }
+            resolve(values)
+        })
+    })
+}
+
 function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, totalCtr) {
     console.log(`_readSubAggFoldersRecursive: ${relFolder}`);
     let _children = undefined;
@@ -145,20 +202,12 @@ function _readSubAggFoldersRecursive(relFolder, basePath, progressCallback, tota
                     const subFolder = path.join(relFolder, f);
                     const type = await getPathType(subFolder, basePath);
                     if (type === "folder") {
-                        const aggValues = await readAggFolder(subFolder, basePath);
-                        const filteredUnstemmed = filterStopwordsAndUnstem(subFolder, aggValues);
-                        const words = filteredUnstemmed.map(wav => wav.word);
-                        const tfidfValues = filteredUnstemmed.map(wav => wav.value);
-                        const sumValues = filteredUnstemmed.map(wav => wav.sum);
-                        const avgValues = filteredUnstemmed.map(wav => wav.avg);
-                        const maxValues = filteredUnstemmed.map(wav => wav.max);
-                        const maxCountValues = filteredUnstemmed.map(wav => (wav.max * wav.count));
-                        const countValues = filteredUnstemmed.map(wav => wav.count);
+                        const folderValues = await readFolderValues(subFolder, basePath);
                         const [children, subCtr] = await _readSubAggFoldersRecursive(subFolder, basePath, progressCallback, totalCtr);
                         _children = _children ? _children : []
-                        _children.push({name: f, value: subCtr, words, children, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues});
+                        _children.push({...folderValues, name: f, value: subCtr, children});
                     } else {
-                        if(f != AGG_CSV) {
+                        if(isNoAggFile(f)) {
                             if(++totalCtr.ctr % (100 + (Math.floor(Math.random() * 10))) == 0) {
                                 await waitForCallback(() => progressCallback(totalCtr.ctr));
                             }
@@ -186,7 +235,7 @@ function _countFilesRecursive(relFolder, basePath) {
                     if (type === "folder") {
                         ctr += await _countFilesRecursive(subFolder, basePath)
                     } else {
-                        if(f != AGG_CSV) {
+                        if(isNoAggFile(f)) {
                             ctr++;
                         }
                     }
@@ -243,7 +292,11 @@ const filterStopwords = (path, wordsAndValues) => {
 
 const filterStopwordsAndUnstem = (path, wordsAndValues) => {
     const filteredWordsAndValues = filterStopwords(path, wordsAndValues);
-    return  filteredWordsAndValues.map(wav => {
+    return unstemWordsAndValues(filteredWordsAndValues)
+}
+
+const unstemWordsAndValues = (wordsAndValues) => {
+    return  wordsAndValues.map(wav => {
         return {...wav, word: unstem(wav.word)}
     })
 }
@@ -285,5 +338,6 @@ const stemFromUnstem = (unstemmed) => reversedUnstemDict[unstemmed] ? reversedUn
 
 module.exports = {
     readSrcFolder, getPathType, readAggFolder, readSrcFolder2, TFIDF_EXTENSION, getPathTypeSync, readSubAggFolders,
-    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem
+    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
+    readAllValuesForOneFeature
 }
