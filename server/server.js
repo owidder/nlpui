@@ -33,7 +33,8 @@ const server = require("http").createServer(app);
 router.get("/agg/folder/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
-        const wordsAndValues = await readAggFolder(`tfidf/${relFolder}`, cliOptions.datapath);
+        const folder = path.join(cliOptions.datapath, "tfidf", relFolder);
+        const wordsAndValues = await readAggFolder(folder);
         res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
     } catch (e) {
         res.status(500).json({error: e.toString()});
