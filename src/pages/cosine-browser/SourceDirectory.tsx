@@ -126,9 +126,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const maxValue: number = Object.values(this.state.values).reduce((_max, _v) => _v > _max ? _v : _max, 0);
         const backgroundColor = this.state.values[entry] > 0 ? wordSearchColor(this.state.values[entry], maxValue) : "white";
         const doHighlight = _path.basename(this.state.currentPath) == entry;
+        const value = this.state.values[entry] ? `(${this.state.values[entry]})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={`#path=${path}&currentMetric=${this.props.currentMetric}`}
-                  onClick={() => this.gotoPath(path, true)}>{entry}</a>
+                  onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
     }
 
     render() {
