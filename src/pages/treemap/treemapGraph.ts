@@ -14,6 +14,7 @@ import {METRICS} from "../cosine-browser/metrics";
 import {getHashString} from "../../util/queryUtil2";
 import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
+import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string) => {
     const tile = (node, x0, y0, x1, y1) => {
@@ -60,8 +61,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         const lowlight = (d) => d === _root ? "#fff" : d.children ? "#ccc" : "#ddd";
         const lowlightWithWords = (d, value: number, maxValue: number) => {
-            const alpha = value / maxValue;
-            return d === _root ? "#fff" : d.children ? `rgba(255, 173, 189, ${alpha})` : `rgba(249, 224, 229, ${alpha})`;
+            return d === _root ? "#fff" : wordSearchColor(value, maxValue, d.children);
         }
 
         const _name = d => d.ancestors().reverse().map(d => d.data.name).join("/");

@@ -8,6 +8,7 @@ import {METRICS} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import { css } from "@emotion/react";
+import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 
 const override = css`
   position: absolute;
@@ -62,7 +63,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         return new Promise(resolve => {
             streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
                 (values: ValuesForFeature) => {
-                    console.log(values)
                     this.setState({values})
                     resolve()
                 })
@@ -123,8 +123,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     renderLink(entry: string, path: string) {
+        // @ts-ignore
+        const maxValue: number = Object.values(this.state.values).reduce((_max, _v) => _v > _max ? _v : _max, 0);
+        const backgroundColor = this.state.values[entry] > 0 ? wordSearchColor(this.state.values[entry], maxValue) : "white";
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
+        return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={`#path=${path}&currentMetric=${this.props.currentMetric}`}
                   onClick={() => this.gotoPath(path, true)}>{entry}</a>
     }
