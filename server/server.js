@@ -9,9 +9,10 @@ const {writeJsonz} = require("./stream");
 
 const {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
+    saveStopwords, filterStopwordsAndUnstem, stopwords, initNumberOfFiles, getNumberOfFiles,
     readAllValuesForOneFeature, typeFromPath
-} = require("./serverFunctions")
+} = require("./serverFunctions");
+const {initUnstemDict, unstem, stemFromUnstem} = require("./unstem");
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
@@ -136,7 +137,7 @@ router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
         console.log(`cosineValuesWithProgress: ${doc1} / ${JSON.stringify(req.headers, null, 4)}`);
-        await similarDocsFromFileWithProgress(doc1, .1, res, 100);
+        await similarDocsFromFileWithProgress(doc1, .1, res, 100, "Employee", cliOptions.dataPath);
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

@@ -5,6 +5,7 @@ const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz, deleteEve
 const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
+const {readFeatures} = require("./tfidf");
 
 const computeCosineBetweenVectors = (vector1, vector2) => {
     if(vector1.length === vector2.length) {
@@ -62,7 +63,7 @@ const findVector = async (doc, eventEmitter) => {
     })
 }
 
-const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) => {
+const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, featureToSearchFor, basePath) => {
     console.log(`similarDocsFromFileWithProgress: ${doc1}`);
     const cachedResult = resultCache.get(doc1);
 
@@ -86,6 +87,10 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs) =>
                         const doc2Vector = parts.slice(1).map(Number);
                         const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
                         if(cosine > threshold) {
+                            if(featureToSearchFor) {
+                                const allFeatures = await readFeatures(path.join(basePath, doc2));
+                                console.log(allFeatures);
+                            }
                             resultList.push({document: doc2, cosine})
                         }
                     }

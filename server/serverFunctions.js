@@ -8,10 +8,9 @@ const TFIDF_EXTENSION = "tfidf.csv";
 const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
 const {createReadlineInterface} = require("./fileUtil");
+const {unstem, unstemWordsAndValues} = require("./unstem");
 
 let stopwords = {};
-let unstemDict;
-let reversedUnstemDict;
 let numberOfFiles = 0;
 
 const AGG_CSV = "_.csv";
@@ -263,12 +262,6 @@ const filterStopwordsAndUnstem = (path, wordsAndValues) => {
     return unstemWordsAndValues(filteredWordsAndValues)
 }
 
-const unstemWordsAndValues = (wordsAndValues) => {
-    return  wordsAndValues.map(wav => {
-        return {...wav, word: unstem(wav.word)}
-    })
-}
-
 const initStopwords = (stopwordspath) => {
     if(fs.existsSync(stopwordspath)) {
         const stopwordsStr = fs.readFileSync(stopwordspath);
@@ -276,36 +269,8 @@ const initStopwords = (stopwordspath) => {
     }
 }
 
-const readUnstemDict = (datapath) => {
-    const unstemDictPath = path.join(datapath, "unstem_dict.json");
-    if(fs.existsSync(unstemDictPath)) {
-        const unstemDictJson = fs.readFileSync(unstemDictPath);
-        return JSON.parse(unstemDictJson);
-    }
-
-    return {}
-}
-
-const createReversedDict = (dict) => {
-    return Object.keys(dict).reduce((_rev, word) => {
-        console.log(word);
-        return {..._rev, [dict[word]]: word}
-    }, {})
-}
-
-const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
-
-const initUnstemDict = (datapath, reverseUnstem) => {
-    unstemDict = readUnstemDict(datapath);
-    if(reverseUnstem != null) {
-        reversedUnstemDict = createReversedDict(unstemDict);
-    }
-}
-
-const stemFromUnstem = (unstemmed) => reversedUnstemDict[unstemmed] ? reversedUnstemDict[unstemmed] : unstemmed;
-
 module.exports = {
     readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders,
-    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initUnstemDict, unstem, initNumberOfFiles, getNumberOfFiles, stemFromUnstem,
+    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initNumberOfFiles, getNumberOfFiles,
     readAllValuesForOneFeature, typeFromPath
 }
