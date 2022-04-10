@@ -1,11 +1,9 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const {foldersToBuild} = require("./scripts/searchFolders");
 
-const PUBLIC_PATH = "public";
 const TEMPLATES_PATH = "templates";
 const DEFAULT_TEMPLATE = "default.html";
 const PAGES_PATH = "src/pages";
@@ -41,7 +39,9 @@ const common = {
     },
     devtool: 'source-map',
     devServer: {
-        contentBase: path.join(__dirname, "public"),
+        static: {
+            directory: path.join(__dirname, "public")
+        },
         compress: true,
         port: 9000,
         proxy: {
@@ -126,12 +126,13 @@ const common = {
             // Make sure to add the new loader(s) before the "file" loader.
         ],
     },
-    plugins: [
-        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/static", to: "cosine-browser"}]),
-        new CopyWebpackPlugin([PUBLIC_PATH, {from: "data/lsi", to: "lsi"}]),
-    ],
+    plugins: [],
     resolve: {
-        extensions: [".tsx", ".ts", ".js"]
+        extensions: [".tsx", ".ts", ".js"],
+        fallback: {
+            buffer: false,
+            path: require.resolve("path-browserify")
+        },
     },
 }
 

@@ -1,5 +1,5 @@
 import * as React from "react"
-import * as ReactDOM from "react-dom"
+import * as ReactDOM from "react-dom/client"
 
 import {getHashParamValue} from "../../util/queryUtil2"
 import {SourceDirectory} from "./SourceDirectory"
@@ -10,4 +10,4 @@ import "materialize-css/dist/css/materialize.css"
 const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
 
-ReactDOM.render(<SourceDirectory path={path} currentMetric={currentMetric} staticFolderCall={false}/>, document.getElementById("container"))
+ReactDOM.createRoot(document.getElementById("container")).render(<SourceDirectory path={path} currentMetric={currentMetric} staticFolderCall={false}/>)

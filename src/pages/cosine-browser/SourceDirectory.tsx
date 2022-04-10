@@ -60,7 +60,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}}
 
     private readValuesForFeature(path: string, feature: string) {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
                 (valuesForFeature: ValuesForFeature) => {
                     this.setState({valuesForFeature})
@@ -81,7 +81,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderInfo: FolderInfo = await callApi(folderUrl)
 
             if(pathType == "folder") {
-                await new Promise(resolve => {
+                await new Promise<void>(resolve => {
                     const treeLoaded = (tree: any) => {
                         this.setState({tree});
                         resolve()
