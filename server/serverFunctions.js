@@ -2,9 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
-const {readFeatures} = require("./tfidf");
+const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 
-const TFIDF_EXTENSION = "tfidf.csv";
 const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
 const {createReadlineInterface} = require("./fileUtil");
@@ -228,7 +227,7 @@ function getNumberOfFiles() {
 function readSubAggFolders(relFolder, basePath, progressCallback) {
     return new Promise(async (resolve, reject) => {
         try {
-            const absFolder = path.join(basePath, "tfidf", relFolder);
+            const absFolder = path.join(basePath, TFIDF_FOLDER, relFolder);
             const [children] = await _readSubAggFoldersRecursive(absFolder, progressCallback, {ctr: 0});
             resolve({name: (relFolder.length > 0 ? relFolder : "."), children})
         } catch (e) {

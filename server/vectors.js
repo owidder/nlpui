@@ -1,3 +1,4 @@
+const path = require("path");
 const math = require('mathjs');
 const NodeCache = require("node-cache");
 
@@ -6,6 +7,7 @@ const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
 const {readFeatures} = require("./tfidf");
+const {unstem} = require("./unstem");
 
 const computeCosineBetweenVectors = (vector1, vector2) => {
     if(vector1.length === vector2.length) {
@@ -87,11 +89,19 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
                         const doc2Vector = parts.slice(1).map(Number);
                         const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
                         if(cosine > threshold) {
+                            let tfidfValueOfFeature;
                             if(featureToSearchFor) {
                                 const allFeatures = await readFeatures(path.join(basePath, doc2));
+                                const indexOfSearchedFeature = allFeatures.findIndex(f => {
+                                    console.log(unstem(f.feature))
+                                    return unstem(f.feature) == featureToSearchFor
+                                });
+                                if(indexOfSearchedFeature > -1) {
+                                    tfidfValueOfFeature = allFeatures[indexOfSearchedFeature].value;
+                                }
                                 console.log(allFeatures);
                             }
-                            resultList.push({document: doc2, cosine})
+                            resultList.push({document: doc2, cosine, tfidfValueOfFeature})
                         }
                     }
                     if(++lineCtr % randomNumberBetween(100, 110) == 0) {

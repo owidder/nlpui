@@ -4,11 +4,11 @@ const commandLineArgs = require('command-line-args');
 const path = require("path");
 
 const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
-const {readFeatures} = require("./tfidf");
+const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 
 const {
-    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, initStopwords,
+    readAggFolder, readSrcFolder2, readSubAggFolders, initStopwords,
     saveStopwords, filterStopwordsAndUnstem, stopwords, initNumberOfFiles, getNumberOfFiles,
     readAllValuesForOneFeature, typeFromPath
 } = require("./serverFunctions");
@@ -34,7 +34,7 @@ const server = require("http").createServer(app);
 router.get("/agg/folder/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
-        const folder = path.join(cliOptions.datapath, "tfidf", relFolder);
+        const folder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const wordsAndValues = await readAggFolder(folder);
         res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
     } catch (e) {
@@ -74,7 +74,7 @@ router.get("/numberOfFiles", async function (req, res) {
 router.get("/src/folder2/*", async function (req, res) {
     try {
         const relFolder = req.originalUrl.substr("/api/src/folder2".length + 1);
-        const absFolder = path.join(cliOptions.datapath, "tfidf", relFolder);
+        const absFolder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const entries = await readSrcFolder2(absFolder);
         const undottedEntries = entries.filter(e => !e.startsWith("."));
         const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
@@ -89,7 +89,7 @@ router.get("/src/folder2/*", async function (req, res) {
 router.get("/src/pathType/*", async function (req, res) {
     try {
         const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
-        const absPath = path.join(cliOptions.datapath, "tfidf", relPath);
+        const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relPath);
         const pathType = await typeFromPath(absPath);
         console.log(`pathType: ${relPath} -> ${pathType}`);
         res.json({path: relPath, pathType});
@@ -137,7 +137,7 @@ router.get("/cosineValuesWithProgress", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
         console.log(`cosineValuesWithProgress: ${doc1} / ${JSON.stringify(req.headers, null, 4)}`);
-        await similarDocsFromFileWithProgress(doc1, .1, res, 100, "Employee", cliOptions.dataPath);
+        await similarDocsFromFileWithProgress(doc1, .1, res, 100, "Employee", path.join(cliOptions.datapath, TFIDF_FOLDER));
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
@@ -146,7 +146,7 @@ router.get("/cosineValuesWithProgress", async (req, res) => {
 router.get("/features", async (req, res) => {
     try {
         const doc1 = req.query.doc1;
-        const features = await readFeatures(path.join(cliOptions.datapath, `tfidf/${doc1}.${TFIDF_EXTENSION}`));
+        const features = await readFeatures(path.join(cliOptions.datapath, TFIDF_FOLDER, `${doc1}.${TFIDF_EXTENSION}`));
         const unstemmedFeatures = features.map(f => {
             return {...f, feature: unstem(f.feature)}
         })
@@ -161,7 +161,7 @@ router.get("/valuesForFeature", async (req, res) => {
     try {
         const relFolder = req.query.path;
         const feature = req.query.feature;
-        const absPath = path.join(cliOptions.datapath, "tfidf", relFolder)
+        const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder)
         const values = await readAllValuesForOneFeature(absPath, feature);
         await writeJsonz(null, JSON.stringify(values), res);
     } catch (e) {
@@ -202,7 +202,7 @@ process.on('uncaughtException', function (err) {
 initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => {
     initStopwords(cliOptions.stopwordspath);
     initUnstemDict(cliOptions.datapath, cliOptions.reverseunstem);
-    await initNumberOfFiles(path.join(cliOptions.datapath, "tfidf"));
+    await initNumberOfFiles(path.join(cliOptions.datapath, TFIDF_FOLDER));
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);
     });
