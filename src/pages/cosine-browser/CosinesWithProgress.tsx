@@ -22,6 +22,7 @@ import {Feature} from "../Feature";
 import "../styles.scss"
 import "./cosines.scss"
 import {callApi} from "../../util/fetchUtil";
+import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 
 interface CosinesWithProgressProps {
     doc: string
@@ -30,6 +31,7 @@ interface CosinesWithProgressProps {
 interface CosineValue {
     document: string
     cosine: number
+    tfidfValueOfFeature?: number
 }
 
 let shortlist = true;
@@ -46,9 +48,9 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
             setProgress,
             setNumberOfFiles,
             setProgressText,
-            _cosineValues => {
+            (_cosineValues: CosineValue[]) => {
                 const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
-                setCosineValues([{document: doc, cosine: 1}, ...sortedCosineValues]);
+                setCosineValues(sortedCosineValues);
             })
     }, [doc])
 
@@ -137,9 +139,12 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
 
     const showCosines = () => {
         setTimeout(() => handleList(cosineValues), 10);
+        const maxTfidfValueOfFeature = cosineValues.reduce((_max, _cosineValue) =>
+            _max < _cosineValue.tfidfValueOfFeature ? _cosineValue.tfidfValueOfFeature : _max, 0);
         return <div className="list">
             {cosineValues.map((cosineValue, index) => {
-                return <div className="listrow" key={index}>
+                const backgroundColor = wordSearchColor(cosineValue.tfidfValueOfFeature, maxTfidfValueOfFeature);
+                return <div className="listrow" key={index} style={{backgroundColor}}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
                         <span className="document-path">{cosineValue.document}</span>

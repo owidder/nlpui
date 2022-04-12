@@ -65,6 +65,14 @@ const findVector = async (doc, eventEmitter) => {
     })
 }
 
+const findTfidfValueOfFeature = async (docPath, feature) => {
+    if(feature) {
+        const allFeatures = await readFeatures(docPath);
+        const indexOfFeature = allFeatures.findIndex(f => unstem(f.feature) == feature);
+        return indexOfFeature > -1 ? allFeatures[indexOfFeature].value : undefined;
+    }
+}
+
 const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, featureToSearchFor, basePath) => {
     console.log(`similarDocsFromFileWithProgress: ${doc1}`);
     const cachedResult = resultCache.get(doc1);
@@ -79,7 +87,8 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
             const doc1Vector = await findVector(doc1, eventEmitter);
             await writeMaxProgress(eventEmitter, numberOfVectors);
             await writeProgressText(eventEmitter, "Computing cosines");
-            const resultList = [];
+
+            const resultList = [{document: doc1, cosine: 1, tfidfValueOfFeature: await findTfidfValueOfFeature(path.join(basePath, doc1), featureToSearchFor)}];
             let lineCtr = 0;
             return new Promise(resolve => {
                 createReadlineInterface(vectorspath).on("line", async line => {
@@ -89,18 +98,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
                         const doc2Vector = parts.slice(1).map(Number);
                         const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
                         if(cosine > threshold) {
-                            let tfidfValueOfFeature;
-                            if(featureToSearchFor) {
-                                const allFeatures = await readFeatures(path.join(basePath, doc2));
-                                const indexOfSearchedFeature = allFeatures.findIndex(f => {
-                                    console.log(unstem(f.feature))
-                                    return unstem(f.feature) == featureToSearchFor
-                                });
-                                if(indexOfSearchedFeature > -1) {
-                                    tfidfValueOfFeature = allFeatures[indexOfSearchedFeature].value;
-                                }
-                                console.log(allFeatures);
-                            }
+                            const tfidfValueOfFeature = await findTfidfValueOfFeature(path.join(basePath, doc2), featureToSearchFor);
                             resultList.push({document: doc2, cosine, tfidfValueOfFeature})
                         }
                     }

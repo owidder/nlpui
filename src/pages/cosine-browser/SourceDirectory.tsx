@@ -124,7 +124,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     renderLink(entry: string, path: string) {
         const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
-        const backgroundColor = this.state.valuesForFeature[entry] > 0 ? wordSearchColor(this.state.valuesForFeature[entry], maxValue) : "white";
+        const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry]})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
