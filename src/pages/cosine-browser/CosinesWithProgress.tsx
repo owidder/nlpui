@@ -144,10 +144,11 @@ export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
         return <div className="list">
             {cosineValues.map((cosineValue, index) => {
                 const backgroundColor = wordSearchColor(cosineValue.tfidfValueOfFeature, maxTfidfValueOfFeature);
+                const value = cosineValue.tfidfValueOfFeature ? ` (${cosineValue.tfidfValueOfFeature})` : "";
                 return <div className="listrow" key={index} style={{backgroundColor}}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
-                        <span className="document-path">{cosineValue.document}</span>
+                        <span className="document-path">{cosineValue.document}</span><span className="small-value">{value}</span>
                     </div>
                     <div className="cell"><a target="_blank"
                                              href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a>
