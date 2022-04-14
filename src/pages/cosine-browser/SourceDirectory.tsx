@@ -9,6 +9,7 @@ import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import { css } from "@emotion/react";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
+import {removeAllTooltips} from "../../util/tooltip";
 
 const override = css`
   position: absolute;
@@ -91,6 +92,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 })
             }
 
+            removeAllTooltips();
             this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, loading: false})
         }
     }

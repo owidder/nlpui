@@ -50,6 +50,8 @@ export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: str
     selectAllTooltips().data([tooltip]);
 }
 
+export const removeAllTooltips = () => selectAllTooltips().remove();
+
 const _moveTooltip = (pageX: number, pageY: number) => {
     selectTooltip().style('transform', `translate(${pageX}px, ${pageY}px)`);
 }
