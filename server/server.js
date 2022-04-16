@@ -45,7 +45,8 @@ router.get("/agg/folder/*", async function (req, res) {
 let totalSubAgg;
 
 router.get("/subAgg/folder/*", async function (req, res) {
-    const relFolder = req.originalUrl.substr("/api/subAgg/folder".length + 1);
+    const relFolder = req.originalUrl.substring("/api/subAgg/folder".length + 1);
+    console.log(`subAgg: ${relFolder}`);
 
     try {
         let subAggToReturn;
@@ -160,10 +161,14 @@ router.get("/features", async (req, res) => {
 router.get("/valuesForFeature", async (req, res) => {
     try {
         const relFolder = req.query.path;
+        console.log(`start valuesForFeature: ${relFolder}`);
         const feature = req.query.feature;
         const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder)
         const values = await readAllValuesForOneFeature(absPath, feature);
+        console.log(`end valuesForFeature: ${relFolder}`);
         await writeJsonz(null, JSON.stringify(values), res);
+        res.status(200).send();
+        console.log(`written valuesForFeature: ${relFolder}`);
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

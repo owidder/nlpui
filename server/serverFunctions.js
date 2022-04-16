@@ -158,7 +158,6 @@ const readAllValuesForOneFeature = (absPath, feature) => {
 }
 
 function _readSubAggFoldersRecursive(folder, progressCallback, totalCtr) {
-    console.log(`_readSubAggFoldersRecursive: ${folder}`);
     let _children = undefined;
     return new Promise(async (resolve, reject) => {
         try {

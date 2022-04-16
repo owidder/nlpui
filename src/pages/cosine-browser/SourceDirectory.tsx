@@ -71,6 +71,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
+        await this.readValuesForFeature(path, "Employee");
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
@@ -98,7 +99,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     async componentDidMount() {
-        this.readValuesForFeature(this.props.path, "Employee")
         this.gotoPath(this.props.path)
     }
 
