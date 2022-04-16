@@ -74,14 +74,20 @@ export const WordCloud = ({path, currentMetric}: WordCloudProps) => {
         if(paramPath && paramWord) {
             callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(async status => {
                 console.log(status);
-                if(chart) chart.dispose();
+                if(chart) {
+                    chart.dispose();
+                    setChart(null);
+                }
                 setChart(await createCloud(path, switchOnEditStopwords, currentMetric));
             })
         } else {
-            if(chart) chart.dispose();
+            if(chart) {
+                chart.dispose();
+                setChart(null);
+            }
             createCloud(path, switchOnEditStopwords, currentMetric).then(_chart => setChart(_chart));
         }
-    }, [path, switchOnEditStopwords])
+    }, [path, switchOnEditStopwords, currentMetric])
 
-    return <div id="wordCloud"></div>
+    return <div id="wordCloud"/>
 }
