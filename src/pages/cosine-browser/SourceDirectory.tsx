@@ -83,9 +83,18 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderInfo: FolderInfo = await callApi(folderUrl)
 
             if(pathType == "folder") {
+                let finished = false;
+                setTimeout(() => {
+                    console.log("set loading to true")
+                    if(!finished) {
+                        this.setState({loading: true})
+                    }
+                }, 500);
+
                 await new Promise<void>(resolve => {
                     const treeLoaded = (tree: any) => {
-                        this.setState({tree});
+                        finished = true;
+                        this.setState({tree, loading: false});
                         resolve()
                     }
                     streamContentWithProgress(`/api/subAgg/folder/${path}`,
@@ -128,7 +137,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry]})` : "";
+        const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={`#path=${path}&currentMetric=${this.props.currentMetric}`}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
