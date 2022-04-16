@@ -26,7 +26,11 @@ export const addWordCount = (branch: Tree, word: string): number => {
             return _count + addWordCount(child, word)
         }, 0)
     } else {
-        branch.wordCountValue = branch.words ? branch.words.filter(w => w === word).length : 0;
+        branch.wordCountValue = branch.words ?
+            branch.words.reduce((_countValue, w, i) => {
+                return w === word ? _countValue + branch.countValues[i] : _countValue
+            }, 0)
+            : 0;
     }
     return branch.wordCountValue
 }
