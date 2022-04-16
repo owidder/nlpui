@@ -76,7 +76,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
-            const listHead = `<span class="tooltip-title">${_path(d)}</span>`;
+            const showWordCloudLink = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({
+                path: _path(d),
+                currentMetric
+            })}`, "Show word cloud");
+
+            const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + showWordCloudLink;
             const dataObjArray = d.data.words.map((word, i) => {
                 return {
                     word,
@@ -88,7 +93,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                     "max*count": _.round(d.data.maxValues[i] * d.data.countValues[i], 2)
                 }
             })
-            const best = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse().slice(0, 200);
+            const best = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse();
             const list = best.map(b => {
                 const valStr = METRICS.reduce((_valStr, attr) => {
                     const attr_value = `${attr}: ${b[attr]}`;
@@ -96,11 +101,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
-            const listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({
-                path: _path(d),
-                currentMetric
-            })}`, "Show word cloud");
-            doListEffect(listHead, listFoot, list, undefined, METRICS, (currentMetric) => {
+            doListEffect(listHead, showWordCloudLink, list, undefined, METRICS, (currentMetric) => {
                 return getHashString({zoomto: _path(d.parent), currentMetric})
             });
         }
