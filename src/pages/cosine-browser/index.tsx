@@ -9,5 +9,12 @@ import "materialize-css/dist/css/materialize.css"
 
 const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
+const feature = getHashParamValue("feature", "");
 
-ReactDOM.createRoot(document.getElementById("container")).render(<SourceDirectory path={path} currentMetric={currentMetric} staticFolderCall={false}/>)
+ReactDOM.createRoot(document.getElementById("container"))
+    .render(<SourceDirectory
+        path={path}
+        currentMetric={currentMetric}
+        staticFolderCall={false}
+        feature={feature}
+    />)

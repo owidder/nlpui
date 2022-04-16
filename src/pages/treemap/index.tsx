@@ -8,7 +8,15 @@ import "materialize-css/dist/css/materialize.css"
 
 const zoomto = getHashParamValue("zoomto", "");
 const currentMetric = getHashParamValue("currentMetric", "sum")
+const feature = getHashParamValue("feature", "")
 
 document.querySelector(".homelink a").setAttribute("href", "/treemap/treemap.html");
 
-ReactDOM.createRoot(document.getElementById("container")).render(<TreemapWithSpinner zoomto={zoomto} width={window.innerWidth} height={window.innerHeight} currentMetric={currentMetric}/>)
+ReactDOM.createRoot(document.getElementById("container"))
+    .render(<TreemapWithSpinner
+        zoomto={zoomto}
+        width={window.innerWidth}
+        height={window.innerHeight}
+        currentMetric={currentMetric}
+        feature={feature}
+    />)

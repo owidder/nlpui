@@ -26,6 +26,7 @@ interface DirectoryProps {
     currentMetric: string
     staticFolderCall?: boolean
     staticFileCall?: boolean
+    feature?: string
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -71,7 +72,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
-        await this.readValuesForFeature(path, "Employee");
+        if(this.props.feature) {
+            await this.readValuesForFeature(path, this.props.feature);
+        }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
 

@@ -16,7 +16,7 @@ import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 
-export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string) => {
+export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string, feature?: string) => {
     const tile = (node, x0, y0, x1, y1) => {
         d3.treemapBinary(node, 0, 0, width, height);
         for (const child of node.children) {
@@ -27,10 +27,12 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         }
     }
 
-    addWordTfidf(data, "Employee");
-    addWordCount(data, "Employee")
-    if (data.children) {
-        addMaxWordTfidf(data.children);
+    if(feature) {
+        addWordTfidf(data, feature);
+        addWordCount(data, feature)
+        if (data.children) {
+            addMaxWordTfidf(data.children);
+        }
     }
 
     const treemap = (data: Tree) => {
@@ -176,7 +178,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             .attr("font-weight", d => d === _root ? "bold" : null)
             .selectAll("tspan")
             .data(d => {
-                const wordValues = `${formatFloat(d.data.wordTfidfValue)} / ${format(d.data.wordCountValue)}`;
+                const wordValues = feature ? `${formatFloat(d.data.wordTfidfValue)} / ${format(d.data.wordCountValue)}` : "";
                 return d === _root ? [_name(d), format(d.value), wordValues] : [d.data.name, format(d.value), wordValues]
             })
             .join("tspan")
