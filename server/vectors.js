@@ -6,7 +6,7 @@ const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz, deleteEve
 const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
-const {readFeatures} = require("./tfidf");
+const {readFeatures, compareToFeature} = require("./tfidf");
 const {unstem} = require("./unstem");
 
 const computeCosineBetweenVectors = (vector1, vector2) => {
@@ -68,9 +68,21 @@ const findVector = async (doc, eventEmitter) => {
 const findTfidfValueOfFeature = async (docPath, feature) => {
     if(feature) {
         const allFeatures = await readFeatures(docPath);
-        const indexOfFeature = allFeatures.findIndex(f => unstem(f.feature) == feature);
+        const indexOfFeature = allFeatures.findIndex(f => compareToFeature(unstem(f.feature), feature));
         return indexOfFeature > -1 ? allFeatures[indexOfFeature].value : undefined;
     }
+}
+
+const addTfidfValuesOfFeature = (resultList, feature, basePath) => {
+    const resultListWithFeatureValues = [];
+    return new Promise(async resolve => {
+        for(let i = 0; i < resultList.length; i++) {
+            const _r = resultList[i];
+            const tfidfValueOfFeature = await findTfidfValueOfFeature(path.join(basePath, _r.document), feature);
+            resultListWithFeatureValues.push({..._r, tfidfValueOfFeature});
+        }
+        resolve(resultListWithFeatureValues)
+    })
 }
 
 const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, featureToSearchFor, basePath) => {
@@ -80,7 +92,9 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
     const eventEmitter = subscribeToEventEmitter("vector", res, doc1);
 
     if(cachedResult) {
-        return writeJsonz(eventEmitter, cachedResult);
+        const cachedResultList = JSON.parse(cachedResult);
+        const cachedResultListWithFeatureValues = await addTfidfValuesOfFeature(cachedResultList, featureToSearchFor, basePath);
+        return writeJsonz(eventEmitter, JSON.stringify(cachedResultListWithFeatureValues));
     } else {
         if(eventEmitter.isNew) {
             eventEmitter.isNew = false;
@@ -88,7 +102,7 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
             await writeMaxProgress(eventEmitter, numberOfVectors);
             await writeProgressText(eventEmitter, "Computing cosines");
 
-            const resultList = [{document: doc1, cosine: 1, tfidfValueOfFeature: await findTfidfValueOfFeature(path.join(basePath, doc1), featureToSearchFor)}];
+            const resultList = [{document: doc1, cosine: 1}];
             let lineCtr = 0;
             return new Promise(resolve => {
                 createReadlineInterface(vectorspath).on("line", async line => {
@@ -98,19 +112,19 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
                         const doc2Vector = parts.slice(1).map(Number);
                         const cosine = computeCosineBetweenVectors(doc1Vector, doc2Vector);
                         if(cosine > threshold) {
-                            const tfidfValueOfFeature = await findTfidfValueOfFeature(path.join(basePath, doc2), featureToSearchFor);
-                            resultList.push({document: doc2, cosine, tfidfValueOfFeature})
+                            resultList.push({document: doc2, cosine})
                         }
                     }
                     if(++lineCtr % randomNumberBetween(100, 110) == 0) {
                         await writeProgress(eventEmitter, lineCtr);
                     }
                 }).on("close", async () => {
-                    const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine);
-                    const result = JSON.stringify(sortedResultList.slice(0, maxDocs));
+                    const sortedResultList = resultList.sort((a, b) => b.cosine - a.cosine).slice(0, maxDocs);
+                    const result = JSON.stringify(sortedResultList);
                     resultCache.set(doc1, result);
+                    const sortedResultListWithFeatureValues = await addTfidfValuesOfFeature(sortedResultList, featureToSearchFor, basePath);
                     deleteEventEmitterFromMap("vector", doc1);
-                    await writeJsonz(eventEmitter, result);
+                    await writeJsonz(eventEmitter, JSON.stringify(sortedResultListWithFeatureValues));
                     resolve();
                 })
             })

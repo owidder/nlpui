@@ -27,4 +27,9 @@ const readFeatures = (path) => {
     })
 }
 
-module.exports = {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER}
+const compareToFeature = (word, feature) => {
+    return (word.toLowerCase() == feature.toLowerCase());
+}
+
+
+module.exports = {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature}

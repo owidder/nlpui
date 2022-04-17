@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
-const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
+const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature} = require("./tfidf");
 
 const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
@@ -136,7 +136,7 @@ const readAllValuesForOneFeature = (absPath, feature) => {
                     const type = await typeFromPath(fileOrFolder);
                     if (type === "folder") {
                         const folderValues = await readFolderValues(fileOrFolder);
-                        const indexOfFeature = folderValues.words.findIndex(w => w === feature);
+                        const indexOfFeature = folderValues.words.findIndex(w => compareToFeature(w, feature));
                         if(indexOfFeature > -1) {
                             values[f] = folderValues.tfidfValues[indexOfFeature];
                         }
@@ -145,7 +145,7 @@ const readAllValuesForOneFeature = (absPath, feature) => {
                         const unstemmedFileValues = fileValues.map(({feature, value}) => {
                             return {feature: unstem(feature), value}
                         });
-                        const indexOfFeature = unstemmedFileValues.findIndex(fv => fv.feature === feature);
+                        const indexOfFeature = unstemmedFileValues.findIndex(fv => compareToFeature(fv.feature, feature));
                         if(indexOfFeature > -1) {
                             values[removeTfIdfExtension(f)] = unstemmedFileValues[indexOfFeature].value;
                         }
