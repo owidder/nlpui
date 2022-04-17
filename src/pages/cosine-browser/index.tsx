@@ -11,6 +11,8 @@ const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
 const feature = getHashParamValue("feature", "");
 
+document.querySelector(".homelink a").setAttribute("href", `/cosine-browser/cosine-browser.html?rnd=${Math.random().toFixed(5)}#feature=${feature}`);
+
 ReactDOM.createRoot(document.getElementById("container"))
     .render(<SourceDirectory
         path={path}
