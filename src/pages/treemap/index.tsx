@@ -10,7 +10,7 @@ const zoomto = getHashParamValue("zoomto", "");
 const currentMetric = getHashParamValue("currentMetric", "sum")
 const feature = getHashParamValue("feature", "")
 
-document.querySelector(".homelink a").setAttribute("href", `/treemap/treemap.html?rnd=${Math.random()}#feature=${feature}`);
+document.querySelector(".homelink a").setAttribute("href", `/treemap/treemap.html?rnd=${Math.random().toFixed(5)}#feature=${feature}`);
 
 ReactDOM.createRoot(document.getElementById("container"))
     .render(<TreemapWithSpinner
