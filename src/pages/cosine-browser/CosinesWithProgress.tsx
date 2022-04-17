@@ -75,7 +75,7 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
             return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}">${f.feature} <small>[${f.value.toFixed(2)}]</small></span>`
         });
-        let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}`, "Show similar documents")
+        let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
             + "<br/>"
             + tooltipLink(srcPathFromPath(documentPath), "Show source");
 
