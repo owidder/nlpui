@@ -137,8 +137,9 @@ router.get("/cosineValuesWithProgress", async (req, res) => {
 
     try {
         const doc1 = req.query.doc1;
+        const feature = req.query.feature;
         console.log(`cosineValuesWithProgress: ${doc1} / ${JSON.stringify(req.headers, null, 4)}`);
-        await similarDocsFromFileWithProgress(doc1, .1, res, 100, "Employee", path.join(cliOptions.datapath, TFIDF_FOLDER));
+        await similarDocsFromFileWithProgress(doc1, .1, res, 100, feature, path.join(cliOptions.datapath, TFIDF_FOLDER));
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

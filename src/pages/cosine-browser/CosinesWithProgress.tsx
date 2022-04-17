@@ -26,6 +26,7 @@ import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 
 interface CosinesWithProgressProps {
     doc: string
+    feature?: string
 }
 
 interface CosineValue {
@@ -37,14 +38,14 @@ interface CosineValue {
 let shortlist = true;
 let rootFeatures: String[] = [];
 
-export const CosinesWithProgress = ({doc}: CosinesWithProgressProps) => {
+export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${doc}`,
+        streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${doc}&feature=${feature}`,
             setProgress,
             setNumberOfFiles,
             setProgressText,

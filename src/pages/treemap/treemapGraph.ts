@@ -79,8 +79,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
             const showWordCloudLink = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({
-                path: _path(d),
-                currentMetric
+                path: _path(d), currentMetric, feature
             })}`, "Show word cloud");
 
             const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + showWordCloudLink;
