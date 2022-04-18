@@ -33,9 +33,7 @@ const createCloud = (path: string, editStopwords: boolean, currentMetric: string
             series.minFontSize = 20;
             series.maxFontSize = 200;
 
-            if(editStopwords) {
-                series.labels.template.url = `${window.location.origin}${window.location.pathname}?swpath=${path}&sw={word}${window.location.hash}`;
-            }
+            series.labels.template.url = `${window.location.origin}${window.location.pathname}?rnd=${Math.random().toFixed(5)}#path=${path}&currentMetric=${currentMetric}&feature={word}`;
 
             series.heatRules.push({
                 "target": series.labels.template,
