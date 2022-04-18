@@ -4,6 +4,7 @@ const {createReadlineInterface} = require("./fileUtil");
 
 const TFIDF_EXTENSION = "tfidf.csv";
 const TFIDF_FOLDER = "tfidf";
+const IGNORED_TFIDF_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
 
 const readFeatures = (path) => {
     const pathWithCorrectExtension = path.endsWith(TFIDF_EXTENSION) ? path : `${path}.${TFIDF_EXTENSION}`;
@@ -32,4 +33,4 @@ const compareToFeature = (word, feature) => {
 }
 
 
-module.exports = {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature}
+module.exports = {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TFIDF_EXTENSIONS}

@@ -2,9 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
-const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature} = require("./tfidf");
-
-const IGNORED_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
+const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TFIDF_EXTENSIONS} = require("./tfidf");
 
 const {createReadlineInterface} = require("./fileUtil");
 const {unstem, unstemWordsAndValues} = require("./unstem");
@@ -56,7 +54,7 @@ const filterFolders = async (filesAndSubfolders, absFolder) => {
             if(!fileOrSubfolder.startsWith("__")
                 && !fileOrSubfolder.startsWith(".")
                 && isNoAggFile(fileOrSubfolder)
-                && IGNORED_EXTENSIONS.filter(ext => fileOrSubfolder.endsWith(ext)).length == 0) {
+                && IGNORED_TFIDF_EXTENSIONS.filter(ext => fileOrSubfolder.endsWith(ext)).length == 0) {
                 filtered.push(fileOrSubfolder)
             }
         } else {

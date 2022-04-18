@@ -9,6 +9,8 @@ const {createReadlineInterface} = require("./fileUtil");
 const {readFeatures, compareToFeature} = require("./tfidf");
 const {unstem} = require("./unstem");
 
+const VECTORS_FILE_NAME = "vectors2.csv";
+
 const computeCosineBetweenVectors = (vector1, vector2) => {
     if(vector1.length === vector2.length) {
         return math.multiply(vector1, vector2) / (math.norm(vector1) * math.norm(vector2));
@@ -132,4 +134,4 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
     }
 }
 
-module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors}
+module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors, VECTORS_FILE_NAME}

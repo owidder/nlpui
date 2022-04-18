@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
 
-const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress} = require("./vectors");
+const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = require("./vectors");
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 
@@ -205,7 +205,7 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-initVectorspath(path.join(cliOptions.datapath, "vectors.csv")).then(async () => {
+initVectorspath(path.join(cliOptions.datapath, VECTORS_FILE_NAME)).then(async () => {
     initStopwords(cliOptions.stopwordspath);
     initUnstemDict(cliOptions.datapath, cliOptions.reverseunstem);
     await initNumberOfFiles(path.join(cliOptions.datapath, TFIDF_FOLDER));
