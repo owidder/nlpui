@@ -142,7 +142,9 @@ export const unpinTooltip = () => {
     }
 }
 
-export const doListEffect = async (head: string, foot: string, list: string[], listEnd?: string, extraData?: string[], createHash?: (selectedExtraData: string) => string) => {
+export const doListEffect = async (head: string, foot: string, list: string[], listEnd?: string, extraData?: string[],
+                                   createHash?: (selectedExtraData: string) => string,
+                                   extraDataSelected?: (selectedExtraData: string) => void) => {
     const tooltip = currentTooltip();
     if(tooltip) {
         const headtext = tooltip.inFocus ? undefined : `<span class="tooltip-headtext">${tooltip.pinned ? tooltip.unpinMessage : tooltip.pinMessage}</span>`;
@@ -152,6 +154,7 @@ export const doListEffect = async (head: string, foot: string, list: string[], l
             removeAllEventListeners("switchTooltipType");
             addEventListener("switchTooltipType", (e: {detail: {selectedExtraData: string}}) => {
                 tooltip.selectedExtraData = e.detail.selectedExtraData;
+                extraDataSelected(tooltip.selectedExtraData);
                 redrawTooltip();
             })
             subhead = extraData.reduce((_subhead, selectedExtraData) => {
