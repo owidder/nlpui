@@ -14,7 +14,7 @@ export const configureGlobalLinks = (newLink: LinkConfig) => {
     configureCosineBrowserHomeLink(newLink);
 }
 
-const configureTreemapHomeLink = (newLinkConfig: LinkConfig) => {
+export const configureTreemapHomeLink = (newLinkConfig: LinkConfig) => {
     currentLinkConfig = {...currentLinkConfig, ...newLinkConfig, r: nextR()}
 
     document.querySelector(".homelink a")
@@ -22,10 +22,10 @@ const configureTreemapHomeLink = (newLinkConfig: LinkConfig) => {
             `/treemap/treemap.html?r=${currentLinkConfig.r}#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}`);
 }
 
-const configureCosineBrowserHomeLink = (newLinkConfig: LinkConfig) => {
+export const configureCosineBrowserHomeLink = (newLinkConfig: LinkConfig) => {
     currentLinkConfig = {...currentLinkConfig, ...newLinkConfig, r: nextR()}
 
     document.querySelector(".switchlink a")
         .setAttribute("href",
-            `/cosine-browser/cosine-browser.html?r=${currentLinkConfig.r}#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}`);
+            `/cosine-browser/cosine-browser.html?r=${currentLinkConfig.r}#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}&path=${currentLinkConfig.path}`);
 }

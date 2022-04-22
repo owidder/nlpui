@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom/client"
 
 import {getHashParamValue} from "../../util/queryUtil2"
 import {TreemapWithSpinner} from "./TreemapWithSpinner"
+import {configureGlobalLinks} from "../../global/globalLinks";
 
 import "materialize-css/dist/css/materialize.css"
 
@@ -12,8 +13,7 @@ const zoomto = getHashParamValue("zoomto", "");
 const currentMetric = getHashParamValue("currentMetric", "sum")
 const feature = getHashParamValue("feature", "")
 
-document.querySelector(".switchlink a").setAttribute("href", `/cosine-browser/cosine-browser.html#currenMetric=${currentMetric}&feature=${feature}&path=${_path.dirname(zoomto)}`);
-document.querySelector(".homelink a").setAttribute("href", `/treemap/treemap.html?rnd=${Math.random().toFixed(5)}#feature=${feature}&currentMetric=${currentMetric}`);
+configureGlobalLinks({currentMetric, feature, path: _path.dirname(zoomto)});
 
 ReactDOM.createRoot(document.getElementById("container"))
     .render(<TreemapWithSpinner
