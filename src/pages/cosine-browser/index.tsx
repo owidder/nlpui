@@ -17,7 +17,7 @@ configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
 ReactDOM.createRoot(document.getElementById("container"))
     .render(<SourceDirectory
         path={path}
-        initialMetric={currentMetric}
+        initialCurrentMetric={currentMetric}
         staticFolderCall={false}
         feature={feature}
     />)

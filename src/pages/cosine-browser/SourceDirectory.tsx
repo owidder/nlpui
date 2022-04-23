@@ -23,7 +23,7 @@ const NOP = () => {}
 
 interface DirectoryProps {
     path: string
-    initialMetric: string
+    initialCurrentMetric: string
     staticFolderCall?: boolean
     staticFileCall?: boolean
     feature?: string
@@ -60,7 +60,7 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}, currentMetric: this.props.initialMetric}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}, currentMetric: this.props.initialCurrentMetric}
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
