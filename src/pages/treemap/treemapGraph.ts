@@ -15,7 +15,7 @@ import {getHashString} from "../../util/queryUtil2";
 import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
-import {configureGlobalLinks} from "../../global/globalLinks";
+import {configureGlobalLinksForTreemapPage} from "../../global/globalLinks";
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string, feature?: string) => {
     const tile = (node, x0, y0, x1, y1) => {
@@ -105,7 +105,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             });
             doListEffect(listHead, showWordCloudLink, list, undefined, METRICS, (currentMetric) => {
                 return getHashString({zoomto: _path(d.parent), currentMetric})
-            }, (currentMetric: string) => configureGlobalLinks({currentMetric}));
+            }, (currentMetric: string) => configureGlobalLinksForTreemapPage({currentMetric}));
         }
 
         createTooltip(renderTooltip, "Right click to pin", "Right click to unpin", _currentMetric);
