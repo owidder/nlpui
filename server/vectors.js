@@ -9,7 +9,7 @@ const {createReadlineInterface} = require("./fileUtil");
 const {readFeatures, compareToFeature} = require("./tfidf");
 const {unstem} = require("./unstem");
 
-const VECTORS_FILE_NAME = "vectors2.csv";
+const VECTORS_FILE_NAME = "vectors.csv";
 
 const computeCosineBetweenVectors = (vector1, vector2) => {
     if(vector1.length === vector2.length) {

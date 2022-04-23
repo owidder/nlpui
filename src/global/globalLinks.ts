@@ -36,11 +36,11 @@ export const configureSwitchToCosineBrowserLink = (newLinkConfig: LinkConfig) =>
 }
 
 const configureGlobalSwitchLink = (pageNameToSwitchTo, newLinkConfig: LinkConfig, pathAttributeName: string) => {
-    currentLinkConfig = {...currentLinkConfig, ...newLinkConfig, r: nextR()}
+    currentLinkConfig = {...currentLinkConfig, ...newLinkConfig}
 
     document.querySelector(".switchlink a")
         .setAttribute("href",
-            `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html?r=${currentLinkConfig.r}#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}&${pathAttributeName}=${currentLinkConfig.path}`);
+            `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}&${pathAttributeName}=${currentLinkConfig.path}`);
 }
 
 const configureGlobalHomeLink = (pageName: string, newLinkConfig: LinkConfig) => {
