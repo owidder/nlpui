@@ -40,6 +40,7 @@ interface DirectoryState {
     tree?: any
     loading: boolean
     valuesForFeature?: ValuesForFeature
+    currentMetric: string
 }
 
 interface FolderInfo {
@@ -59,7 +60,7 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}, currentMetric: this.props.initialMetric}
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
@@ -142,7 +143,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
-                  href={`#path=${path}&currentMetric=${this.props.initialMetric}&feature=${this.props.feature}`}
+                  href={`#path=${path}&currentMetric=${this.state.currentMetric}&feature=${this.props.feature}`}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
     }
 
@@ -153,9 +154,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
             const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&currentMetric=${metric}`;
-            const onclick = () => setTimeout(() => window.location.reload(), 100);
-            const a = <a onClick={onclick} href={href}>{metric}</a>;
-            let link = metric == this.props.initialMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
+            const a = <a onClick={() => this.setState({currentMetric: metric})} href={href}>{metric}</a>;
+            let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
         return this.state.loading ? <ClimbingBoxLoader color="blue" css={override} loading={true} size={100}/> :
@@ -176,7 +176,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                     {this.state.currentPathType == "file" ? <CosinesWithProgress
                         doc={this.state.currentPath}
                         feature={this.props.feature}
-                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.props.initialMetric}/>}
+                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}/>}
                 </div>
             </div>
             </div>
