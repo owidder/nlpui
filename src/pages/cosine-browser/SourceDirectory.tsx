@@ -86,26 +86,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
             const folderInfo: FolderInfo = await callApi(folderUrl)
 
-            if(pathType == "folder") {
-                let finished = false;
-                setTimeout(() => {
-                    console.log("set loading to true")
-                    if(!finished) {
-                        this.setState({loading: true})
-                    }
-                }, 500);
-
-                await new Promise<void>(resolve => {
-                    const treeLoaded = (tree: any) => {
-                        finished = true;
-                        this.setState({tree, loading: false});
-                        resolve()
-                    }
-                    streamContentWithProgress(`/api/subAgg/folder/${path}`,
-                        () => {}, () => {}, () => {}, treeLoaded);
-                })
-            }
-
             removeAllTooltips();
             this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, loading: false})
         }
