@@ -18,6 +18,7 @@ import {
     tooltipLink
 } from "../../util/tooltip";
 import {Feature} from "../Feature";
+import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
 import "../styles.scss"
 import "./cosines.scss"
@@ -55,20 +56,15 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             })
     }, [doc])
 
-    let showAllListener;
-
     const renderTooltip = (documentPath: string, features: Feature[]) => {
         if (!features) return;
 
-        if(showAllListener) {
-            document.removeEventListener("showall", showAllListener);
-        }
-        showAllListener = () => {
+        removeAllEventListeners("showall");
+        addEventListener("showall", () => {
             console.log("show all");
             shortlist = false;
             renderTooltip(documentPath, features);
-        };
-        document.addEventListener("showall", showAllListener)
+        });
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`;
         let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
