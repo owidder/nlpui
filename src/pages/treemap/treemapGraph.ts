@@ -16,6 +16,7 @@ import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {configureGlobalLinksForTreemapPage} from "../../global/globalLinks";
+import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
 export const showTreemap = (selector: string, data: Tree, width: number, height: number, newZoomtoCallback: (newZoomto: string) => void, zoomto: string, _currentMetric: string, feature?: string) => {
     const tile = (node, x0, y0, x1, y1) => {
@@ -74,7 +75,10 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             return name.startsWith("./") ? name.substr(2) : name
         }
 
+        let shortlist = true;
+
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
+            console.log(`render: ${shortlist}`)
             if (!d.data.words) return;
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
@@ -83,7 +87,21 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 path: _path(d), currentMetric, feature
             })}`, "Show word cloud");
 
-            const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + showWordCloudLink;
+            removeAllEventListeners("showall");
+            addEventListener("showall", () => {
+                shortlist = false;
+                renderTooltip(__, d, tooltip);
+            });
+            removeAllEventListeners("showless");
+            addEventListener("showless", () => {
+                shortlist = true;
+                renderTooltip(__, d, tooltip);
+            });
+
+            const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
+            const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
+
+            const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + showWordCloudLink + "&nbsp;" + (shortlist ? showall : showless);
             const dataObjArray = d.data.words.map((word, i) => {
                 return {
                     word,
@@ -95,7 +113,8 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                     "max*count": _.round(d.data.maxValues[i] * d.data.countValues[i], 2)
                 }
             })
-            const best = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse();
+            const sorted = _.sortBy(dataObjArray, [currentMetric, "count"]).reverse();
+            const best = shortlist ? sorted.slice(0, 20) : sorted;
             const list = best.map(b => {
                 const valStr = METRICS.reduce((_valStr, attr) => {
                     const attr_value = `${attr}: ${b[attr]}`;
@@ -103,6 +122,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 }, "")
                 return `${b.word} <small>[${valStr}]</small>`
             });
+
             doListEffect(listHead, showWordCloudLink, list, undefined, METRICS, (currentMetric) => {
                 return getHashString({zoomto: _path(d.parent), currentMetric})
             }, (currentMetric: string) => configureGlobalLinksForTreemapPage({currentMetric}));
