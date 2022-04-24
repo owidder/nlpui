@@ -78,7 +78,6 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         let shortlist = true;
 
         const renderTooltip = (__: string, d, tooltip: Tooltip) => {
-            console.log(`render: ${shortlist}`)
             if (!d.data.words) return;
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;

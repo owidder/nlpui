@@ -26,7 +26,6 @@ export interface Event {
 
 export const createTooltip = (renderCallback: TooltipCallback, _pinMessage?: string, _unpinMessage?: string,
                               initialSelectedExtraData?: string) => {
-    console.log("create tooltip")
     selectAllTooltips().remove();
     d3.select("body").append("div")
         .attr("class", "tooltip")

@@ -70,8 +70,7 @@ export const WordCloud = ({path, currentMetric}: WordCloudProps) => {
         const paramPath = urlParams.get("swpath");
         const paramWord = urlParams.get("sw");
         if(paramPath && paramWord) {
-            callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(async status => {
-                console.log(status);
+            callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(async () => {
                 if(chart) {
                     chart.dispose();
                     setChart(null);

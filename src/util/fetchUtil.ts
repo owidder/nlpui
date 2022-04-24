@@ -19,7 +19,6 @@ export const callStreamApi = async (apiPath: string, callback: (string) => void,
         while(true) {
             const {done, value} = await reader.read();
             const decoded = decoder.decode(value);
-            console.log(decoded);
             callback(decoded);
             if(done) {
                 resolve();

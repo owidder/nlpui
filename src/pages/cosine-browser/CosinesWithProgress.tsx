@@ -17,7 +17,7 @@ import {
     togglePinTooltip,
     tooltipLink
 } from "../../util/tooltip";
-import {Feature} from "../Feature";
+import {Feature, smallestFeatureValue, sortFeatures} from "../Feature";
 import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
 import "../styles.scss"
@@ -36,7 +36,6 @@ interface CosineValue {
     tfidfValueOfFeature?: number
 }
 
-let shortlist = true;
 let rootFeatures: String[] = [];
 
 export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) => {
@@ -56,18 +55,32 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             })
     }, [doc])
 
+    let shortlist = true;
+
     const renderTooltip = (documentPath: string, features: Feature[]) => {
         if (!features) return;
 
+        const sortedFeatures = sortFeatures(features);
+        const smallestValue = smallestFeatureValue(features);
+
         removeAllEventListeners("showall");
         addEventListener("showall", () => {
-            console.log("show all");
+            console.log("showall")
             shortlist = false;
-            renderTooltip(documentPath, features);
+            renderTooltip(documentPath, sortedFeatures);
         });
 
-        const listHead = `<span class="tooltip-title">${documentPath}</span>`;
-        let list = features.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
+        removeAllEventListeners("showless");
+        addEventListener("showless", () => {
+            console.log("showless")
+            shortlist = true;
+            renderTooltip(documentPath, sortedFeatures);
+        });
+
+        const showall = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
+        const showless = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
+
+        const list = sortedFeatures.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
             const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
             return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="/cosine-browser/cosine-browser.html?rnd=${Math.random().toFixed(5)}#path=${doc}&feature=${f.feature}">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
         });
@@ -75,12 +88,11 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             + "<br/>"
             + tooltipLink(srcPathFromPath(documentPath), "Show source");
 
-        let listEnd;
-        if(shortlist && list.length < features.length) {
-            listEnd = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
-        }
+        const listHead = `<span class="tooltip-title">${documentPath}</span>`
+            + "<br>"
+            + (shortlist ? ((smallestValue > 0.1) ? "<span/>" : showall) : ((smallestValue > 0.1) ? "<span/>" : showless));
 
-        doListEffect(listHead, listFood, list, listEnd);
+        doListEffect(listHead, listFood, list);
     }
 
     const readFeatures = (document: string): Promise<Feature[]> => {
@@ -119,7 +131,6 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
                 moveTooltip(event);
             })
             .on("mouseenter", function(event, d) {
-                shortlist = true;
                 d3.select(this).classed("selected", true);
                 enter(event, d);
             })
