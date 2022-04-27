@@ -10,6 +10,7 @@ import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import { css } from "@emotion/react";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
+import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 
 const override = css`
   position: absolute;
@@ -140,7 +141,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
             const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&currentMetric=${metric}`;
-            const a = <a onClick={() => this.setState({currentMetric: metric})} href={href}>{metric}</a>;
+            const a = <a onClick={() => {
+                configureGlobalLinksForCosineBrowserPage({currentMetric: metric});
+                this.setState({currentMetric: metric})
+            }} href={href}>{metric}</a>;
             let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
