@@ -77,8 +77,8 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             renderTooltip(documentPath, sortedFeatures);
         });
 
-        const showall = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
-        const showless = `<a class="fakelink" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
+        const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
+        const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
 
         const list = sortedFeatures.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
             const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
