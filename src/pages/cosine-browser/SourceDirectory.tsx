@@ -4,7 +4,7 @@ import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
-import {METRICS} from "./metrics";
+import {METRICS, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import { css } from "@emotion/react";
@@ -41,6 +41,7 @@ interface DirectoryState {
     loading: boolean
     valuesForFeature?: ValuesForFeature
     currentMetric: string
+    wordsAndMetrics: WordAndMetrics[]
 }
 
 interface FolderInfo {
@@ -60,7 +61,8 @@ const lastPartOfPath = (path: string) => {
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {}, currentMetric: this.props.initialCurrentMetric}
+    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
+        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: []}
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
@@ -85,6 +87,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folder = (pathType == "file" ? _path.dirname(path) : path)
             const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
             const folderInfo: FolderInfo = await callApi(folderUrl)
+            if(pathType == "folder") {
+                const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
+                this.setState({wordsAndMetrics})
+            }
 
             removeAllTooltips();
             this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, loading: false})
@@ -156,7 +162,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                     {this.state.currentPathType == "file" ? <CosinesWithProgress
                         doc={this.state.currentPath}
                         feature={this.props.feature}
-                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}/>}
+                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric} wordsAndMetrics={this.state.wordsAndMetrics}/>}
                 </div>
             </div>
             </div>
