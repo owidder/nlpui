@@ -7,10 +7,11 @@ import "../directory.scss";
 import {METRICS, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
-import { css } from "@emotion/react";
+import {css} from "@emotion/react";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
+import {WordList} from "./WordList";
 
 const override = css`
   position: absolute;
@@ -20,7 +21,8 @@ const override = css`
 
 const _path = require("path");
 
-const NOP = () => {}
+const NOP = () => {
+}
 
 interface DirectoryProps {
     path: string
@@ -32,7 +34,7 @@ interface DirectoryProps {
 
 type PathType = "file" | "folder" | "NA"
 
-type ValuesForFeature = {[fileOrFolder: string]: number}
+type ValuesForFeature = { [fileOrFolder: string]: number }
 
 interface DirectoryState {
     content: string[]
@@ -57,13 +59,15 @@ interface PathInfo {
 
 const lastPartOfPath = (path: string) => {
     const parts = path.split("/")
-    return parts[parts.length-1]
+    return parts[parts.length - 1]
 }
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
-    readonly state: DirectoryState = {content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
-        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: []}
+    readonly state: DirectoryState = {
+        content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
+        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: []
+    }
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
@@ -76,19 +80,19 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
-        if(this.props.feature) {
+        if (this.props.feature) {
             await this.readValuesForFeature(path, this.props.feature);
         }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
 
-        if(pathType === "file" && withReload) {
+        if (pathType === "file" && withReload) {
             location.reload();
         } else {
             const folder = (pathType == "file" ? _path.dirname(path) : path)
             const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
             const folderInfo: FolderInfo = await callApi(folderUrl)
-            if(pathType == "folder") {
+            if (pathType == "folder") {
                 const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
                 this.setState({wordsAndMetrics})
             }
@@ -105,14 +109,14 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     currentFolderWithoutTrailingSlash(): string {
         const currentFolder = this.state.currentPathType == "folder" ? this.state.currentPath : _path.dirname(this.state.currentPath)
 
-        return currentFolder.endsWith("/") ? currentFolder.substr(0, currentFolder.length-1) : currentFolder
+        return currentFolder.endsWith("/") ? currentFolder.substr(0, currentFolder.length - 1) : currentFolder
     }
 
     parentFolderOfCurrentPath(): string {
         const currentFolder = this.currentFolderWithoutTrailingSlash()
-        if(currentFolder.length > 0 && currentFolder != ".") {
+        if (currentFolder.length > 0 && currentFolder != ".") {
             const parts = currentFolder.split("/")
-            return parts.slice(0, parts.length-1).join("/")
+            return parts.slice(0, parts.length - 1).join("/")
         }
 
         return null
@@ -145,30 +149,37 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 configureGlobalLinksForCosineBrowserPage({currentMetric: metric});
                 this.setState({currentMetric: metric})
             }} href={href}>{metric}</a>;
-            let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> : <small key={i}><i>{a}</i></small>;
+            let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> :
+                <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
         return this.state.loading ? <ClimbingBoxLoader color="blue" css={override} loading={true} size={100}/> :
-        <div className="directory">
-            <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
-            <div className="margins row">
-                <div className={gridClass(2)}>
-                    {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
-                    {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
-                    {this.state.content.map(entry => {
-                        const newPath = (this.state.currentPathType == "folder" ?
-                            _path.join(this.state.currentPath, entry) :
-                            _path.join(_path.dirname(this.state.currentPath), entry))
-                        return this.renderLinkWithDiv(entry, newPath)
-                    })}
+            <div className="directory">
+                <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
+                <div className="margins row">
+                    <div className={gridClass(2)}>
+                        {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
+                        {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
+                        {this.state.content.map(entry => {
+                            const newPath = (this.state.currentPathType == "folder" ?
+                                _path.join(this.state.currentPath, entry) :
+                                _path.join(_path.dirname(this.state.currentPath), entry))
+                            return this.renderLinkWithDiv(entry, newPath)
+                        })}
+                    </div>
+                    <div className={gridClass(10)}>
+                        {this.state.currentPathType == "file" ? <CosinesWithProgress
+                                doc={this.state.currentPath}
+                                feature={this.props.feature}
+                            /> :
+                            <div>
+                                <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
+                                           wordsAndMetrics={this.state.wordsAndMetrics}/>
+                                <WordList path={this.state.currentPath} currentMetric={this.state.currentMetric}
+                                           wordsAndMetrics={this.state.wordsAndMetrics}/>
+                            </div>}
+                    </div>
                 </div>
-                <div className={gridClass(10)}>
-                    {this.state.currentPathType == "file" ? <CosinesWithProgress
-                        doc={this.state.currentPath}
-                        feature={this.props.feature}
-                    /> : <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric} wordsAndMetrics={this.state.wordsAndMetrics}/>}
-                </div>
-            </div>
             </div>
     }
 }
