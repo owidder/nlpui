@@ -2,12 +2,9 @@ interface LinkConfig {
     currentMetric?: string
     feature?: string
     path?: string
-    r?: number
 }
 
-let currentLinkConfig: LinkConfig = {r: 0}
-
-const nextR = () => currentLinkConfig.r < 9 ? currentLinkConfig.r + 1 : 0;
+let currentLinkConfig: LinkConfig = {}
 
 export const configureGlobalLinksForTreemapPage = (newLinkConfig: LinkConfig) => {
     configureTreemapHomeLink(newLinkConfig);
@@ -44,9 +41,9 @@ const configureGlobalSwitchLink = (pageNameToSwitchTo, newLinkConfig: LinkConfig
 }
 
 const configureGlobalHomeLink = (pageName: string, newLinkConfig: LinkConfig) => {
-    currentLinkConfig = {...currentLinkConfig, ...newLinkConfig, r: nextR()}
+    currentLinkConfig = {...currentLinkConfig, ...newLinkConfig}
 
     document.querySelector(".homelink a")
         .setAttribute("href",
-            `/${pageName}/${pageName}.html?r=${currentLinkConfig.r}#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}`);
+            `/${pageName}/${pageName}.html#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}`);
 }

@@ -1,6 +1,6 @@
 const queryString = require('query-string');
 
-const getHashParamMap = () => {
+export const getHashParamMap = () => {
     const hash = window.location.hash;
     return queryString.parse(hash);
 }

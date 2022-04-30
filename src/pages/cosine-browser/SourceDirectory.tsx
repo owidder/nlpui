@@ -12,7 +12,7 @@ import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
-import {setHashValue} from "../../util/queryUtil2";
+import {setHashValue, getHashString, getHashParamMap} from "../../util/queryUtil2";
 
 const override = css`
   position: absolute;
@@ -83,6 +83,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
+        configureGlobalLinksForCosineBrowserPage({path});
         if (this.props.feature) {
             await this.readValuesForFeature(path, this.props.feature);
         }
@@ -136,8 +137,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
+        const hashString = getHashString({...getHashParamMap(), path})
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
-                  href={`#path=${path}&currentMetric=${this.state.currentMetric}&feature=${this.props.feature}`}
+                  href={`#${hashString}`}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
     }
 
