@@ -3,6 +3,5 @@ export const DEFAULT_METRIC = "sum";
 
 export interface WordAndMetrics {
     word: string
-    [metric: string]: any
+    [metric: string]: number | any
 }
-

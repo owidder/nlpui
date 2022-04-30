@@ -11,14 +11,16 @@ interface WordListProps {
 
 export const WordList = ({path, currentMetric, wordsAndMetrics}: WordListProps) => {
 
+    const sortedWordsAndMetrics = wordsAndMetrics.sort((a, b) => b[currentMetric] - a[currentMetric]);
+
     return <div className="directory list">
         <a target="_blank" href={srcPathFromPath(path)}><h5 className="title">{path}</h5></a>
-        {wordsAndMetrics.length > 0 ?
-            wordsAndMetrics.map((wordAndMetrics, index) => {
+        {sortedWordsAndMetrics.length > 0 ?
+            sortedWordsAndMetrics.map((wordAndMetrics, index) => {
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">{wordAndMetrics.word}</div>
-                    <div className="cell">{wordAndMetrics.value.toFixed(2)}</div>
+                    <div className="cell">{wordAndMetrics[currentMetric].toFixed(2)}</div>
                 </div>
             }) :
             <h5>???</h5>
