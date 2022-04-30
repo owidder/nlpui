@@ -11,6 +11,7 @@ import "materialize-css/dist/css/materialize.css"
 const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
 const feature = getHashParamValue("feature", "");
+const fmt = getHashParamValue("fmt", "cloud");
 
 configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
 
@@ -20,4 +21,5 @@ ReactDOM.createRoot(document.getElementById("container"))
         initialCurrentMetric={currentMetric}
         staticFolderCall={false}
         feature={feature}
+        initialShowList={fmt == "list"}
     />)

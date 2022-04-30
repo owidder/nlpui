@@ -12,6 +12,7 @@ import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
+import {setHashValue} from "../../util/queryUtil2";
 
 const override = css`
   position: absolute;
@@ -30,6 +31,7 @@ interface DirectoryProps {
     staticFolderCall?: boolean
     staticFileCall?: boolean
     feature?: string
+    initialShowList: boolean
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -67,7 +69,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     readonly state: DirectoryState = {
         content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
-        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: false
+        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList
     }
 
     private readValuesForFeature(path: string, feature: string) {
@@ -159,7 +161,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
-                        <div><a className="fakelink" onClick={() => this.setState({showList: !this.state.showList})}>Show as {this.state.showList ? "cloud" : "list"}</a></div>
+                        <div><a className="fakelink" onClick={() => {
+                            setHashValue("fmt", this.state.showList ? "cloud" : "list");
+                            this.setState({showList: !this.state.showList});
+                        }}>Show as {this.state.showList ? "cloud" : "list"}</a></div>
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                         {this.state.content.map(entry => {
