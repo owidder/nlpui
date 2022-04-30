@@ -45,6 +45,7 @@ interface DirectoryState {
     valuesForFeature?: ValuesForFeature
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
+    showList: boolean
 }
 
 interface FolderInfo {
@@ -66,7 +67,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     readonly state: DirectoryState = {
         content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
-        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: []
+        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: false
     }
 
     private readValuesForFeature(path: string, feature: string) {
@@ -158,6 +159,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
+                        <div><a className="fakelink" onClick={() => this.setState({showList: !this.state.showList})}>Show as {this.state.showList ? "cloud" : "list"}</a></div>
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                         {this.state.content.map(entry => {
@@ -173,10 +175,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                 feature={this.props.feature}
                             /> :
                             <div>
-                                <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
-                                           wordsAndMetrics={this.state.wordsAndMetrics}/>
-                                <WordList path={this.state.currentPath} currentMetric={this.state.currentMetric}
-                                           wordsAndMetrics={this.state.wordsAndMetrics}/>
+                                {this.state.showList ?
+                                    <WordList path={this.state.currentPath} currentMetric={this.state.currentMetric}
+                                           wordsAndMetrics={this.state.wordsAndMetrics}/> :
+                                    <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
+                                               wordsAndMetrics={this.state.wordsAndMetrics}/>}
                             </div>}
                     </div>
                 </div>
