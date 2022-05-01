@@ -141,7 +141,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
-                  href={currentLocationWithNewHashValues({path})}
+                  href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
     }
 
@@ -153,7 +153,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
             const href = currentLocationWithNewHashValues({currentMetric: metric, fmt: this.getFmt(), path: this.state.currentPath});
             const a = <a onClick={() => {
-                configureGlobalLinksForCosineBrowserPage({currentMetric: metric});
+                configureGlobalLinksForCosineBrowserPage({currentMetric: metric, fmt: this.getFmt()});
                 this.setState({currentMetric: metric})
             }} href={href}>{metric}</a>;
             let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> :
