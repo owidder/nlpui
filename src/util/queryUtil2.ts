@@ -1,6 +1,8 @@
 const queryString = require('query-string');
 
-export const getHashParamMap = () => {
+type HashValues = {[name: string]: string | number};
+
+const getHashParamMap = () => {
     const hash = window.location.hash;
     return queryString.parse(hash);
 }
@@ -47,14 +49,27 @@ export const setHashValue = (name: string, value: string | number) => {
     window.location.hash = queryString.stringify(newHashParamMap);
 }
 
-export const setHashValues = (hashValues: {[name: string]: string | number}) => {
+export const setHashValues = (hashValues: HashValues) => {
     for(const name in hashValues) {
         setHashValue(name, hashValues[name])
     }
 }
 
-export const getHashString = (hashValues: {[name: string]: string | number}) => {
+const getHashString = (hashValues: HashValues): string => {
     return queryString.stringify(hashValues);
+}
+
+export const getCurrentHashString = (): string => {
+    return getHashString(getHashParamMap());
+}
+
+export const getCurrentHashStringWithNewValues = (newHashValues: HashValues): string => {
+    const currentHashString = getHashParamMap();
+    return getHashString({...currentHashString, ...newHashValues})
+}
+
+export const currentLocationWithNewHashValues = (newHashValues: HashValues) => {
+    return `${window.location.origin}${window.location.pathname}${window.location.search}#${getCurrentHashStringWithNewValues(newHashValues)}`
 }
 
 export const removeHashName = (name: string) => {

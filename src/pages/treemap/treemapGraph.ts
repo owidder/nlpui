@@ -11,7 +11,7 @@ import {
     showTooltip, hideTooltip, togglePinTooltip, tooltipLink, Tooltip
 } from "../../util/tooltip";
 import {METRICS} from "../cosine-browser/metrics";
-import {getHashString} from "../../util/queryUtil2";
+import {getCurrentHashStringWithNewValues} from "../../util/queryUtil2";
 import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
@@ -82,9 +82,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
-            const showWordCloudLink = tooltipLink(`/cosine-browser/cosine-browser.html#${getHashString({
-                path: _path(d), currentMetric, feature
-            })}`, "Show word cloud");
+            const showWordCloudLink = tooltipLink(`/cosine-browser/cosine-browser.html#${getCurrentHashStringWithNewValues({path: _path(d), currentMetric})}`, "Show word cloud");
 
             removeAllEventListeners("showall");
             addEventListener("showall", () => {
@@ -123,7 +121,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             });
 
             doListEffect(listHead, showWordCloudLink, list, undefined, METRICS, (currentMetric) => {
-                return getHashString({zoomto: _path(d.parent), currentMetric})
+                return getCurrentHashStringWithNewValues({currentMetric});
             }, (currentMetric: string) => configureGlobalLinksForTreemapPage({currentMetric}));
         }
 

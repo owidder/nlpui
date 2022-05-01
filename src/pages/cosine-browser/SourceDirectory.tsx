@@ -12,7 +12,7 @@ import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
-import {setHashValue, getHashString, getHashParamMap} from "../../util/queryUtil2";
+import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 
 const override = css`
   position: absolute;
@@ -71,6 +71,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
         currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList
     }
+
+    getFmt = () => this.state.showList ? "list" : "cloud";
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
@@ -137,9 +139,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
-        const hashString = getHashString({...getHashParamMap(), path})
         return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
-                  href={`#${hashString}`}
+                  href={currentLocationWithNewHashValues({path})}
                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
     }
 
@@ -149,7 +150,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
-            const href = `/cosine-browser/cosine-browser.html#path=${this.state.currentPath}&currentMetric=${metric}`;
+            const href = currentLocationWithNewHashValues({currentMetric: metric, fmt: this.getFmt(), path: this.state.currentPath});
             const a = <a onClick={() => {
                 configureGlobalLinksForCosineBrowserPage({currentMetric: metric});
                 this.setState({currentMetric: metric})
@@ -163,10 +164,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
-                        <div><a className="fakelink" onClick={() => {
-                            setHashValue("fmt", this.state.showList ? "cloud" : "list");
-                            this.setState({showList: !this.state.showList});
-                        }}>Show as {this.state.showList ? "cloud" : "list"}</a></div>
+                        <div><a href={currentLocationWithNewHashValues({fmt: this.state.showList ? "list" : "cloud"})}
+                                onClick={() => this.setState({showList: !this.state.showList})}>Show as {this.state.showList ? "cloud" : "list"}</a></div>
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                         {this.state.content.map(entry => {
