@@ -1,6 +1,6 @@
 const queryString = require('query-string');
 
-type HashValues = {[name: string]: string | number};
+export type HashValues = {[name: string]: string | number};
 
 const getHashParamMap = () => {
     const hash = window.location.hash;
@@ -55,7 +55,7 @@ export const setHashValues = (hashValues: HashValues) => {
     }
 }
 
-const getHashString = (hashValues: HashValues): string => {
+export const getHashString = (hashValues: HashValues): string => {
     return queryString.stringify(hashValues);
 }
 

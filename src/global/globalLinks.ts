@@ -1,49 +1,45 @@
-interface LinkConfig {
-    currentMetric?: string
-    feature?: string
-    path?: string
-}
+import {getHashString, HashValues} from "../util/queryUtil2";
 
-let currentLinkConfig: LinkConfig = {}
+let currentLinkConfig: HashValues = {}
 
-export const configureGlobalLinksForTreemapPage = (newLinkConfig: LinkConfig) => {
+export const configureGlobalLinksForTreemapPage = (newLinkConfig: HashValues) => {
     configureTreemapHomeLink(newLinkConfig);
     configureSwitchToCosineBrowserLink(newLinkConfig);
 }
 
-export const configureGlobalLinksForCosineBrowserPage = (newLinkConfig: LinkConfig) => {
+export const configureGlobalLinksForCosineBrowserPage = (newLinkConfig: HashValues) => {
     configureCosineBrowserHomeLink(newLinkConfig);
     configureSwitchToTreemapLink(newLinkConfig);
 }
 
-export const configureTreemapHomeLink = (newLinkConfig: LinkConfig) => {
+export const configureTreemapHomeLink = (newLinkConfig: HashValues) => {
     configureGlobalHomeLink("treemap", newLinkConfig);
 }
 
-export const configureCosineBrowserHomeLink = (newLinkConfig: LinkConfig) => {
+export const configureCosineBrowserHomeLink = (newLinkConfig: HashValues) => {
     configureGlobalHomeLink("cosine-browser", newLinkConfig);
 }
 
-export const configureSwitchToTreemapLink = (newLinkConfig: LinkConfig) => {
-    configureGlobalSwitchLink("treemap", newLinkConfig, "zoomto");
+export const configureSwitchToTreemapLink = (newLinkConfig: HashValues) => {
+    configureGlobalSwitchLink("treemap", newLinkConfig);
 }
 
-export const configureSwitchToCosineBrowserLink = (newLinkConfig: LinkConfig) => {
-    configureGlobalSwitchLink("cosine-browser", newLinkConfig, "path");
+export const configureSwitchToCosineBrowserLink = (newLinkConfig: HashValues) => {
+    configureGlobalSwitchLink("cosine-browser", newLinkConfig);
 }
 
-const configureGlobalSwitchLink = (pageNameToSwitchTo, newLinkConfig: LinkConfig, pathAttributeName: string) => {
+const configureGlobalSwitchLink = (pageNameToSwitchTo, newLinkConfig: HashValues) => {
     currentLinkConfig = {...currentLinkConfig, ...newLinkConfig}
 
     document.querySelector(".switchlink a")
         .setAttribute("href",
-            `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}&${pathAttributeName}=${currentLinkConfig.path}`);
+            `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html#${getHashString(currentLinkConfig)}`);
 }
 
-const configureGlobalHomeLink = (pageName: string, newLinkConfig: LinkConfig) => {
+const configureGlobalHomeLink = (pageName: string, newLinkConfig: HashValues) => {
     currentLinkConfig = {...currentLinkConfig, ...newLinkConfig}
 
     document.querySelector(".homelink a")
         .setAttribute("href",
-            `/${pageName}/${pageName}.html#feature=${currentLinkConfig.feature}&currentMetric=${currentLinkConfig.currentMetric}`);
+            `/${pageName}/${pageName}.html#${getHashString({...currentLinkConfig, path: "."})}`);
 }

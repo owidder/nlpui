@@ -37,11 +37,14 @@
     &nbsp;&nbsp;
     <div class="switchlink"><a href="#">Switch</a></div>
     &nbsp;&nbsp;
-    <div class="homelink"><a href="/cosine-browser/cosine-browser.html">Home</a></div>
+    <div class="homelink"><a href="/cosine-browser/cosine-browser.html" onclick="document.dispatchEvent(new CustomEvent('reload'))">Home</a></div>
 </div>
 <div id="container"></div>
 
 <script>
+    document.addEventListener("reload", () => {
+        setTimeout(() => window.location.reload(), 200);
+    })
 </script>
 </body>
 </html>
