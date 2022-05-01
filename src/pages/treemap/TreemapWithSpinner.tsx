@@ -5,6 +5,7 @@ import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import {setHashValue, removeHashName} from "../../util/queryUtil2"
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import { css } from "@emotion/react";
+import {configureGlobalLinksForTreemapPage} from "../../global/globalLinks";
 
 const override = css`
   position: absolute;
@@ -24,9 +25,11 @@ interface TreemapWithProgressProps {
 
 const newZoomtoCallback = (newZoomto: string) => {
     if(newZoomto != "." && newZoomto.length > 0) {
-        setHashValue("zoomto", newZoomto.startsWith("./") ? newZoomto.substr(2) : newZoomto)
+        const path = newZoomto.startsWith("./") ? newZoomto.substr(2) : newZoomto;
+        configureGlobalLinksForTreemapPage({path});
+        setHashValue("path", path)
     } else {
-        removeHashName("zoomto")
+        removeHashName("path")
     }
 }
 

@@ -17,9 +17,9 @@ interface TreemapWithProgressProps {
 
 const newZoomtoCallback = (newZoomto: string) => {
     if(newZoomto != "." && newZoomto.length > 0) {
-        setHashValue("zoomto", newZoomto.startsWith("./") ? newZoomto.substr(2) : newZoomto)
+        setHashValue("path", newZoomto.startsWith("./") ? newZoomto.substr(2) : newZoomto)
     } else {
-        removeHashName("zoomto")
+        removeHashName("path")
     }
 }
 
