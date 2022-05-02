@@ -8,7 +8,7 @@ import {
     doListEffect,
     moveTooltip,
     setTooltipData,
-    showTooltip, hideTooltip, togglePinTooltip, tooltipLink, Tooltip
+    showTooltip, hideTooltip, togglePinTooltip, Tooltip
 } from "../../util/tooltip";
 import {METRICS} from "../cosine-browser/metrics";
 import {getCurrentHashStringWithNewValues} from "../../util/queryUtil2";
@@ -82,8 +82,6 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
 
-            const showWordCloudLink = tooltipLink(`/cosine-browser/cosine-browser.html#${getCurrentHashStringWithNewValues({path: _path(d), currentMetric})}`, "Show word cloud");
-
             removeAllEventListeners("showall");
             addEventListener("showall", () => {
                 shortlist = false;
@@ -98,7 +96,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
             const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
             const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
 
-            const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + showWordCloudLink + "&nbsp;" + (shortlist ? showall : showless);
+            const listHead = `<span class="tooltip-title">${_path(d)}</span><br>` + (shortlist ? showall : showless);
             const dataObjArray = d.data.words.map((word, i) => {
                 return {
                     word,
@@ -120,7 +118,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 return `${b.word} <small>[${valStr}]</small>`
             });
 
-            doListEffect(listHead, showWordCloudLink, list, undefined, METRICS, (currentMetric) => {
+            doListEffect(listHead, "", list, undefined, METRICS, (currentMetric) => {
                 return getCurrentHashStringWithNewValues({currentMetric});
             }, (currentMetric: string) => configureGlobalLinksForTreemapPage({currentMetric}));
         }
