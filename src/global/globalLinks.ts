@@ -21,19 +21,20 @@ export const configureCosineBrowserHomeLink = (newLinkConfig: HashValues) => {
 }
 
 export const configureSwitchToTreemapLink = (newLinkConfig: HashValues) => {
-    configureGlobalSwitchLink("treemap", newLinkConfig);
+    configureGlobalSwitchLink("Switch to map", "treemap", newLinkConfig);
 }
 
 export const configureSwitchToCosineBrowserLink = (newLinkConfig: HashValues) => {
-    configureGlobalSwitchLink("cosine-browser", newLinkConfig);
+    configureGlobalSwitchLink("Switch to list/cloud", "cosine-browser", newLinkConfig);
 }
 
-const configureGlobalSwitchLink = (pageNameToSwitchTo, newLinkConfig: HashValues) => {
+const configureGlobalSwitchLink = (showAsText: string, pageNameToSwitchTo, newLinkConfig: HashValues) => {
     currentLinkConfig = {...currentLinkConfig, ...newLinkConfig}
 
-    document.querySelector(".switchlink a")
-        .setAttribute("href",
-            `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html#${getHashString(currentLinkConfig)}`);
+    const switchLink = document.querySelector(".switchlink a");
+
+    switchLink.setAttribute("href", `/${pageNameToSwitchTo}/${pageNameToSwitchTo}.html#${getHashString(currentLinkConfig)}`);
+    switchLink.innerHTML = showAsText;
 }
 
 const configureGlobalHomeLink = (pageName: string, newLinkConfig: HashValues) => {
