@@ -12,11 +12,13 @@ const path = getHashParamValue("path", "");
 const currentMetric = getHashParamValue("currentMetric", "sum");
 const feature = getHashParamValue("feature", "");
 
-configureGlobalLinksForTreemapPage({path: zoomto, feature, currentMetric});
+const _path = path.length > 0 ? path : zoomto;
+
+configureGlobalLinksForTreemapPage({path: _path, feature, currentMetric});
 
 ReactDOM.createRoot(document.getElementById("container"))
     .render(<TreemapWithSpinner
-        zoomto={path.length > 0 ? path : zoomto}
+        zoomto={_path}
         width={window.innerWidth}
         height={window.innerHeight}
         currentMetric={currentMetric}

@@ -11,7 +11,7 @@ import "materialize-css/dist/css/materialize.css"
 const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
 const feature = getHashParamValue("feature", "");
-const fmt = getHashParamValue("fmt", "cloud");
+const fmt = getHashParamValue("fmt", "list");
 
 configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
 
