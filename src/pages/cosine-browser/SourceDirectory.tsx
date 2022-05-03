@@ -86,12 +86,12 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
-        configureGlobalLinksForCosineBrowserPage({path});
         if (this.props.feature) {
             await this.readValuesForFeature(path, this.props.feature);
         }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
+        configureGlobalLinksForCosineBrowserPage({path : pathType == "file" ? _path.dirname(path) : path});
 
         if (pathType === "file" && withReload) {
             location.reload();
