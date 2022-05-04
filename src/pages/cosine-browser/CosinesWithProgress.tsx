@@ -82,7 +82,7 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
 
         const list = sortedFeatures.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
             const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
-            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="/cosine-browser/cosine-browser.html?rnd=${Math.random().toFixed(5)}#path=${doc}&feature=${f.feature}">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
+            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="/cosine-browser/cosine-browser.html#path=${doc}&feature=${f.feature}">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
         });
         let listFood = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
             + "<br/>"

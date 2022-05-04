@@ -186,7 +186,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                             /> :
                             <div>
                                 {this.state.showList ?
-                                    <WordList path={this.state.currentPath} currentMetric={this.state.currentMetric}
+                                    <WordList currentMetric={this.state.currentMetric}
                                            wordsAndMetrics={this.state.wordsAndMetrics}/> :
                                     <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
                                                wordsAndMetrics={this.state.wordsAndMetrics}/>}
