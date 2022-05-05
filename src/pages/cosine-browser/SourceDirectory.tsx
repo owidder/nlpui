@@ -165,11 +165,13 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
-                        <div><a href={currentLocationWithNewHashValues({fmt: this.getFmt()})}
-                                onClick={() => {
-                                    configureGlobalLinksForCosineBrowserPage({fmt: this.getReverseFmt()});
-                                    this.setState({showList: !this.state.showList})
-                                }}>Show as {this.getReverseFmt()}</a></div>
+                        {this.state.currentPathType == "folder" ?
+                            <div><a href={currentLocationWithNewHashValues({fmt: this.getFmt()})}
+                                    onClick={() => {
+                                        configureGlobalLinksForCosineBrowserPage({fmt: this.getReverseFmt()});
+                                        this.setState({showList: !this.state.showList})
+                                    }}>Show as {this.getReverseFmt()}</a></div> : <span/>
+                        }
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
                         {this.state.content.map(entry => {

@@ -24,6 +24,7 @@ import "../styles.scss"
 import "./cosines.scss"
 import {callApi} from "../../util/fetchUtil";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
+import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 
 interface CosinesWithProgressProps {
     doc: string
@@ -82,7 +83,8 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
 
         const list = sortedFeatures.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
             const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
-            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="/cosine-browser/cosine-browser.html#path=${doc}&feature=${f.feature}">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
+            const href = currentLocationWithNewHashValues({path: doc, feature: f.feature})
+            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="${href}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
         });
         let listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
             + "<br/>"
