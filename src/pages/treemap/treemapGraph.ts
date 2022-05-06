@@ -11,7 +11,7 @@ import {
     showTooltip, hideTooltip, togglePinTooltip, Tooltip
 } from "../../util/tooltip";
 import {METRICS} from "../cosine-browser/metrics";
-import {getCurrentHashStringWithNewValues} from "../../util/queryUtil2";
+import {currentLocationWithNewHashValues, getCurrentHashStringWithNewValues} from "../../util/queryUtil2";
 import {Tree} from "../../aggTree/Tree";
 import {addMaxWordTfidf, addWordTfidf, addWordCount} from "../../aggTree/treeFunctions";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
@@ -77,7 +77,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
 
         let shortlist = true;
 
-        const renderTooltip = (__: string, d, tooltip: Tooltip) => {
+        const  renderTooltip = (__: string, d, tooltip: Tooltip) => {
             if (!d.data.words) return;
 
             const currentMetric = tooltip.selectedExtraData ? tooltip.selectedExtraData : _currentMetric;
@@ -114,8 +114,9 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 const valStr = METRICS.reduce((_valStr, attr) => {
                     const attr_value = `${attr}: ${b[attr]}`;
                     return _valStr + " " + (attr == currentMetric ? `<b>${attr_value}</b>` : attr_value);
-                }, "")
-                return `${b.word} <small>[${valStr}]</small>`
+                }, "");
+                const href = currentLocationWithNewHashValues({feature: b.word});
+                return `<a onclick="document.dispatchEvent(new CustomEvent('reload'))" href="${href}">${b.word}</a> <small>[${valStr}]</small>`
             });
 
             doListEffect(listHead, "", list, undefined, METRICS, (currentMetric) => {
