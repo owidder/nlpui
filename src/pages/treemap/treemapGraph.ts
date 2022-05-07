@@ -93,9 +93,6 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
                 renderTooltip(__, d, tooltip);
             });
 
-            const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
-            const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
-
             const hrefToListOfAll = `/cosine-browser/cosine-browser.html#${getCurrentHashStringWithNewValues({path: _path(d)})}`;
             const listHead = `<span class="tooltip-title">${_path(d)}</span><br><a target="_blank" href="${hrefToListOfAll}">Show list of all words</a>`;
             const dataObjArray = d.data.words.map((word, i) => {
