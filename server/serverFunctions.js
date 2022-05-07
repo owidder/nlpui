@@ -90,7 +90,8 @@ function readAggFolder(folder) {
                 wordsAndValues.push({word: wordAndValues[0], sum: _.round(wordAndValues[SUM_INDEX], 2),
                     count: Number(wordAndValues[COUNT_INDEX]),
                     max: _.round(wordAndValues[MAX_INDEX], 2),
-                    avg: _.round(wordAndValues[AVG_INDEX], 2), value});
+                    avg: _.round(wordAndValues[AVG_INDEX], 2),
+                    "max*count": _.round(wordAndValues[MAX_INDEX] * wordAndValues[COUNT_INDEX], 2), value});
             }).on("close", () => {
                 resolve(_.sortBy(wordsAndValues, ["value"]).reverse())
             })
