@@ -52,7 +52,16 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
         .attr("viewBox", [0.5, -30.5, width, height + 30].join(" "))
         .style("font", "10px sans-serif");
 
+    const featureName = svg.append("g").attr("class", "featurename");
     const svgTreemap = svg.append("g").attr("class", "treemap");
+
+    if(feature) {
+        featureName.append("text")
+            .attr("class", "feature-text")
+            .attr("x", window.innerWidth / 3)
+            .attr("y", -10)
+            .text(feature);
+    }
 
     const treemapData = treemap(data);
 
