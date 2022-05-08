@@ -2,6 +2,7 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
+import {VscGithub} from "react-icons/vsc";
 
 import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
@@ -158,7 +159,9 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
                 return <div className="listrow" key={index} style={{backgroundColor}}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
-                        <span className="document-path">{cosineValue.document}</span><span className="small-value">{value}</span>
+                        <span><a target="_blank" href={srcPathFromPath(cosineValue.document)}><VscGithub/></a></span>
+                        &nbsp;<span className="document-path">{cosineValue.document}</span>
+                        <span className="small-value">{value}</span>
                     </div>
                     <div className="cell"><a target="_blank"
                                              href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a>
