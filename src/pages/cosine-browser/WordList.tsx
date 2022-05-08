@@ -17,7 +17,7 @@ export const WordList = ({currentMetric, wordsAndMetrics}: WordListProps) => {
             sortedWordsAndMetrics.map((wordAndMetrics, index) => {
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index}</div>
-                    <div className="cell string"><a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.word})}>{wordAndMetrics.word}</a></div>
+                    <div className="cell string"><a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.word, currentMetric})}>{wordAndMetrics.word}</a></div>
                     <div className="cell">{wordAndMetrics[currentMetric].toFixed(currentMetric == "count" ? 0 : 2)}</div>
                 </div>
             }) :
