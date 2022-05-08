@@ -1,4 +1,5 @@
 import * as React from "react";
+import {VscGithub} from "react-icons/vsc";
 
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
@@ -13,6 +14,7 @@ import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
+import {srcPathFromPath} from "../srcFromPath";
 
 const override = css`
   position: absolute;
@@ -129,20 +131,23 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         return null
     }
 
-    renderLinkWithDiv(entry: string, path: string) {
+    renderLinkWithDiv(entry: string, path: string, withSourceLink = true) {
         return <div className="listrow" key={path + entry}>
-            <div>{this.renderLink(entry, path)}</div>
+            <div>{this.renderLink(entry, path, withSourceLink)}</div>
         </div>
     }
 
-    renderLink(entry: string, path: string) {
+    renderLink(entry: string, path: string, withSourceLink = true) {
         const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
-        return <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
+        return <span>
+            {withSourceLink ? <a target="_blank" href={srcPathFromPath(_path.join(path, entry))}><VscGithub/></a> : <span/>}
+            <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
-                  onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
+                        onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
+        </span>
     }
 
     render() {
@@ -173,8 +178,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                         this.setState({showList: !this.state.showList})
                                     }}>Show as {this.getReverseFmt()}</a></div> : <span/>
                         }
-                        {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath)}
-                        {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder) : <span/>}
+                        {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
+                        {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
                         {this.state.content.map(entry => {
                             const newPath = (this.state.currentPathType == "folder" ?
                                 _path.join(this.state.currentPath, entry) :
