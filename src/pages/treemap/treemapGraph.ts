@@ -58,7 +58,7 @@ export const showTreemap = (selector: string, data: Tree, width: number, height:
     if(feature) {
         featureName.append("text")
             .attr("class", "feature-text")
-            .attr("x", window.innerWidth / 3)
+            .attr("x", window.innerWidth / 2)
             .attr("y", -10)
             .text(feature);
     }

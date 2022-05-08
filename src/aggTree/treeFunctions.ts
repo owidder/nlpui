@@ -23,31 +23,31 @@ export const addMaxWordTfidf = (siblings: Tree[]) => {
 }
 
 export const addWordCount = (branch: Tree, word: string): number => {
-    if (branch.children) {
-        branch.wordCountValue = branch.children.reduce((_count, child) => {
+    branch.wordCountValue = branch.children ? branch.children.reduce((_count, child) => {
             return _count + addWordCount(child, word)
         }, 0)
-    } else {
-        branch.wordCountValue = branch.words ?
-            branch.words.reduce((_countValue, w, i) => {
-                return compareToFeature(w, word) ? _countValue + branch.countValues[i] : _countValue
-            }, 0)
-            : 0;
-    }
+        : 0;
+
+    branch.wordCountValue = branch.words ?
+        branch.words.reduce((_countValue, w, i) => {
+            return compareToFeature(w, word) ? _countValue + branch.countValues[i] : _countValue
+        }, 0)
+        : 0;
+
     return branch.wordCountValue
 }
 
 export const addWordTfidf = (branch: Tree, word: string): number => {
-    if (branch.children) {
-        branch.wordTfidfValue = branch.children.reduce((_count, child) => {
+    branch.wordTfidfValue = branch.children ? branch.children.reduce((_count, child) => {
             return _count + addWordTfidf(child, word)
         }, 0)
-    } else {
-        branch.wordTfidfValue = branch.words ?
-            branch.words.reduce((_tfidfValue, w, i) => {
-                return compareToFeature(w, word) ? _tfidfValue + branch.tfidfValues[i] : _tfidfValue
-            }, 0)
-            : 0
-    }
+        : 0;
+
+    branch.wordTfidfValue += branch.words ?
+        branch.words.reduce((_tfidfValue, w, i) => {
+            return compareToFeature(w, word) ? _tfidfValue + branch.tfidfValues[i] : _tfidfValue
+        }, 0)
+        : 0
+
     return branch.wordTfidfValue
 }

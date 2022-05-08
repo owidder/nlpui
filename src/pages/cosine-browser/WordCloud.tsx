@@ -29,6 +29,7 @@ const createCloud = (path: string, editStopwords: boolean, currentMetric: string
     series.maxFontSize = 200;
 
     series.labels.template.url = `${window.location.origin}${window.location.pathname}#path=${path}&fmt=cloud&currentMetric=${currentMetric}&feature={word}`;
+    series.labels.template.events.on("hit", () => document.dispatchEvent(new CustomEvent('reload')));
 
     series.heatRules.push({
         "target": series.labels.template,
