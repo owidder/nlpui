@@ -143,7 +143,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <span>
-            {withSourceLink ? <a target="_blank" href={srcPathFromPath(_path.join(path, entry))}><VscGithub/></a> : <span/>}
+            {withSourceLink ? <a target="_blank" href={srcPathFromPath(path)}><VscGithub/></a> : <span/>}
             <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
                         onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
