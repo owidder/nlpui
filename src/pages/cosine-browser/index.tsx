@@ -19,7 +19,6 @@ ReactDOM.createRoot(document.getElementById("container"))
     .render(<SourceDirectory
         path={path}
         initialCurrentMetric={currentMetric}
-        staticFolderCall={false}
         feature={feature}
         initialShowList={fmt == "list"}
     />)

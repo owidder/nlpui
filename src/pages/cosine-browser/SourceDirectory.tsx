@@ -30,8 +30,6 @@ const NOP = () => {
 interface DirectoryProps {
     path: string
     initialCurrentMetric: string
-    staticFolderCall?: boolean
-    staticFileCall?: boolean
     feature?: string
     initialShowList: boolean
 }
@@ -60,11 +58,6 @@ interface FolderInfo {
 interface PathInfo {
     path: string
     pathType: PathType
-}
-
-const lastPartOfPath = (path: string) => {
-    const parts = path.split("/")
-    return parts[parts.length - 1]
 }
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
@@ -99,8 +92,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             location.reload();
         } else {
             const folder = (pathType == "file" ? _path.dirname(path) : path)
-            const folderUrl = this.props.staticFolderCall ? `src/folder/${folder}/${lastPartOfPath(folder)}.json` : `/api/src/folder2/${folder}`
-            const folderInfo: FolderInfo = await callApi(folderUrl)
+            const folderInfo: FolderInfo = await callApi(`/api/src/folder2/${folder}`)
             if (pathType == "folder") {
                 const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
                 this.setState({wordsAndMetrics})
