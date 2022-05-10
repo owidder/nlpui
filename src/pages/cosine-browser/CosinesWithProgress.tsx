@@ -163,9 +163,7 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
                         &nbsp;<span className="document-path">{cosineValue.document}</span>
                         <span className="small-value">{value}</span>
                     </div>
-                    <div className="cell"><a target="_blank"
-                                             href={`/feature-table/feature-table.html#path=${cosineValue.document}`}>{cosineValue.cosine.toFixed(2)}</a>
-                    </div>
+                    <div className="cell">{cosineValue.cosine.toFixed(2)}</div>
                 </div>
             })}
         </div>
