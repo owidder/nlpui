@@ -14,20 +14,10 @@ const readUnstemDict = (datapath) => {
     return {}
 }
 
-const createReversedDict = (dict) => {
-    return Object.keys(dict).reduce((_rev, word) => {
-        console.log(word);
-        return {..._rev, [dict[word]]: word}
-    }, {})
-}
-
 const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
 
-const initUnstemDict = (datapath, reverseUnstem) => {
+const initUnstemDict = (datapath) => {
     unstemDict = readUnstemDict(datapath);
-    if(reverseUnstem != null) {
-        reversedUnstemDict = createReversedDict(unstemDict);
-    }
 }
 
 const unstemWordsAndValues = (wordsAndValues) => {

@@ -3,22 +3,16 @@ const bodyParser = require('body-parser');
 const commandLineArgs = require('command-line-args');
 const path = require("path");
 
-const {cosine, similarDocs, initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = require("./vectors");
+const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = require("./vectors");
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 
-const {
-    readAggFolder, readSrcFolder2, readSubAggFolders, initStopwords,
-    saveStopwords, filterStopwordsAndUnstem, stopwords, initNumberOfFiles, getNumberOfFiles,
-    readAllValuesForOneFeature, typeFromPath
-} = require("./serverFunctions");
-const {initUnstemDict, unstem, stemFromUnstem} = require("./unstem");
+const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath} = require("./serverFunctions");
+const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
 
 const cliOptionsConfig = [
     {name: "datapath", alias: "d", type: String},
     {name: "port", type: String},
-    {name: "stopwordspath", alias: "p", type: String},
-    {name: "reverseunstem", alias: "r", type: String}
 ]
 
 const cliOptions = commandLineArgs(cliOptionsConfig);
@@ -36,7 +30,7 @@ router.get("/agg/folder/*", async function (req, res) {
         const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
         const folder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const wordsAndValues = await readAggFolder(folder);
-        res.json(filterStopwordsAndUnstem(relFolder, wordsAndValues));
+        res.json(unstemWordsAndValues(wordsAndValues));
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
@@ -59,14 +53,6 @@ router.get("/subAgg/folder/*", async function (req, res) {
 
         await writeJsonz(null, JSON.stringify(subAggToReturn), res);
         res.status(200).send();
-    } catch (e) {
-        res.status(500).json({error: e.toString()});
-    }
-});
-
-router.get("/numberOfFiles", async function (req, res) {
-    try {
-        res.json({numberOfFiles: getNumberOfFiles()});
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
@@ -98,32 +84,6 @@ router.get("/src/pathType/*", async function (req, res) {
         res.status(500).json({error: e.toString()});
     }
 });
-
-router.get("/cosine", (req, res) => {
-    try {
-        const doc1 = req.query.doc1;
-        const doc2 = req.query.doc2;
-
-        const cos = cosine(doc1, doc2);
-        res.json({result: cos})
-    } catch (e) {
-        res.status(500).json({error: e.toString()});
-    }
-})
-
-router.get("/config", (req, res) => {
-    res.json({editStopwords: cliOptions.stopwordspath != null})
-})
-
-router.get("/cosineValues", async (req, res) => {
-    try {
-        const doc1 = req.query.doc1;
-        const docs = await similarDocs(doc1, .1)
-        res.json(docs.slice(0, 100))
-    } catch (e) {
-        res.status(500).json({error: e.toString()});
-    }
-})
 
 router.get("/cosineValuesWithProgress", async (req, res) => {
     if(req.header("x-nginx-proxy") == "true") {
@@ -175,28 +135,6 @@ router.get("/valuesForFeature", async (req, res) => {
     }
 })
 
-router.post("/setStopword", async (req, res) => {
-    try {
-        if (cliOptions.stopwordspath != null) {
-            const {path, word} = req.body;
-            const stemmed = stemFromUnstem(word);
-            if (stopwords[path] == undefined) {
-                stopwords[path] = [stemmed]
-            } else {
-                if (!stopwords[path].includes(stemmed)) {
-                    stopwords[path].push(stemmed)
-                }
-            }
-            saveStopwords(cliOptions.stopwordspath);
-            res.json({status: "ok"})
-        } else {
-            res.status(409).json({error: "stopwords editing not enabled"});
-        }
-    } catch (e) {
-        res.status(500).json({error: e.toString()});
-    }
-})
-
 app.use('/api', router);
 
 const port = cliOptions.port ? Number(cliOptions.port) : 3100;
@@ -206,9 +144,7 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectorspath(path.join(cliOptions.datapath, VECTORS_FILE_NAME)).then(async () => {
-    initStopwords(cliOptions.stopwordspath);
-    initUnstemDict(cliOptions.datapath, cliOptions.reverseunstem);
-    await initNumberOfFiles(path.join(cliOptions.datapath, TFIDF_FOLDER));
+    initUnstemDict(cliOptions.datapath);
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);
     });

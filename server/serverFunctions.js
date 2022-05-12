@@ -7,9 +7,6 @@ const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TF
 const {createReadlineInterface} = require("./fileUtil");
 const {unstem, unstemWordsAndValues} = require("./unstem");
 
-let stopwords = {};
-let numberOfFiles = 0;
-
 const AGG_CSV = "_.csv";
 const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"];
 
@@ -187,41 +184,6 @@ function _readSubAggFoldersRecursive(folder, progressCallback, totalCtr) {
     })
 }
 
-function _countFilesRecursive(absFolder) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            fs.readdir(absFolder, async (err, filesAndSubfolders) => {
-                let ctr = 0;
-                for (const f of filesAndSubfolders) {
-                    const subFolder = path.join(absFolder, f);
-                    const type = await typeFromPath(subFolder);
-                    if (type === "folder") {
-                        ctr += await _countFilesRecursive(subFolder)
-                    } else {
-                        if(isNoAggFile(f)) {
-                            ctr++;
-                        }
-                    }
-                }
-                resolve(ctr)
-            });
-        } catch (e) {
-            reject(e)
-        }
-    })
-}
-
-function initNumberOfFiles(absFolder) {
-    return new Promise(async resolve => {
-        numberOfFiles = await _countFilesRecursive(absFolder);
-        resolve(numberOfFiles);
-    })
-}
-
-function getNumberOfFiles() {
-    return numberOfFiles;
-}
-
 function readSubAggFolders(relFolder, basePath, progressCallback) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -234,40 +196,4 @@ function readSubAggFolders(relFolder, basePath, progressCallback) {
     })
 }
 
-const saveStopwords = (stopwordspath) => {
-    const stopwordsStr = JSON.stringify(stopwords, null, 4);
-    fs.writeFileSync(stopwordspath, stopwordsStr);
-}
-
-const filterStopwords = (path, wordsAndValues) => {
-    let filteredWordsAndValues = [...wordsAndValues]
-    for(const _path in stopwords) {
-        filteredWordsAndValues = filteredWordsAndValues.filter(wav => {
-            if(_path == "." || path.startsWith(_path)) {
-                return !stopwords[_path].includes(wav.word)
-            }
-
-            return true
-        })
-    }
-
-    return filteredWordsAndValues
-}
-
-const filterStopwordsAndUnstem = (path, wordsAndValues) => {
-    const filteredWordsAndValues = filterStopwords(path, wordsAndValues);
-    return unstemWordsAndValues(filteredWordsAndValues)
-}
-
-const initStopwords = (stopwordspath) => {
-    if(fs.existsSync(stopwordspath)) {
-        const stopwordsStr = fs.readFileSync(stopwordspath);
-        stopwords = JSON.parse(stopwordsStr);
-    }
-}
-
-module.exports = {
-    readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders,
-    initStopwords, saveStopwords, filterStopwordsAndUnstem, stopwords, initNumberOfFiles, getNumberOfFiles,
-    readAllValuesForOneFeature, typeFromPath
-}
+module.exports = {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, readAllValuesForOneFeature, typeFromPath}

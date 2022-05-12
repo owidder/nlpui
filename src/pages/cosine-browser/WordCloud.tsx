@@ -4,7 +4,6 @@ import * as am4core from "@amcharts/amcharts4/core";
 import * as am4plugins_wordCloud from "@amcharts/amcharts4/plugins/wordCloud";
 import * as _ from "lodash";
 
-import {callApi} from "../../util/fetchUtil";
 import {WordAndMetrics} from "./metrics";
 
 interface WordCloudProps {
@@ -13,7 +12,7 @@ interface WordCloudProps {
     wordsAndMetrics: WordAndMetrics[]
 }
 
-const createCloud = (path: string, editStopwords: boolean, currentMetric: string, wordsAndMetrics: WordAndMetrics[]) => {
+const createCloud = (path: string, currentMetric: string, wordsAndMetrics: WordAndMetrics[]) => {
     const chart = am4core.create("wordCloud", am4plugins_wordCloud.WordCloud);
     chart.fontFamily = "Courier New";
     const series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
@@ -48,37 +47,16 @@ const createCloud = (path: string, editStopwords: boolean, currentMetric: string
 }
 
 export const WordCloud = ({path, currentMetric, wordsAndMetrics}: WordCloudProps) => {
-    const [switchOnEditStopwords, setSwitchOnEditStopwords] = useState(false);
     const [chart, setChart] = useState(null as am4plugins_wordCloud.WordCloud);
 
     useEffect(() => {
-        callApi("/api/config", "GET").then(({editStopwords}) => {
-            setSwitchOnEditStopwords(editStopwords)
-        });
-    }, [])
-
-    useEffect(() => {
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-
-        const paramPath = urlParams.get("swpath");
-        const paramWord = urlParams.get("sw");
-        if(paramPath && paramWord) {
-            callApi("/api/setStopword", "POST", {path: paramPath, word: paramWord}).then(async () => {
-                if(chart) {
-                    chart.dispose();
-                    setChart(null);
-                }
-                setChart(createCloud(path, switchOnEditStopwords, currentMetric, wordsAndMetrics));
-            })
-        } else {
-            if(chart) {
-                chart.dispose();
-                setChart(null);
-            }
-            setChart(createCloud(path, switchOnEditStopwords, currentMetric, wordsAndMetrics));
+        if(chart) {
+            chart.dispose();
+            setChart(null);
         }
-    }, [path, switchOnEditStopwords, currentMetric])
+        setChart(createCloud(path, currentMetric, wordsAndMetrics));
+
+    }, [path, currentMetric])
 
     return <div id="wordCloud"/>
 }
