@@ -48,6 +48,7 @@ interface DirectoryState {
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
     showList: boolean
+    srcPathMap: {[name: string]: string}
 }
 
 interface FolderInfo {
@@ -64,11 +65,16 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     readonly state: DirectoryState = {
         content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
-        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList
+        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList, srcPathMap: {}
     }
 
     getFmt = () => this.state.showList ? "list" : "cloud";
     getReverseFmt = () => this.state.showList ? "cloud" : "list";
+
+    private async readSrcPathMap() {
+        const srcPathMap = await callApi("/api/srcPathMap");
+        this.setState({srcPathMap})
+    }
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
@@ -104,6 +110,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     async componentDidMount() {
+        await this.readSrcPathMap();
         this.gotoPath(this.props.path)
     }
 

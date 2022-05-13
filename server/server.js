@@ -6,6 +6,7 @@ const path = require("path");
 const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = require("./vectors");
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
+const {getSrcPathMap} = require("./srcPath");
 
 const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath} = require("./serverFunctions");
 const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
@@ -133,6 +134,12 @@ router.get("/valuesForFeature", async (req, res) => {
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
+})
+
+router.get("/srcPathMap", async (req, res) => {
+    const srcPathMap = await getSrcPathMap(path.join(cliOptions.datapath, "info"));
+    console.log(srcPathMap)
+    res.json(srcPathMap)
 })
 
 app.use('/api', router);
