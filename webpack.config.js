@@ -1,6 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 const {foldersToBuild} = require("./scripts/searchFolders");
 
@@ -126,7 +127,14 @@ const common = {
             // Make sure to add the new loader(s) before the "file" loader.
         ],
     },
-    plugins: [],
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                {from: "public"}
+            ]
+
+        })
+    ],
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
         fallback: {
