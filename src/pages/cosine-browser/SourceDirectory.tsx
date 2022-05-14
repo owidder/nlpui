@@ -140,9 +140,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
-        return <span>
+        return <span style={{backgroundColor}}>
             {withSourceLink ? <SrcPathLink path={path} srcPathMap={this.state.srcPathMap}/> : <span/>}
-            <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
+            <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
                         onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
         </span>
