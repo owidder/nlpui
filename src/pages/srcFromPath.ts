@@ -10,7 +10,8 @@ export const srcPathFromPath = (path: string, srcPathMap: {[name: string]: strin
         const pathPrefix = pathPrefixes[p];
         if(path.startsWith(pathPrefix) && srcPathMap[pathPrefix].length > 0) {
             console.log(`srcPathMapEntry = ${srcPathMap[pathPrefix]}`);
-            console.log(`substring = path.substring(pathPrefix.length)`);
+            console.log(`substring = ${path.substring(pathPrefix.length)}`);
+            console.log(`length = ${pathPrefix.length}`);
             const srcPath = _path.join(srcPathMap[pathPrefix], path.substring(pathPrefix.length));
             console.log(`srcPath = ${srcPath}`);
             return srcPath
