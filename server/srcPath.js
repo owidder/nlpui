@@ -1,10 +1,10 @@
-const {promises: {readdir, readFile}} = require('fs');
-const {stat} = require("fs");
+const {promises: {readdir}, stat} = require('fs');
 const path = require("path");
+const {createReadlineInterface} = require("./fileUtil");
 
 // Thanks to https://stackoverflow.com/a/24594123
 const getAllSubdirs = async (root) => {
-    return (await readdir(root, { withFileTypes: true }))
+    return (await readdir(root, {withFileTypes: true}))
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name)
 }
@@ -16,8 +16,11 @@ const readSrcPath = (absFolder) => {
             if(err) {
                 resolve("???")
             } else {
-                const srcPath = (await readFile(absPathToBaseUrl, "utf8")).replace(/(\r\n|\n|\r)/gm, "");
-                resolve(srcPath)
+                createReadlineInterface(absPathToBaseUrl).on("line", line => {
+                    resolve(line)
+                }).on("close", () => {
+                    resolve("???")
+                })
             }
         })
     })
