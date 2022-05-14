@@ -14,12 +14,12 @@ const readSrcPath = (absFolder) => {
         const absPathToBaseUrl = path.join(absFolder, "base_url.txt");
         stat(absPathToBaseUrl, async (err) => {
             if(err) {
-                resolve("???")
+                resolve("")
             } else {
                 createReadlineInterface(absPathToBaseUrl).on("line", line => {
                     resolve(line)
                 }).on("close", () => {
-                    resolve("???")
+                    resolve("")
                 })
             }
         })

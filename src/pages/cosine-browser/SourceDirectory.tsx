@@ -1,5 +1,4 @@
 import * as React from "react";
-import {VscGithub} from "react-icons/vsc";
 
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
@@ -14,7 +13,7 @@ import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
-import {srcPathFromPath} from "../srcFromPath";
+import {SrcPathLink} from "./SrcPathLink";
 
 const override = css`
   position: absolute;
@@ -48,7 +47,7 @@ interface DirectoryState {
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
     showList: boolean
-    srcPathMap: {[name: string]: string}
+    srcPathMap: any
 }
 
 interface FolderInfo {
@@ -142,7 +141,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <span>
-            {withSourceLink ? <a target="_blank" href={srcPathFromPath(path)}><VscGithub/></a> : <span/>}
+            {withSourceLink ? <SrcPathLink path={path} srcPathMap={this.state.srcPathMap}/> : <span/>}
             <a className={`directoryentry ${doHighlight ? "highlight" : ""}`} style={{backgroundColor}}
                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
                         onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
@@ -190,6 +189,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         {this.state.currentPathType == "file" ? <CosinesWithProgress
                                 doc={this.state.currentPath}
                                 feature={this.props.feature}
+                                srcPathMap={this.state.srcPathMap}
                             /> :
                             <div>
                                 {this.state.showList ?

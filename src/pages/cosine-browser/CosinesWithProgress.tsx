@@ -2,9 +2,7 @@ import * as React from "react";
 import {useState, useEffect} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
-import {VscGithub} from "react-icons/vsc";
 
-import {srcPathFromPath} from "../srcFromPath";
 import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import {
@@ -27,9 +25,12 @@ import {callApi} from "../../util/fetchUtil";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 
+import {SrcPathLink} from "./SrcPathLink";
+
 interface CosinesWithProgressProps {
     doc: string
     feature?: string
+    srcPathMap?: any
 }
 
 interface CosineValue {
@@ -40,7 +41,7 @@ interface CosineValue {
 
 let rootFeatures: String[] = [];
 
-export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) => {
+export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
@@ -87,9 +88,7 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
             const href = currentLocationWithNewHashValues({path: doc, feature: f.feature})
             return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="${href}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
         });
-        let listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
-            + "<br/>"
-            + tooltipLink(srcPathFromPath(documentPath), "Show source");
+        let listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents");
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`
             + "<br>"
@@ -159,7 +158,7 @@ export const CosinesWithProgress = ({doc, feature}: CosinesWithProgressProps) =>
                 return <div className="listrow" key={index} style={{backgroundColor}}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
-                        <span><a target="_blank" href={srcPathFromPath(cosineValue.document)}><VscGithub/></a></span>
+                        <span><SrcPathLink path={cosineValue.document} srcPathMap={srcPathMap}/></span>
                         &nbsp;<span className="document-path">{cosineValue.document}</span>
                         <span className="small-value">{value}</span>
                     </div>
