@@ -6,6 +6,7 @@ const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TF
 
 const {createReadlineInterface} = require("./fileUtil");
 const {unstem, unstemWordsAndValues} = require("./unstem");
+const {hasVector} = require("./vectors");
 
 const AGG_CSV = "_.csv";
 const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"];
@@ -62,6 +63,24 @@ const filterFolders = async (filesAndSubfolders, absFolder) => {
     return filtered
 }
 
+const createAdvanceEntries = async (filesAndSubfolderNames, absRoot, relFolder) => {
+    const advancedEntries = []
+    for(const fileOrSubfolderName of filesAndSubfolderNames) {
+        const advancedEntry = {name: fileOrSubfolderName}
+        const relFileOrSubfolder = path.join(relFolder, fileOrSubfolderName);
+        const absFileOrSubfolder = path.join(absRoot, relFileOrSubfolder);
+        advancedEntry.type = await typeFromPath(absFileOrSubfolder);
+        if(advancedEntry.type == "file") {
+            if(hasVector(relFileOrSubfolder)) {
+                advancedEntry.hasVector = true;
+            }
+        }
+        advancedEntries.push(advancedEntry);
+    }
+
+    return advancedEntries
+}
+
 const removeTfIdfExtension = f => f.split(`.${TFIDF_EXTENSION}`)[0];
 
 function readSrcFolder2(absFolder) {
@@ -71,6 +90,20 @@ function readSrcFolder2(absFolder) {
             const withoutTfIdfExtension = filtered.map(removeTfIdfExtension);
             if (err) reject(err);
             resolve(sortNonCaseSensitive(withoutTfIdfExtension));
+        });
+    })
+}
+
+function readSrcFolder3(absRoot, relFolder) {
+    const absFolder = path.join(absRoot, relFolder);
+    return new Promise((resolve, reject) => {
+        fs.readdir(absFolder, async (err, filesAndSubfolderNames) => {
+            if (err) reject(err);
+
+            const filtered = await filterFolders(filesAndSubfolderNames, absFolder);
+            const withoutTfIdfExtension = filtered.map(removeTfIdfExtension);
+            const advancedEntries = createAdvanceEntries(sortNonCaseSensitive(withoutTfIdfExtension), absRoot, relFolder);
+            resolve(advancedEntries);
         });
     })
 }
@@ -196,4 +229,4 @@ function readSubAggFolders(relFolder, basePath, progressCallback) {
     })
 }
 
-module.exports = {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, readAllValuesForOneFeature, typeFromPath}
+module.exports = {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3}

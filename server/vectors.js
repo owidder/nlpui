@@ -23,6 +23,7 @@ const resultCache = new NodeCache();
 
 let vectorspath;
 let numberOfVectors;
+let docs = [];
 
 const getNumberOfVectors = () => {
     return numberOfVectors;
@@ -33,12 +34,18 @@ const initVectorspath = (_vectorspath) => {
     numberOfVectors = 0;
     return new Promise(resolve => {
         const readlineInterface = createReadlineInterface(_vectorspath);
-        readlineInterface.on("line", () => {
+        readlineInterface.on("line", (line) => {
             numberOfVectors++;
+            const parts = line.split("\t");
+            docs.push(parts[0]);
         }).on("close", () => {
             resolve();
         })
     })
+}
+
+const hasVector = (doc) => {
+    return docs.includes(doc)
 }
 
 const findVector = async (doc, eventEmitter) => {
@@ -134,4 +141,4 @@ const similarDocsFromFileWithProgress = async (doc1, threshold, res, maxDocs, fe
     }
 }
 
-module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors, VECTORS_FILE_NAME}
+module.exports = {initVectorspath, similarDocsFromFileWithProgress, getNumberOfVectors, VECTORS_FILE_NAME, hasVector}

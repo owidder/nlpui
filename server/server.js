@@ -8,7 +8,7 @@ const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
 
-const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath} = require("./serverFunctions");
+const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3} = require("./serverFunctions");
 const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
 
 const cliOptionsConfig = [
@@ -64,10 +64,10 @@ router.get("/src/folder2/*", async function (req, res) {
         const relFolder = req.originalUrl.substr("/api/src/folder2".length + 1);
         const absFolder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const entries = await readSrcFolder2(absFolder);
+        const advancedEntries = await readSrcFolder3(path.join(cliOptions.datapath, TFIDF_FOLDER), relFolder)
         const undottedEntries = entries.filter(e => !e.startsWith("."));
-        const foldersOrFilesWithVectors = cliOptions.filter == true ? await filterFilesWithoutVectors(relFolder, undottedEntries) : undottedEntries;
         res.json({
-            folder: relFolder, content: foldersOrFilesWithVectors
+            folder: relFolder, content: undottedEntries, advancedEntries
         });
     } catch (e) {
         res.status(500).json({error: e.toString()});
