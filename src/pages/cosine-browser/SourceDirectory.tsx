@@ -37,8 +37,15 @@ type PathType = "file" | "folder" | "NA"
 
 type ValuesForFeature = { [fileOrFolder: string]: number }
 
+interface AdvancedEntry {
+    name: string
+    type: PathType
+    hasVector?: boolean
+}
+
 interface DirectoryState {
     content: string[]
+    advancedEntries: AdvancedEntry[]
     currentPath: string
     currentPathType?: PathType
     tree?: any
@@ -53,6 +60,7 @@ interface DirectoryState {
 interface FolderInfo {
     folder: string
     content: string[]
+    advancedEntries: AdvancedEntry[]
 }
 
 interface PathInfo {
@@ -63,7 +71,7 @@ interface PathInfo {
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {
-        content: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
+        content: [], advancedEntries: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
         currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList, srcPathMap: {}
     }
 
@@ -104,7 +112,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             }
 
             removeAllTooltips();
-            this.setState({content: folderInfo.content, currentPath: path, currentPathType: pathType, loading: false})
+            this.setState({content: folderInfo.content, advancedEntries: folderInfo.advancedEntries, currentPath: path, currentPathType: pathType, loading: false})
         }
     }
 
@@ -129,22 +137,25 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         return null
     }
 
-    renderLinkWithDiv(entry: string, path: string, withSourceLink = true) {
+    renderLinkWithDiv(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
         return <div className="listrow" key={path + entry}>
-            <div>{this.renderLink(entry, path, withSourceLink)}</div>
+            <div>{this.renderLink(entry, path, withSourceLink, isFileWithoutVector)}</div>
         </div>
     }
 
-    renderLink(entry: string, path: string, withSourceLink = true) {
+    renderLink(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
         const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
         const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
         return <span style={{backgroundColor}}>
             {withSourceLink ? <SrcPathLink path={path} srcPathMap={this.state.srcPathMap}/> : <span/>}
-            <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
-                  href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
-                        onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
+            {isFileWithoutVector ?
+                <span className="directoryentry no-vector">{entry}</span> :
+                <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
+                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
+                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
+            }
         </span>
     }
 
@@ -178,11 +189,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         }
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
-                        {this.state.content.map(entry => {
+                        {this.state.advancedEntries.map(advancedEntry => {
                             const newPath = (this.state.currentPathType == "folder" ?
-                                _path.join(this.state.currentPath, entry) :
-                                _path.join(_path.dirname(this.state.currentPath), entry))
-                            return this.renderLinkWithDiv(entry, newPath)
+                                _path.join(this.state.currentPath, advancedEntry.name) :
+                                _path.join(_path.dirname(this.state.currentPath), advancedEntry.name))
+                            return this.renderLinkWithDiv(advancedEntry.name, newPath, true, (advancedEntry.type == "file" && !advancedEntry.hasVector))
                         })}
                     </div>
                     <div className={gridClass(10)}>
