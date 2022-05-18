@@ -169,12 +169,4 @@ export const doListEffect = async (head: string, foot: string, list: string[], l
     }
 }
 
-export class TooltipRenderer {
-    shortlist = true;
-
-    render() {
-
-    }
-}
-
 export const tooltipLink = (href: string, text: string) => `<a target="_blank" href="${href}"><span class="tooltip-link">${text}</span></a>`;

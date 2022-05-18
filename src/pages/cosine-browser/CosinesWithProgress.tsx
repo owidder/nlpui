@@ -7,7 +7,6 @@ import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import {
     createTooltip,
-    doListEffect,
     moveTooltip,
     showTooltip,
     hideTooltip,
@@ -16,8 +15,8 @@ import {
     togglePinTooltip,
     tooltipLink
 } from "../../util/tooltip";
-import {Feature, smallestFeatureValue, sortFeatures} from "../Feature";
-import {addEventListener, removeAllEventListeners} from "../../util/listener";
+import {Feature} from "../Feature";
+import {FeatureTooltipRenderer} from "./FeatureTooltipRenderer";
 
 import "../styles.scss"
 import "./cosines.scss"
@@ -58,44 +57,11 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgr
             })
     }, [doc])
 
-    let shortlist = true;
-
-    const renderTooltip = (documentPath: string, features: Feature[]) => {
-        if (!features) return;
-
-        const sortedFeatures = sortFeatures(features);
-        const smallestValue = smallestFeatureValue(features);
-
-        removeAllEventListeners("showall");
-        addEventListener("showall", () => {
-            console.log("showall")
-            shortlist = false;
-            renderTooltip(documentPath, sortedFeatures);
-        });
-
-        removeAllEventListeners("showless");
-        addEventListener("showless", () => {
-            console.log("showless")
-            shortlist = true;
-            renderTooltip(documentPath, sortedFeatures);
-        });
-
-        const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
-        const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
-
-        const list = sortedFeatures.filter(f => shortlist ? f.value > 0.1 : f).map(f => {
-            const isHighlighted = rootFeatures.indexOf(f.feature) > -1;
-            const href = currentLocationWithNewHashValues({path: doc, feature: f.feature})
-            return `<span class="${isHighlighted ? 'highlight-feature' : 'lowlight-feature'}"><a href="${href}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
-        });
-        let listFoot = tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents");
-
-        const listHead = `<span class="tooltip-title">${documentPath}</span>`
-            + "<br>"
-            + (shortlist ? ((smallestValue > 0.1) ? "<span/>" : showall) : ((smallestValue > 0.1) ? "<span/>" : showless));
-
-        doListEffect(listHead, listFoot, list);
-    }
+    const featureTooltipRenderer = new FeatureTooltipRenderer(
+        (feature: string) => currentLocationWithNewHashValues({path: doc, feature}),
+        (feature: string) => rootFeatures.indexOf(feature) > -1,
+        (documentPath: string) => tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
+    )
 
     const readFeatures = (document: string): Promise<Feature[]> => {
         return new Promise(resolve => {
@@ -171,7 +137,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgr
     if (progress > 0 && progressText.length > 0 && numberOfFiles > 0) {
         return <ProgressBar message={progressText} max={numberOfFiles} current={progress}/>
     } else if (cosineValues && cosineValues.length > 0) {
-        createTooltip(renderTooltip);
+        createTooltip(featureTooltipRenderer.render.bind(featureTooltipRenderer));
         return showCosines();
     } else {
         return <span>WAITING!!!</span>
