@@ -13,10 +13,10 @@ const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"];
 
 const isNoAggFile = f => !(f === AGG_CSV || IGNORED_AGG_CSV.indexOf(f) > -1);
 
-const SUM_INDEX = 1
-const MAX_INDEX = 2
+const SUM_INDEX = 5
+const MAX_INDEX = 6
 const COUNT_INDEX = 3
-const AVG_INDEX = 4
+const AVG_INDEX = 7
 
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
@@ -116,7 +116,7 @@ function readAggFolder(folder) {
             const wordsAndValues = [];
             readLineInterface.on("line", line => {
                 const wordAndValues = line.split("\t");
-                const value = Number(wordAndValues[AVG_INDEX]) * Math.min(Number(wordAndValues[COUNT_INDEX]), 10)
+                const value = Number(wordAndValues[SUM_INDEX])
                 wordsAndValues.push({word: wordAndValues[0], sum: _.round(wordAndValues[SUM_INDEX], 2),
                     count: Number(wordAndValues[COUNT_INDEX]),
                     max: _.round(wordAndValues[MAX_INDEX], 2),
@@ -154,7 +154,26 @@ const readFolderValues = async (folder) => {
     return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues}
 }
 
-const readAllValuesForOneFeature = (absPath, feature) => {
+const getFolderValueFromMetricAndIndex = (metric, folderValues, indexOfFeature) => {
+    switch (metric) {
+        case "sum":
+            return folderValues.sumValues[indexOfFeature]
+
+        case "avg":
+            return folderValues.avgValues[indexOfFeature]
+
+        case "max":
+            return folderValues.maxValues[indexOfFeature]
+
+        case "max*count":
+            return folderValues.maxCountValues[indexOfFeature]
+
+        case "count":
+            return folderValues.countValues[indexOfFeature]
+    }
+}
+
+const readAllValuesForOneFeature = (absPath, feature, metric) => {
     return new Promise(async resolve => {
         const absFolder = await typeFromPath(absPath) == "folder" ? absPath : path.dirname(absPath);
         const values = {};
@@ -167,7 +186,7 @@ const readAllValuesForOneFeature = (absPath, feature) => {
                         const folderValues = await readFolderValues(fileOrFolder);
                         const indexOfFeature = folderValues.words.findIndex(w => compareToFeature(w, feature));
                         if(indexOfFeature > -1) {
-                            values[f] = folderValues.tfidfValues[indexOfFeature];
+                            values[f] = metric ? getFolderValueFromMetricAndIndex(metric, folderValues, indexOfFeature) : folderValues.tfidfValues[indexOfFeature];
                         }
                     } else {
                         const fileValues = await readFeatures(fileOrFolder);

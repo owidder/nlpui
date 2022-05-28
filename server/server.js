@@ -123,14 +123,12 @@ router.get("/features", async (req, res) => {
 router.get("/valuesForFeature", async (req, res) => {
     try {
         const relFolder = req.query.path;
-        console.log(`start valuesForFeature: ${relFolder}`);
         const feature = req.query.feature;
+        const metric = req.query.metric;
         const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder)
-        const values = await readAllValuesForOneFeature(absPath, feature);
-        console.log(`end valuesForFeature: ${relFolder}`);
+        const values = await readAllValuesForOneFeature(absPath, feature, metric);
         await writeJsonz(null, JSON.stringify(values), res);
         res.status(200).send();
-        console.log(`written valuesForFeature: ${relFolder}`);
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
@@ -138,7 +136,6 @@ router.get("/valuesForFeature", async (req, res) => {
 
 router.get("/srcPathMap", async (req, res) => {
     const srcPathMap = await getSrcPathMap(path.join(cliOptions.datapath, "info"));
-    console.log(srcPathMap)
     res.json(srcPathMap)
 })
 

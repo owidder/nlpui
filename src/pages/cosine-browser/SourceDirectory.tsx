@@ -85,7 +85,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
-            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
+            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}&metric=${this.state.currentMetric}`, NOP, NOP, NOP,
                 (valuesForFeature: ValuesForFeature) => {
                     this.setState({valuesForFeature})
                     resolve()

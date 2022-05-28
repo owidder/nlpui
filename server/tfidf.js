@@ -2,6 +2,8 @@ const {access, constants} = require("fs");
 
 const {createReadlineInterface} = require("./fileUtil");
 
+const TFIDF_INDEX = 2;
+
 const TFIDF_EXTENSION = "tfidf.csv";
 const TFIDF_FOLDER = "tfidf";
 const IGNORED_TFIDF_EXTENSIONS = ["tfidf_all.csv", "tfidf2.csv"]
@@ -18,7 +20,7 @@ const readFeatures = (path) => {
                 readlineInterface.on("line", line => {
                     const parts = line.split("\t");
                     const feature = parts[0];
-                    const value = Number(parts[1]);
+                    const value = Number(parts[TFIDF_INDEX]);
                     result.push({feature, value})
                 }).on("close", () => {
                     resolve(result);
