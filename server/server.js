@@ -124,9 +124,8 @@ router.get("/valuesForFeature", async (req, res) => {
     try {
         const relFolder = req.query.path;
         const feature = req.query.feature;
-        const metric = req.query.metric;
         const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder)
-        const values = await readAllValuesForOneFeature(absPath, feature, metric);
+        const values = await readAllValuesForOneFeature(absPath, feature);
         await writeJsonz(null, JSON.stringify(values), res);
         res.status(200).send();
     } catch (e) {

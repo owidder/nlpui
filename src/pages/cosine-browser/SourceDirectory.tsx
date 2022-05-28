@@ -85,7 +85,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     private readValuesForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
-            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}&metric=${this.state.currentMetric}`, NOP, NOP, NOP,
+            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
                 (valuesForFeature: ValuesForFeature) => {
                     this.setState({valuesForFeature})
                     resolve()
@@ -143,27 +143,27 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         </div>
     }
 
-    extractValueForFeature(value: number | MetricValues): number | undefined {
+    extractValueForFeature(value: number | MetricValues): [number | undefined, string] {
         if(value) {
             if(typeof value === "number") {
-                return value;
+                return [value, `(${value})`];
             } else {
-                return value[this.state.currentMetric]
+                const v = value[this.state.currentMetric];
+                return [v, `(${this.state.currentMetric}: ${v})`]
             }
         }
 
-        return undefined
+        return [undefined, ""]
     }
 
     renderLink(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
         const maxValue: number = Object.values(this.state.valuesForFeature).reduce<number>((_max, _v) => {
-            const value = this.extractValueForFeature(_v);
+            const value: number = this.extractValueForFeature(_v)[0];
             return value > _max ? value : _max
         }, 0);
-        const _value = this.extractValueForFeature(this.state.valuesForFeature[entry]);
-        const backgroundColor = wordSearchColor(_value, maxValue);
+        const [value, valueStr] = this.extractValueForFeature(this.state.valuesForFeature[entry]);
+        const backgroundColor = wordSearchColor(value, maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        const valueStr = _value ? `(${_value.toFixed(2)})` : "";
         return <span style={{backgroundColor}}>
             {withSourceLink ? <SrcPathLink path={path} srcPathMap={this.state.srcPathMap}/> : <span/>}
             {isFileWithoutVector ?

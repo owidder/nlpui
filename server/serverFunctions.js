@@ -154,26 +154,7 @@ const readFolderValues = async (folder) => {
     return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues}
 }
 
-const getFolderValueFromMetricAndIndex = (metric, folderValues, indexOfFeature) => {
-    switch (metric) {
-        case "sum":
-            return folderValues.sumValues[indexOfFeature]
-
-        case "avg":
-            return folderValues.avgValues[indexOfFeature]
-
-        case "max":
-            return folderValues.maxValues[indexOfFeature]
-
-        case "max*count":
-            return folderValues.maxCountValues[indexOfFeature]
-
-        case "count":
-            return folderValues.countValues[indexOfFeature]
-    }
-}
-
-const readAllValuesForOneFeature = (absPath, feature, metric) => {
+const readAllValuesForOneFeature = (absPath, feature) => {
     return new Promise(async resolve => {
         const absFolder = await typeFromPath(absPath) == "folder" ? absPath : path.dirname(absPath);
         const values = {};
@@ -186,7 +167,13 @@ const readAllValuesForOneFeature = (absPath, feature, metric) => {
                         const folderValues = await readFolderValues(fileOrFolder);
                         const indexOfFeature = folderValues.words.findIndex(w => compareToFeature(w, feature));
                         if(indexOfFeature > -1) {
-                            values[f] = metric ? getFolderValueFromMetricAndIndex(metric, folderValues, indexOfFeature) : folderValues.tfidfValues[indexOfFeature];
+                            values[f] = {
+                                sum: folderValues.sumValues[indexOfFeature],
+                                avg: folderValues.avgValues[indexOfFeature],
+                                max: folderValues.maxValues[indexOfFeature],
+                                "max*count": folderValues.maxCountValues[indexOfFeature],
+                                count: folderValues.countValues[indexOfFeature]
+                            }
                         }
                     } else {
                         const fileValues = await readFeatures(fileOrFolder);
