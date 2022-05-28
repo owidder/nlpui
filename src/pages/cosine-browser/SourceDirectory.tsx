@@ -4,7 +4,7 @@ import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import {WordCloud} from "./WordCloud";
 import "../directory.scss";
-import {METRICS, WordAndMetrics} from "./metrics";
+import {METRICS, WordAndMetrics, MetricValues} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import {css} from "@emotion/react";
@@ -35,7 +35,7 @@ interface DirectoryProps {
 
 type PathType = "file" | "folder" | "NA"
 
-type ValuesForFeature = { [fileOrFolder: string]: number }
+type ValuesForFeature = {[fileOrFolder: string]: number | MetricValues}
 
 interface AdvancedEntry {
     name: string
@@ -143,18 +143,34 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         </div>
     }
 
+    extractValueForFeature(value: number | MetricValues): number | undefined {
+        if(value) {
+            if(typeof value === "number") {
+                return value;
+            } else {
+                return value[this.state.currentMetric]
+            }
+        }
+
+        return undefined
+    }
+
     renderLink(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
-        const maxValue: number = Object.values(this.state.valuesForFeature).reduce((_max, _v) => _v > _max ? _v : _max, 0);
-        const backgroundColor = wordSearchColor(this.state.valuesForFeature[entry], maxValue);
+        const maxValue: number = Object.values(this.state.valuesForFeature).reduce<number>((_max, _v) => {
+            const value = this.extractValueForFeature(_v);
+            return value > _max ? value : _max
+        }, 0);
+        const _value = this.extractValueForFeature(this.state.valuesForFeature[entry]);
+        const backgroundColor = wordSearchColor(_value, maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
-        const value = this.state.valuesForFeature[entry] ? `(${this.state.valuesForFeature[entry].toFixed(2)})` : "";
+        const valueStr = _value ? `(${_value.toFixed(2)})` : "";
         return <span style={{backgroundColor}}>
             {withSourceLink ? <SrcPathLink path={path} srcPathMap={this.state.srcPathMap}/> : <span/>}
             {isFileWithoutVector ?
                 <span className="directoryentry no-vector">{entry}</span> :
                 <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                    href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
-                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value}</span></a>
+                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{valueStr}</span></a>
             }
         </span>
     }

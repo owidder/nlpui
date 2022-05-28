@@ -5,3 +5,5 @@ export interface WordAndMetrics {
     word: string
     [metric: string]: number | any
 }
+
+export type MetricValues = {[key in typeof METRICS[number]]: number}
