@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="server erpnext" type="NodeJSConfigurationType" application-parameters="--datapath $PROJECT_DIR$/../nlp/dict/erpnext/antlr --port 3225" path-to-js-file="server.js" working-dir="$PROJECT_DIR$/server">
-    <method v="2" />
-  </configuration>
-</component>

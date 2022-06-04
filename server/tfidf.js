@@ -30,8 +30,8 @@ const readFeatures = (path) => {
     })
 }
 
-const compareToFeature = (word, feature) => {
-    return (word.toLowerCase() == feature.toLowerCase());
+const compareToFeature = (words, feature) => {
+    return words.map(w => w.toLowerCase()).indexOf(feature.toLowerCase()) > -1;
 }
 
 
