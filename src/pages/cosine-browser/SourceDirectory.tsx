@@ -146,7 +146,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     extractValueForFeature(value: number | MetricValues): [number | undefined, string] {
         if(value) {
             if(typeof value === "number") {
-                return [value, `(${value})`];
+                return [value, `(tf-idf: ${value})`];
             } else {
                 const v = value[this.state.currentMetric];
                 return [v, `(${this.state.currentMetric}: ${v})`]
