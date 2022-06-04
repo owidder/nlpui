@@ -111,7 +111,7 @@ router.get("/features", async (req, res) => {
         const doc1 = req.query.doc1;
         const features = await readFeatures(path.join(cliOptions.datapath, TFIDF_FOLDER, `${doc1}.${TFIDF_EXTENSION}`));
         const unstemmedFeatures = features.map(f => {
-            return {...f, feature: unstem(f.feature)}
+            return {...f, features: unstem(f.feature)}
         })
         unstemmedFeatures.sort((f1, f2) => f2.value - f1.value)
         res.json(unstemmedFeatures)

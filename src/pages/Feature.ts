@@ -1,5 +1,5 @@
 export interface Feature {
-    feature: [string]
+    features: [string]
     value: number
 }
 

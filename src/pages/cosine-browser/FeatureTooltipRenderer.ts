@@ -45,8 +45,8 @@ export class FeatureTooltipRenderer {
         const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show only first ${SHORTLIST_LENGTH}</a><br/>`;
 
         const list = sortedFeatures.slice(0, this.shortlist ? SHORTLIST_LENGTH : sortedFeatures.length).map(f => {
-            const links = f.feature.map(feature => `<a href="${this.href(feature)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${feature}</a>`).join(" ");
-            return `<span class="${this.isHighlighted(f.feature) ? 'highlight-feature' : 'lowlight-feature'}">${links} <small>[${f.value.toFixed(2)}]</small></span>`
+            const links = f.features.map(feature => `<a href="${this.href(feature)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${feature}</a>`).join(" ");
+            return `<span class="${this.isHighlighted(f.features) ? 'highlight-feature' : 'lowlight-feature'}">${links} <small>[${f.value.toFixed(2)}]</small></span>`
         });
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`

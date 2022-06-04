@@ -94,7 +94,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgr
     }
 
     const handleList = async (cosineValues: CosineValue[]) => {
-        rootFeatures = (await readFeatures(cosineValues[0].document)).map(f => f.feature);
+        rootFeatures = (await readFeatures(cosineValues[0].document)).map(f => f.features);
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
                 moveTooltip(event);
