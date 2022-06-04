@@ -1,9 +1,11 @@
-import {Feature, smallestFeatureValue, sortFeatures} from "../Feature";
+import {Feature, sortFeatures} from "../Feature";
 import {doListEffect} from "../../util/tooltip";
 import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
-type IsHighlightedCallback = (feature: string) => boolean
+type IsHighlightedCallback = (feature: string[]) => boolean
 type ListFootCallback = (documentPath: string) => string
+
+const SHORTLIST_LENGTH = 20;
 
 export class FeatureTooltipRenderer {
     href: (feature: string) => string
@@ -24,7 +26,6 @@ export class FeatureTooltipRenderer {
         if (!features) return;
 
         const sortedFeatures = sortFeatures(features);
-        const smallestValue = smallestFeatureValue(features);
 
         removeAllEventListeners("showall");
         addEventListener("showall", () => {
@@ -40,16 +41,17 @@ export class FeatureTooltipRenderer {
             this.render(documentPath, sortedFeatures);
         });
 
-        const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all...</a><br/>`;
-        const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show less...</a><br/>`;
+        const showall = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showall'))">show all ${sortedFeatures.length}</a><br/>`;
+        const showless = `<a class="fakelink tooltip-link" onclick="document.dispatchEvent(new CustomEvent('showless'))">show only first ${SHORTLIST_LENGTH}</a><br/>`;
 
-        const list = sortedFeatures.filter(f => this.shortlist ? f.value > 0.1 : f).map(f => {
-            return `<span class="${this.isHighlighted(f.feature) ? 'highlight-feature' : 'lowlight-feature'}"><a href="${this.href(f.feature)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.feature} <small>[${f.value.toFixed(2)}]</small></a></span>`
+        const list = sortedFeatures.slice(0, this.shortlist ? SHORTLIST_LENGTH : sortedFeatures.length).map(f => {
+            const links = f.feature.map(feature => `<a href="${this.href(feature)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${feature}</a>`).join(" ");
+            return `<span class="${this.isHighlighted(f.feature) ? 'highlight-feature' : 'lowlight-feature'}">${links} <small>[${f.value.toFixed(2)}]</small></span>`
         });
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`
             + "<br>"
-            + (this.shortlist ? ((smallestValue > 0.1) ? "<span/>" : showall) : ((smallestValue > 0.1) ? "<span/>" : showless));
+            + (this.shortlist ? ((sortedFeatures.length <= SHORTLIST_LENGTH) ? "<span/>" : showall) : ((sortedFeatures.length <= SHORTLIST_LENGTH) ? "<span/>" : showless));
 
         doListEffect(listHead, this.listFoot(documentPath), list);
     }

@@ -38,7 +38,7 @@ interface CosineValue {
     tfidfValueOfFeature?: number
 }
 
-let rootFeatures: String[] = [];
+let rootFeatures: String[][] = [];
 
 export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
@@ -59,7 +59,17 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgr
 
     const featureTooltipRenderer = new FeatureTooltipRenderer(
         (feature: string) => currentLocationWithNewHashValues({path: doc, feature}),
-        (feature: string) => rootFeatures.indexOf(feature) > -1,
+        (feature: string[]) => {
+            for(let i = 0; i < rootFeatures.length; i++) {
+                for(let j = 0; j < feature.length; j++) {
+                    if(rootFeatures[i].indexOf(feature[j]) > -1) {
+                        return true;
+                    }
+                }
+            }
+
+            return false
+        },
         (documentPath: string) => tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
     )
 
