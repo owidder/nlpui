@@ -22,7 +22,10 @@ const initUnstemDict = (datapath) => {
 
 const unstemWordsAndValues = (wordsAndValues) => {
     return  wordsAndValues.map(wav => {
-        return {...wav, word: unstem(wav.word)}
+        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word)};
+        delete wavNew.word;
+
+        return wavNew
     })
 }
 

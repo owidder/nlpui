@@ -143,7 +143,7 @@ const waitForCallback = (callback) => {
 const readFolderValues = async (folder) => {
     const aggValues = await readAggFolder(folder);
     const unstemmed = unstemWordsAndValues(aggValues);
-    const words = unstemmed.map(wav => wav.word);
+    const words = unstemmed.map(wav => wav.words);
     const tfidfValues = unstemmed.map(wav => wav.value);
     const sumValues = unstemmed.map(wav => wav.sum);
     const avgValues = unstemmed.map(wav => wav.avg);
