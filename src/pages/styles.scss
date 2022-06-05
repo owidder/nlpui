@@ -16,6 +16,11 @@
     &.withline {
       border-bottom: solid black 1px;
     }
+
+    &.title {
+      font-weight: bolder;
+      background-color: antiquewhite;
+    }
   }
 
   .cell {
