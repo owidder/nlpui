@@ -1,4 +1,5 @@
 import * as React from "react";
+import {useState} from "react";
 
 import {WordAndMetrics} from "./metrics";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
@@ -9,13 +10,22 @@ interface WordListProps {
 }
 
 export const WordList = ({currentMetric, wordsAndMetrics}: WordListProps) => {
+    const [orderByAlpha, setOrderByAlpha] = useState(false);
 
-    const sortedWordsAndMetrics = wordsAndMetrics.sort((a, b) => b[currentMetric] - a[currentMetric]);
+    const sortByMetricOrAlpha = (a: WordAndMetrics, b: WordAndMetrics): number => {
+        if(orderByAlpha) {
+            return a.stem.localeCompare(b.stem)
+        } else {
+            return b[currentMetric] - a[currentMetric]
+        }
+    }
+
+    const sortedWordsAndMetrics = wordsAndMetrics.sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
         <div className="listrow title">
             <div className="cell index">No.</div>
-            <div className="cell string">stem and long words</div>
+            <div className="cell string">stem and long words <a href={currentLocationWithNewHashValues({})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a></div>
             <div className="cell">{currentMetric}</div>
         </div>
         {sortedWordsAndMetrics.length > 0 ?
