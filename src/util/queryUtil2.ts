@@ -63,6 +63,10 @@ export const getCurrentHashString = (): string => {
     return getHashString(getHashParamMap());
 }
 
+export const setNewHashValues = (newHashValues: HashValues) => {
+    setHashValues({...getHashParamMap(), ...newHashValues})
+}
+
 export const getCurrentHashStringWithNewValues = (newHashValues: HashValues): string => {
     const currentHashString = getHashParamMap();
     return getHashString({...currentHashString, ...newHashValues})

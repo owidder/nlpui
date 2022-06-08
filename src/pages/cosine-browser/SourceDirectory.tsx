@@ -31,11 +31,13 @@ interface DirectoryProps {
     initialCurrentMetric: string
     feature?: string
     initialShowList: boolean
+    initialOrderByAlpha: boolean
+    initialFilter: string
 }
 
 type PathType = "file" | "folder" | "NA"
 
-type ValuesForFeature = {[fileOrFolder: string]: number | MetricValues}
+type ValuesForFeature = { [fileOrFolder: string]: number | MetricValues }
 
 interface AdvancedEntry {
     name: string
@@ -71,8 +73,15 @@ interface PathInfo {
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {
-        content: [], advancedEntries: [], currentPath: this.props.path, loading: true, valuesForFeature: {},
-        currentMetric: this.props.initialCurrentMetric, wordsAndMetrics: [], showList: this.props.initialShowList, srcPathMap: {}
+        content: [],
+        advancedEntries: [],
+        currentPath: this.props.path,
+        loading: true,
+        valuesForFeature: {},
+        currentMetric: this.props.initialCurrentMetric,
+        wordsAndMetrics: [],
+        showList: this.props.initialShowList,
+        srcPathMap: {}
     }
 
     getFmt = () => this.state.showList ? "list" : "cloud";
@@ -99,7 +108,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
-        configureGlobalLinksForCosineBrowserPage({path : pathType == "file" ? _path.dirname(path) : path});
+        configureGlobalLinksForCosineBrowserPage({path: pathType == "file" ? _path.dirname(path) : path});
 
         if (pathType === "file" && withReload) {
             location.reload();
@@ -112,7 +121,13 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             }
 
             removeAllTooltips();
-            this.setState({content: folderInfo.content, advancedEntries: folderInfo.advancedEntries, currentPath: path, currentPathType: pathType, loading: false})
+            this.setState({
+                content: folderInfo.content,
+                advancedEntries: folderInfo.advancedEntries,
+                currentPath: path,
+                currentPathType: pathType,
+                loading: false
+            })
         }
     }
 
@@ -144,8 +159,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     extractValueForFeature(value: number | MetricValues): [number | undefined, string] {
-        if(value) {
-            if(typeof value === "number") {
+        if (value) {
+            if (typeof value === "number") {
                 return [value, `(tf-idf: ${value})`];
             } else {
                 const v = value[this.state.currentMetric];
@@ -181,7 +196,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
-            const href = currentLocationWithNewHashValues({currentMetric: metric, fmt: this.getFmt(), path: this.state.currentPath});
+            const href = currentLocationWithNewHashValues({
+                currentMetric: metric,
+                fmt: this.getFmt(),
+                path: this.state.currentPath
+            });
             const a = <a onClick={() => {
                 configureGlobalLinksForCosineBrowserPage({currentMetric: metric, fmt: this.getFmt()});
                 this.setState({currentMetric: metric})
@@ -221,7 +240,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                             <div>
                                 {this.state.showList ?
                                     <WordList currentMetric={this.state.currentMetric}
-                                           wordsAndMetrics={this.state.wordsAndMetrics}/> :
+                                              wordsAndMetrics={this.state.wordsAndMetrics}
+                                              initialFilter={this.props.initialFilter}
+                                              initialOrderByAlpha={this.props.initialOrderByAlpha}/> :
                                     <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
                                                wordsAndMetrics={this.state.wordsAndMetrics}/>}
                             </div>}

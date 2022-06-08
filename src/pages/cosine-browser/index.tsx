@@ -12,6 +12,8 @@ const path = getHashParamValue("path", ".");
 const currentMetric = getHashParamValue("currentMetric", DEFAULT_METRIC);
 const feature = getHashParamValue("feature", "");
 const fmt = getHashParamValue("fmt", "list");
+const abc = getHashParamValue("abc", "0");
+const initialFilter = getHashParamValue("filter", "")
 
 configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
 
@@ -21,4 +23,6 @@ ReactDOM.createRoot(document.getElementById("container"))
         initialCurrentMetric={currentMetric}
         feature={feature}
         initialShowList={fmt == "list"}
+        initialFilter={initialFilter}
+        initialOrderByAlpha={Number(abc) === 1}
     />)

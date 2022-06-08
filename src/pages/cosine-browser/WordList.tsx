@@ -1,16 +1,35 @@
 import * as React from "react";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
 import {WordAndMetrics} from "./metrics";
-import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
+import {currentLocationWithNewHashValues, setNewHashValues} from "../../util/queryUtil2";
 
 interface WordListProps {
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
+    initialOrderByAlpha: boolean
+    initialFilter: string
 }
 
-export const WordList = ({currentMetric, wordsAndMetrics}: WordListProps) => {
-    const [orderByAlpha, setOrderByAlpha] = useState(false);
+export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter}: WordListProps) => {
+    const [orderByAlpha, setOrderByAlpha] = useState(initialOrderByAlpha);
+    const [filter, setFilter] = useState(initialFilter);
+    const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
+
+    let filterDelayTimer;
+
+    useEffect(() => {
+       if(filterDelayTimer) {
+           clearTimeout(filterDelayTimer);
+       }
+
+       setNewHashValues({filter: filterInputFieldValue})
+
+       filterDelayTimer = setTimeout(() => {
+           setFilter(filterInputFieldValue);
+           filterDelayTimer = undefined
+       }, 200)
+    }, [filterInputFieldValue])
 
     const sortByMetricOrAlpha = (a: WordAndMetrics, b: WordAndMetrics): number => {
         if(orderByAlpha) {
@@ -20,12 +39,15 @@ export const WordList = ({currentMetric, wordsAndMetrics}: WordListProps) => {
         }
     }
 
-    const sortedWordsAndMetrics = wordsAndMetrics.sort(sortByMetricOrAlpha);
+    const sortedWordsAndMetrics = wordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
         <div className="listrow title">
             <div className="cell index">No.</div>
-            <div className="cell string">stem and long words <a href={currentLocationWithNewHashValues({})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a></div>
+            <div className="cell string">stem and long words
+                <a href={currentLocationWithNewHashValues({abc: orderByAlpha ? 1 : 0})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a>
+                <input value={filterInputFieldValue} onChange={(e) => setFilterInputFieldValue(e.target.value)}/>
+            </div>
             <div className="cell">{currentMetric}</div>
         </div>
         {sortedWordsAndMetrics.length > 0 ?
