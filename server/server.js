@@ -7,6 +7,7 @@ const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = re
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
+const {createIndex} = require("./searchEngine");
 
 const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3} = require("./serverFunctions");
 const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
@@ -147,6 +148,7 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectorspath(path.join(cliOptions.datapath, VECTORS_FILE_NAME)).then(async () => {
+    await createIndex("", "._words_", path.join(cliOptions.datapath, "words"));
     initUnstemDict(cliOptions.datapath);
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);
