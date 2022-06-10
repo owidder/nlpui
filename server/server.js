@@ -148,7 +148,7 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectorspath(path.join(cliOptions.datapath, VECTORS_FILE_NAME)).then(async () => {
-    await createIndex("", "._words_", path.join(cliOptions.datapath, "words"));
+    await createIndex("", ".tfidf.csv", path.join(cliOptions.datapath, "tfidf"));
     initUnstemDict(cliOptions.datapath);
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);

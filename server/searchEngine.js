@@ -1,26 +1,22 @@
 const path = require("path");
 const fs = require("fs");
 
-const {createReadlineInterface, typeFromPathWithDefaultExtension} = require("./fileUtil");
+const {typeFromPathWithDefaultExtension} = require("./fileUtil");
+const {readFeatures} = require("./tfidf");
 
 let stemIndex = {constructor: []};
 
-const addLineToIndex = (index, relFilePath, line) => {
-    const words = line.split(" ");
-    const wordsWithoutDoubles = [...new Set(words)];
+const addToIndex = async (relFilePath, index, baseFolder) => {
+    const absFilePath = path.join(baseFolder, relFilePath);
+    const wordsWithValues = await readFeatures(absFilePath);
 
-    wordsWithoutDoubles.forEach(word => {
-        index[word] = index[word] ? [...index[word], relFilePath] : [relFilePath]
-    })
-}
-
-const addToIndex = (relFilePath, index, baseFolder) => {
-    return new Promise(resolve => {
-        const absFilePath = path.join(baseFolder, relFilePath);
-        const rl = createReadlineInterface(absFilePath);
-        rl.on("line", line => {
-            addLineToIndex(index, relFilePath, line);
-        }).on("close", () => resolve())
+    wordsWithValues.forEach(wwv => {
+        const entry = {relFilePath, tfidf: wwv.value};
+        if(index[wwv.feature]) {
+            index[wwv.feature].push(entry)
+        } else {
+            index[wwv.feature] = [entry]
+        }
     })
 }
 
