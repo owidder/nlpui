@@ -4,7 +4,7 @@ const _ = require("lodash");
 
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TFIDF_EXTENSIONS} = require("./tfidf");
 
-const {createReadlineInterface} = require("./fileUtil");
+const {createReadlineInterface, typeFromPathWithDefaultExtension} = require("./fileUtil");
 const {unstem, unstemWordsAndValues} = require("./unstem");
 const {hasVector} = require("./vectors");
 
@@ -24,30 +24,11 @@ function sortNonCaseSensitive(list) {
     });
 }
 
-function pathTypeFromStats(stats) {
-    return stats.isDirectory() ? "folder" : "file";
-}
-
-const typeFromPath = (path) => {
-    return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
-            if (err) {
-                fs.stat(`${path}.${TFIDF_EXTENSION}`, (err) => {
-                    if(err) reject(err);
-                    resolve("file");
-                })
-            } else {
-                resolve(pathTypeFromStats(stats))
-            }
-        })
-    })
-}
-
 const filterFolders = async (filesAndSubfolders, absFolder) => {
     const filtered = []
     for(const fileOrSubfolder of filesAndSubfolders) {
         const absFileOrSubfolder = path.join(absFolder, fileOrSubfolder);
-        const pathType = await typeFromPath(absFileOrSubfolder);
+        const pathType = await typeFromPathWithDefaultExtension(absFileOrSubfolder, TFIDF_EXTENSION);
         if(pathType === "file") {
             if(!fileOrSubfolder.startsWith("__")
                 && !fileOrSubfolder.startsWith(".")
@@ -69,7 +50,7 @@ const createAdvanceEntries = async (filesAndSubfolderNames, absRoot, relFolder) 
         const advancedEntry = {name: fileOrSubfolderName}
         const relFileOrSubfolder = path.join(relFolder, fileOrSubfolderName);
         const absFileOrSubfolder = path.join(absRoot, relFileOrSubfolder);
-        advancedEntry.type = await typeFromPath(absFileOrSubfolder);
+        advancedEntry.type = await typeFromPathWithDefaultExtension(absFileOrSubfolder, TFIDF_EXTENSION);
         if(advancedEntry.type == "file") {
             if(hasVector(relFileOrSubfolder)) {
                 advancedEntry.hasVector = true;
@@ -156,13 +137,13 @@ const readFolderValues = async (folder) => {
 
 const readAllValuesForOneFeature = (absPath, feature) => {
     return new Promise(async resolve => {
-        const absFolder = await typeFromPath(absPath) == "folder" ? absPath : path.dirname(absPath);
+        const absFolder = await typeFromPathWithDefaultExtension(absPath, TFIDF_EXTENSION) == "folder" ? absPath : path.dirname(absPath);
         const values = {};
         fs.readdir(absFolder, async (err, filesAndSubfolders) => {
             for (const f of filesAndSubfolders) {
                 if(isNoAggFile(f)) {
                     const fileOrFolder = path.join(absFolder, f);
-                    const type = await typeFromPath(fileOrFolder);
+                    const type = await typeFromPathWithDefaultExtension(fileOrFolder, TFIDF_EXTENSION);
                     if (type === "folder") {
                         const folderValues = await readFolderValues(fileOrFolder);
                         const indexOfFeature = folderValues.words.findIndex(w => compareToFeature(w, feature));
@@ -201,7 +182,7 @@ function _readSubAggFoldersRecursive(folder, progressCallback, totalCtr) {
                 for (const f of filesAndSubfolders) {
                     if(isNoAggFile(f)) {
                         const fileOrFolder = path.join(folder, f);
-                        const type = await typeFromPath(fileOrFolder);
+                        const type = await typeFromPathWithDefaultExtension(fileOrFolder, TFIDF_EXTENSION);
                         if (type === "folder") {
                             const folderValues = await readFolderValues(fileOrFolder);
                             const [children, subCtr] = await _readSubAggFoldersRecursive(fileOrFolder, progressCallback, totalCtr);
@@ -235,4 +216,4 @@ function readSubAggFolders(relFolder, basePath, progressCallback) {
     })
 }
 
-module.exports = {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3}
+module.exports = {readAggFolder, readSrcFolder2, TFIDF_EXTENSION, readSubAggFolders, readAllValuesForOneFeature, readSrcFolder3}

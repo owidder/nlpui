@@ -9,7 +9,8 @@ const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
 const {createIndex, searchStem} = require("./searchEngine");
 
-const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3} = require("./serverFunctions");
+const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, readSrcFolder3} = require("./serverFunctions");
+const {typeFromPathWithDefaultExtension} = require("./fileUtil");
 const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
 
 const cliOptionsConfig = [
@@ -79,7 +80,7 @@ router.get("/src/pathType/*", async function (req, res) {
     try {
         const relPath = decodeURI(req.originalUrl.substr("/api/src/pathType".length + 1));
         const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relPath);
-        const pathType = await typeFromPath(absPath);
+        const pathType = await typeFromPathWithDefaultExtension(absPath, TFIDF_EXTENSION);
         console.log(`pathType: ${relPath} -> ${pathType}`);
         res.json({path: relPath, pathType});
     } catch (e) {
