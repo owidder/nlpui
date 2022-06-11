@@ -7,7 +7,7 @@ const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = re
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
-const {createIndex} = require("./searchEngine");
+const {createIndex, searchStem} = require("./searchEngine");
 
 const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, typeFromPath, readSrcFolder3} = require("./serverFunctions");
 const {initUnstemDict, unstem, unstemWordsAndValues} = require("./unstem");
@@ -137,6 +137,11 @@ router.get("/valuesForFeature", async (req, res) => {
 router.get("/srcPathMap", async (req, res) => {
     const srcPathMap = await getSrcPathMap(path.join(cliOptions.datapath, "info"));
     res.json(srcPathMap)
+})
+
+router.get("/searchStem", (req, res) => {
+    const stem = req.query.stem;
+    res.json(searchStem(stem));
 })
 
 app.use('/api', router);

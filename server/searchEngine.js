@@ -49,4 +49,8 @@ const createIndex = async (relFolder, extension, baseFolder) => {
     console.log(stemIndex)
 }
 
-module.exports = {createIndex}
+const searchStem = (stem) => {
+    return stemIndex[stem]
+}
+
+module.exports = {createIndex, searchStem}
