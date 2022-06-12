@@ -242,6 +242,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                     <WordList currentMetric={this.state.currentMetric}
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
+                                              clickedOnStem={(stem: string) => console.log(stem)}
                                               initialOrderByAlpha={this.props.initialOrderByAlpha}/> :
                                     <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
                                                wordsAndMetrics={this.state.wordsAndMetrics}/>}

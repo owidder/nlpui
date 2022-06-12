@@ -1,5 +1,6 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
+import {HiSearchCircle} from "react-icons/hi";
 
 import {WordAndMetrics} from "./metrics";
 import {currentLocationWithNewHashValues, setNewHashValues} from "../../util/queryUtil2";
@@ -9,9 +10,10 @@ interface WordListProps {
     wordsAndMetrics: WordAndMetrics[]
     initialOrderByAlpha: boolean
     initialFilter: string
+    clickedOnStem: (stem: string) => void
 }
 
-export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter}: WordListProps) => {
+export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter, clickedOnStem}: WordListProps) => {
     const [orderByAlpha, setOrderByAlpha] = useState(initialOrderByAlpha);
     const [filter, setFilter] = useState(initialFilter);
     const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
@@ -55,7 +57,9 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index+1}</div>
                     <div className="cell string">
-                        <span>{wordAndMetrics.stem}: </span>{wordAndMetrics.words.map((word, index2) => <span key={index2} ><a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: word, currentMetric})}>{word}</a>&nbsp;</span>)}
+                        <span><a href={currentLocationWithNewHashValues({})} onClick={() => clickedOnStem(wordAndMetrics.stem)}><HiSearchCircle/></a></span>
+                        <span>{wordAndMetrics.stem}: </span>
+                        {wordAndMetrics.words.map((word, index2) => <span key={index2} ><a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: word, currentMetric})}>{word}</a>&nbsp;</span>)}
                     </div>
                     <div className="cell">{wordAndMetrics[currentMetric].toFixed(currentMetric == "count" ? 0 : 2)}</div>
                 </div>

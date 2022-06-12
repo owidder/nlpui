@@ -27,7 +27,8 @@ import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 import {SrcPathLink} from "./SrcPathLink";
 
 interface CosinesWithProgressProps {
-    doc: string
+    doc?: string
+    stem?: string
     feature?: string
     srcPathMap?: any
 }
@@ -40,21 +41,27 @@ interface CosineValue {
 
 let rootFeatures: String[][] = [];
 
-export const CosinesWithProgress = ({doc, feature, srcPathMap}: CosinesWithProgressProps) => {
+export const CosinesWithProgress = ({doc, feature, srcPathMap, stem}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${doc}&feature=${feature}`,
-            setProgress,
-            setNumberOfFiles,
-            setProgressText,
-            (_cosineValues: CosineValue[]) => {
-                const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
-                setCosineValues(sortedCosineValues);
+        if(stem) {
+            callApi(`/api/searchStem/${stem}`).then((result: CosineValue[]) => {
+                setCosineValues(result)
             })
+        } else {
+            streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${doc}&feature=${feature}`,
+                setProgress,
+                setNumberOfFiles,
+                setProgressText,
+                (_cosineValues: CosineValue[]) => {
+                    const sortedCosineValues = _.sortBy(_cosineValues, cv => -cv.cosine);
+                    setCosineValues(sortedCosineValues);
+                })
+        }
     }, [doc])
 
     const featureTooltipRenderer = new FeatureTooltipRenderer(
