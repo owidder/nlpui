@@ -33,7 +33,8 @@ const _createIndexRecursive = (index, relFolder, extension, baseFolder) => {
                     if(type === "folder") {
                         await _createIndexRecursive(index, relFileOrFolder, extension, baseFolder);
                     } else if(f.endsWith(extension)) {
-                        await addToIndex(relFileOrFolder, index, baseFolder);
+                        const fileWithoutExtension = relFileOrFolder.substring(0, relFileOrFolder.indexOf(extension));
+                        await addToIndex(fileWithoutExtension, index, baseFolder);
                     }
                 }
                 resolve()

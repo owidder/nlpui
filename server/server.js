@@ -143,7 +143,7 @@ router.get("/srcPathMap", async (req, res) => {
 router.get("/searchStem", (req, res) => {
     const stem = req.query.stem;
     const path = req.query.path;
-    if(path) {
+    if(path && path.length > 1) {
         res.json(searchStemInPath(stem, path))
     } else {
         res.json(searchStem(stem));
