@@ -53,4 +53,9 @@ const searchStem = (stem) => {
     return stemIndex[stem]
 }
 
-module.exports = {createIndex, searchStem}
+const searchStemInPath = (stem, path) => {
+    const allResults = searchStem(stem);
+    return allResults.filter(result => result.document.startsWith(path))
+}
+
+module.exports = {createIndex, searchStem, searchStemInPath}

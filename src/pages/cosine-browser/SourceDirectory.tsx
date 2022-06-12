@@ -2,7 +2,6 @@ import * as React from "react";
 
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
-import {WordCloud} from "./WordCloud";
 import "../directory.scss";
 import {METRICS, WordAndMetrics, MetricValues} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
@@ -57,6 +56,7 @@ interface DirectoryState {
     wordsAndMetrics: WordAndMetrics[]
     showList: boolean
     srcPathMap: any
+    currentSearchStem?: string
 }
 
 interface FolderInfo {
@@ -215,13 +215,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
-                        {this.state.currentPathType == "folder" ?
-                            <div><a href={currentLocationWithNewHashValues({fmt: this.getFmt()})}
-                                    onClick={() => {
-                                        configureGlobalLinksForCosineBrowserPage({fmt: this.getReverseFmt()});
-                                        this.setState({showList: !this.state.showList})
-                                    }}>Show as {this.getReverseFmt()}</a></div> : <span/>
-                        }
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
                         {this.state.advancedEntries.map(advancedEntry => {
@@ -238,14 +231,19 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                 srcPathMap={this.state.srcPathMap}
                             /> :
                             <div>
-                                {this.state.showList ?
+                                {this.state.currentSearchStem ?
+                                    <CosinesWithProgress
+                                        doc={this.state.currentPath}
+                                        searchStem={this.state.currentSearchStem}
+                                        feature={this.props.feature}
+                                        srcPathMap={this.state.srcPathMap}
+                                    /> :
                                     <WordList currentMetric={this.state.currentMetric}
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
-                                              clickedOnStem={(stem: string) => console.log(stem)}
-                                              initialOrderByAlpha={this.props.initialOrderByAlpha}/> :
-                                    <WordCloud path={this.state.currentPath} currentMetric={this.state.currentMetric}
-                                               wordsAndMetrics={this.state.wordsAndMetrics}/>}
+                                              clickedOnStem={(stem: string) => this.setState({currentSearchStem: stem})}
+                                              initialOrderByAlpha={this.props.initialOrderByAlpha}/>
+                                }
                             </div>}
                     </div>
                 </div>

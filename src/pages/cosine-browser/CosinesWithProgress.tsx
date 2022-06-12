@@ -28,7 +28,7 @@ import {SrcPathLink} from "./SrcPathLink";
 
 interface CosinesWithProgressProps {
     doc?: string
-    stem?: string
+    searchStem?: string
     feature?: string
     srcPathMap?: any
 }
@@ -41,15 +41,15 @@ interface CosineValue {
 
 let rootFeatures: String[][] = [];
 
-export const CosinesWithProgress = ({doc, feature, srcPathMap, stem}: CosinesWithProgressProps) => {
+export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        if(stem) {
-            callApi(`/api/searchStem/${stem}`).then((result: CosineValue[]) => {
+        if(searchStem) {
+            callApi(`/api/searchStem?stem=${searchStem}&path=${doc}`).then((result: CosineValue[]) => {
                 setCosineValues(result)
             })
         } else {
