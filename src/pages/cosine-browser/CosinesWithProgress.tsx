@@ -50,7 +50,8 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
     useEffect(() => {
         if(searchStem) {
             callApi(`/api/searchStem?stem=${searchStem}&path=${doc}`).then((result: CosineValue[]) => {
-                setCosineValues(result)
+                const sortedResult = _.sortBy(result, cv => -cv.cosine);
+                setCosineValues(sortedResult)
             })
         } else {
             streamContentWithProgress(`/api/cosineValuesWithProgress?doc1=${doc}&feature=${feature}`,
