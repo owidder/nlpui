@@ -6,8 +6,7 @@ const {writeProgressText, writeMaxProgress, writeProgress, writeJsonz, deleteEve
 const {randomNumberBetween} = require("./miscUtil");
 
 const {createReadlineInterface} = require("./fileUtil");
-const {readFeatures, compareToFeature} = require("./tfidf");
-const {unstem} = require("./unstem");
+const {readFeatures} = require("./tfidf");
 
 const VECTORS_FILE_NAME = "vectors2.csv";
 
@@ -77,7 +76,7 @@ const findVector = async (doc, eventEmitter) => {
 const findTfidfValueOfFeature = async (docPath, feature) => {
     if(feature) {
         const allFeatures = await readFeatures(docPath);
-        const indexOfFeature = allFeatures.findIndex(f => compareToFeature(unstem(f.feature), feature));
+        const indexOfFeature = allFeatures.findIndex(f => f.feature === feature);
         return indexOfFeature > -1 ? allFeatures[indexOfFeature].value : undefined;
     }
 }
