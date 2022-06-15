@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
-const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, compareToFeature, IGNORED_TFIDF_EXTENSIONS} = require("./tfidf");
+const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER, IGNORED_TFIDF_EXTENSIONS} = require("./tfidf");
 
 const {createReadlineInterface, typeFromPathWithDefaultExtension} = require("./fileUtil");
 const {unstem, unstemWordsAndValues} = require("./unstem");
@@ -124,6 +124,7 @@ const waitForCallback = (callback) => {
 const readFolderValues = async (folder) => {
     const aggValues = await readAggFolder(folder);
     const unstemmed = unstemWordsAndValues(aggValues);
+    const stems = aggValues.map(wav => wav.word);
     const words = unstemmed.map(wav => wav.words);
     const tfidfValues = unstemmed.map(wav => wav.value);
     const sumValues = unstemmed.map(wav => wav.sum);
@@ -132,7 +133,7 @@ const readFolderValues = async (folder) => {
     const maxCountValues = unstemmed.map(wav => (wav.max * wav.count));
     const countValues = unstemmed.map(wav => wav.count);
 
-    return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues}
+    return {words, tfidfValues, sumValues, avgValues, maxValues, countValues, maxCountValues, stems}
 }
 
 const readAllValuesForOneFeature = (absPath, feature) => {
@@ -146,7 +147,7 @@ const readAllValuesForOneFeature = (absPath, feature) => {
                     const type = await typeFromPathWithDefaultExtension(fileOrFolder, TFIDF_EXTENSION);
                     if (type === "folder") {
                         const folderValues = await readFolderValues(fileOrFolder);
-                        const indexOfFeature = folderValues.words.findIndex(w => compareToFeature(w, feature));
+                        const indexOfFeature = folderValues.stems.findIndex(stem => stem === feature);
                         if(indexOfFeature > -1) {
                             values[f] = {
                                 sum: folderValues.sumValues[indexOfFeature],
@@ -161,7 +162,7 @@ const readAllValuesForOneFeature = (absPath, feature) => {
                         const unstemmedFileValues = fileValues.map(({feature, value}) => {
                             return {feature: unstem(feature), value}
                         });
-                        const indexOfFeature = unstemmedFileValues.findIndex(fv => compareToFeature(fv.feature, feature));
+                        const indexOfFeature = fileValues.findIndex(fv => fv.feature === feature);
                         if(indexOfFeature > -1) {
                             values[removeTfIdfExtension(f)] = unstemmedFileValues[indexOfFeature].value;
                         }
