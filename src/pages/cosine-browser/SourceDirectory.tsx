@@ -57,6 +57,7 @@ interface DirectoryState {
     showList: boolean
     srcPathMap: any
     currentSearchStem?: string
+    showSearch?: boolean
 }
 
 interface FolderInfo {
@@ -215,6 +216,12 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
+                        {this.state.currentSearchStem ?
+                            <div><a href={currentLocationWithNewHashValues({})}
+                                    onClick={() => {
+                                        this.setState({showSearch: !this.state.showSearch})
+                                    }}>Show {this.state.showSearch ? "words" : "search"}</a></div> : <span/>
+                        }
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
                         {this.state.advancedEntries.map(advancedEntry => {
@@ -231,7 +238,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                 srcPathMap={this.state.srcPathMap}
                             /> :
                             <div>
-                                {this.state.currentSearchStem ?
+                                {this.state.currentSearchStem && this.state.showSearch ?
                                     <CosinesWithProgress
                                         doc={this.state.currentPath}
                                         searchStem={this.state.currentSearchStem}
@@ -241,7 +248,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                     <WordList currentMetric={this.state.currentMetric}
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
-                                              clickedOnStem={(stem: string) => this.setState({currentSearchStem: stem})}
+                                              clickedOnStem={(stem: string) => this.setState({currentSearchStem: stem, showSearch: true})}
                                               initialOrderByAlpha={this.props.initialOrderByAlpha}/>
                                 }
                             </div>}
