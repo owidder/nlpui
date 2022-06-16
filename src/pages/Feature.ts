@@ -1,5 +1,6 @@
 export interface Feature {
     features: [string]
+    stem: string
     value: number
 }
 
