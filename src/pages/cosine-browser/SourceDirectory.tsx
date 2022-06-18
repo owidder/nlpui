@@ -216,7 +216,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>
-                        {this.state.currentSearchStem ?
+                        {this.props.feature ?
                             <div><a href={currentLocationWithNewHashValues({})}
                                     onClick={() => {
                                         this.setState({showSearch: !this.state.showSearch})
@@ -238,10 +238,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                 srcPathMap={this.state.srcPathMap}
                             /> :
                             <div>
-                                {this.state.currentSearchStem && this.state.showSearch ?
+                                {this.props.feature && this.state.showSearch ?
                                     <CosinesWithProgress
                                         doc={this.state.currentPath}
-                                        searchStem={this.state.currentSearchStem}
+                                        searchStem={this.props.feature}
                                         feature={this.props.feature}
                                         srcPathMap={this.state.srcPathMap}
                                     /> :
