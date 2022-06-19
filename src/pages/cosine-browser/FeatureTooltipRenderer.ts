@@ -2,7 +2,7 @@ import {Feature, sortFeatures} from "../Feature";
 import {doListEffect} from "../../util/tooltip";
 import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
-type IsHighlightedCallback = (feature: string[]) => boolean
+type IsHighlightedCallback = (stem: string) => boolean
 type ListFootCallback = (documentPath: string) => string
 
 const SHORTLIST_LENGTH = 20;
@@ -47,7 +47,7 @@ export class FeatureTooltipRenderer {
         const list = sortedFeatures.slice(0, this.shortlist ? SHORTLIST_LENGTH : sortedFeatures.length).map(f => {
             const searchLink = `<a href="${this.href(f.stem)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.stem}</a>`
             const words = f.features.join(", ");
-            return `<span class="${this.isHighlighted(f.features) ? 'highlight-feature' : 'lowlight-feature'}">${searchLink} [${words}] <small>[${f.value.toFixed(2)}]</small></span>`
+            return `<span class="${this.isHighlighted(f.stem) ? 'highlight-feature' : 'lowlight-feature'}">${searchLink} [${words}] <small>[${f.value.toFixed(2)}]</small></span>`
         });
 
         const listHead = `<span class="tooltip-title">${documentPath}</span>`

@@ -40,7 +40,7 @@ interface CosineValue {
     tfidfValueOfFeature?: number
 }
 
-let rootFeatures: String[][] = [];
+let rootStems: String[] = [];
 
 export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
@@ -72,17 +72,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
 
     const featureTooltipRenderer = new FeatureTooltipRenderer(
         (feature: string) => currentLocationWithNewHashValues({path: doc, feature}),
-        (feature: string[]) => {
-            for(let i = 0; i < rootFeatures.length; i++) {
-                for(let j = 0; j < feature.length; j++) {
-                    if(rootFeatures[i].indexOf(feature[j]) > -1) {
-                        return true;
-                    }
-                }
-            }
-
-            return false
-        },
+        (stem: string) => rootStems.indexOf(stem) > -1,
         (documentPath: string) => tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
     )
 
@@ -108,7 +98,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
     }
 
     const handleList = async (cosineValues: CosineValue[]) => {
-        rootFeatures = (await readFeatures(cosineValues[0].document)).map(f => f.features);
+        rootStems = (await readFeatures(cosineValues[0].document)).map(f => f.stem);
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
                 moveTooltip(event);
