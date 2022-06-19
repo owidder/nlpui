@@ -7,6 +7,7 @@ import {ProgressBar} from "../../progress/ProgressBar";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import {
     createTooltip,
+    removeAllTooltips,
     moveTooltip,
     showTooltip,
     hideTooltip,
@@ -63,6 +64,10 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
                     setCosineValues(sortedCosineValues);
                 })
         }
+
+        return () => {
+            removeAllTooltips()
+        }
     }, [doc])
 
     const featureTooltipRenderer = new FeatureTooltipRenderer(
@@ -90,6 +95,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
     }
 
     const enter = async (event: Event, d: { document: string, features?: Feature[] }) => {
+        console.log("enter");
         if (!d.features) {
             const features = await readFeatures(d.document);
             d.features = features;
