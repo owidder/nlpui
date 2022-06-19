@@ -56,7 +56,6 @@ interface DirectoryState {
     wordsAndMetrics: WordAndMetrics[]
     showList: boolean
     srcPathMap: any
-    currentSearchStem?: string
     showSearch?: boolean
 }
 
@@ -248,7 +247,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                     <WordList currentMetric={this.state.currentMetric}
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
-                                              clickedOnStem={(stem: string) => this.setState({currentSearchStem: stem, showSearch: true})}
                                               initialOrderByAlpha={this.props.initialOrderByAlpha}/>
                                 }
                             </div>}
