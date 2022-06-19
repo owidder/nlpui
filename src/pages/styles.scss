@@ -21,6 +21,12 @@
       font-weight: bolder;
       background-color: antiquewhite;
     }
+
+    &:hover {
+      background-color: lightgray;
+      font-weight: bolder;
+    }
+
   }
 
   .cell {
