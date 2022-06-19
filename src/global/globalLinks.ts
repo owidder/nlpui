@@ -9,7 +9,6 @@ export const configureGlobalLinksForTreemapPage = (newLinkConfig: HashValues) =>
 
 export const configureGlobalLinksForCosineBrowserPage = (newLinkConfig: HashValues) => {
     configureCosineBrowserHomeLink(newLinkConfig);
-    configureSwitchToTreemapLink(newLinkConfig);
 }
 
 export const configureTreemapHomeLink = (newLinkConfig: HashValues) => {
