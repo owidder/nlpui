@@ -98,7 +98,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
     }
 
     const handleList = async (cosineValues: CosineValue[]) => {
-        rootStems = (await readFeatures(cosineValues[0].document)).map(f => f.stem);
+        rootStems = searchStem ? [searchStem] : (await readFeatures(cosineValues[0].document)).map(f => f.stem);
         d3.selectAll(".list")
             .on("mouseenter", (event) => {
                 moveTooltip(event);
