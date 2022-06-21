@@ -11,7 +11,7 @@ const addToIndex = async (relFilePath, index, baseFolder) => {
     const wordsWithValues = await readFeatures(absFilePath);
 
     wordsWithValues.forEach(wwv => {
-        const entry = {document: relFilePath, cosine: wwv.value};
+        const entry = {document: relFilePath, cosine: wwv.value, tfidfValueOfFeature: wwv.value};
         if(index[wwv.feature]) {
             index[wwv.feature].push(entry)
         } else {

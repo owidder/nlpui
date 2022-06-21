@@ -132,10 +132,15 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: Cosi
         const maxTfidfValueOfFeature = cosineValues.reduce((_max, _cosineValue) =>
             _max < _cosineValue.tfidfValueOfFeature ? _cosineValue.tfidfValueOfFeature : _max, 0);
         return <div className="list">
+            <div className="litsrow title">
+                <div className="cell index">No.</div>
+                <div className="cell string">path</div>
+                <div className="cell">{searchStem ? `tf-idf of "${searchStem}"` : "Cosine"}</div>
+            </div>
             {cosineValues.map((cosineValue, index) => {
                 const backgroundColor = wordSearchColor(cosineValue.tfidfValueOfFeature, maxTfidfValueOfFeature);
                 const value = cosineValue.tfidfValueOfFeature ? ` (tf-idf of "${feature}": ${cosineValue.tfidfValueOfFeature})` : "";
-                return <div className="listrow" key={index} style={searchStem ? {} : {backgroundColor}}>
+                return <div className="listrow" key={index} style={{backgroundColor}}>
                     <div className="cell index">{index}</div>
                     <div className="cell string">
                         <span><SrcPathLink path={cosineValue.document} srcPathMap={srcPathMap}/></span>
