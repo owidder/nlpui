@@ -164,7 +164,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 return [value, `(tf-idf of "${this.props.feature}": ${value.toFixed(2)})`];
             } else {
                 const v = value[this.state.currentMetric];
-                return [v, `(${this.state.currentMetric} of "${this.props.feature}": ${v % 1 != 0 ? v.toFixed(2) : v})`]
+                return [v, `(${this.state.currentMetric} of "${this.props.feature}": ${v % 1 != 0 ? v.toFixed(2) : v.toFixed(0)})`]
             }
         }
 
