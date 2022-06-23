@@ -29,7 +29,7 @@ interface DirectoryProps {
     path: string
     initialCurrentMetric: string
     feature?: string
-    initialShowList: boolean
+    initialFmt: string
     initialOrderByAlpha: boolean
     initialFilter: string
 }
@@ -54,9 +54,8 @@ interface DirectoryState {
     valuesForFeature?: ValuesForFeature
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
-    showList: boolean
+    fmt: string
     srcPathMap: any
-    showSearch?: boolean
 }
 
 interface FolderInfo {
@@ -80,12 +79,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         valuesForFeature: {},
         currentMetric: this.props.initialCurrentMetric,
         wordsAndMetrics: [],
-        showList: this.props.initialShowList,
+        fmt: this.props.initialFmt,
         srcPathMap: {}
     }
-
-    getFmt = () => this.state.showList ? "list" : "cloud";
-    getReverseFmt = () => this.state.showList ? "cloud" : "list";
 
     private async readSrcPathMap() {
         const srcPathMap = await callApi("/api/srcPathMap");
@@ -184,7 +180,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             {isFileWithoutVector ?
                 <span className="directoryentry no-vector">{entry}</span> :
                 <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
-                   href={currentLocationWithNewHashValues({path, fmt: this.getFmt()})}
+                   href={currentLocationWithNewHashValues({path, fmt: this.state.fmt})}
                    onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{valueStr}</span></a>
             }
         </span>
@@ -198,11 +194,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
             const href = currentLocationWithNewHashValues({
                 currentMetric: metric,
-                fmt: this.getFmt(),
+                fmt: this.state.fmt,
                 path: this.state.currentPath
             });
             const a = <a onClick={() => {
-                configureGlobalLinksForCosineBrowserPage({currentMetric: metric, fmt: this.getFmt()});
+                configureGlobalLinksForCosineBrowserPage({currentMetric: metric, fmt: this.state.fmt});
                 this.setState({currentMetric: metric})
             }} href={href}>{metric}</a>;
             let link = metric == this.state.currentMetric ? <small key={i}><b><u>{a}</u></b></small> :
@@ -218,8 +214,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         {this.props.feature && this.state.currentPathType === "folder" ?
                             <div><a href={currentLocationWithNewHashValues({})}
                                     onClick={() => {
-                                        this.setState({showSearch: !this.state.showSearch})
-                                    }}>Show {this.state.showSearch ? "words" : "search"}</a></div> : <span/>
+                                        this.setState({fmt: this.state.fmt == "wordlist" ? "search" : "wordlist"})
+                                    }}>Show {this.state.fmt == "wordlist" ? "search" : "words"}</a></div> : <span/>
                         }
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
@@ -237,7 +233,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                 srcPathMap={this.state.srcPathMap}
                             /> :
                             <div>
-                                {this.props.feature && this.state.showSearch ?
+                                {this.props.feature && this.state.fmt == "search" ?
                                     <CosinesWithProgress
                                         doc={this.state.currentPath}
                                         searchStem={this.props.feature}
