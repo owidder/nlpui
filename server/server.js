@@ -7,7 +7,7 @@ const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = re
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
-const {createIndex, searchStem, searchStemInPath} = require("./searchEngine");
+const {createStemIndex, searchStem, searchStemInPath} = require("./searchEngine");
 
 const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, readSrcFolder3} = require("./serverFunctions");
 const {typeFromPathWithDefaultExtension} = require("./fileUtil");
@@ -159,7 +159,7 @@ process.on('uncaughtException', function (err) {
 });
 
 initVectorspath(path.join(cliOptions.datapath, VECTORS_FILE_NAME)).then(async () => {
-    await createIndex("", ".tfidf.csv", path.join(cliOptions.datapath, "tfidf"));
+    await createStemIndex("", ".tfidf.csv", path.join(cliOptions.datapath, "tfidf"));
     initUnstemDict(cliOptions.datapath);
     totalSubAgg = await readSubAggFolders("", cliOptions.datapath, (progress) => {
         console.log(progress);

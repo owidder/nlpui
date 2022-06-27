@@ -59,4 +59,4 @@ const searchStemInPath = (stem, _path) => {
     return allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
 }
 
-module.exports = {createIndex: createStemIndex, searchStem, searchStemInPath}
+module.exports = {createStemIndex, searchStem, searchStemInPath}
