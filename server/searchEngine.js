@@ -45,7 +45,7 @@ const _createIndexRecursive = (index, relFolder, extension, baseFolder) => {
     })
 }
 
-const createIndex = async (relFolder, extension, baseFolder) => {
+const createStemIndex = async (relFolder, extension, baseFolder) => {
     await _createIndexRecursive(stemIndex, relFolder, extension, baseFolder);
     console.log(stemIndex)
 }
@@ -59,4 +59,4 @@ const searchStemInPath = (stem, _path) => {
     return allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
 }
 
-module.exports = {createIndex, searchStem, searchStemInPath}
+module.exports = {createIndex: createStemIndex, searchStem, searchStemInPath}
