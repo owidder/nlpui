@@ -212,7 +212,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <div className="margins row">
                     <div className={gridClass(2)}>
                         {this.props.feature && this.state.currentPathType === "folder" ?
-                            <div><a href={currentLocationWithNewHashValues({})}
+                            <div><a href={currentLocationWithNewHashValues({fmt: this.state.fmt == "wordlist" ? "wordlist" : "search"})}
                                     onClick={() => {
                                         this.setState({fmt: this.state.fmt == "wordlist" ? "search" : "wordlist"})
                                     }}>Show {this.state.fmt == "wordlist" ? "search" : "words"}</a></div> : <span/>
