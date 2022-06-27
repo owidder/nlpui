@@ -14,15 +14,34 @@ const readUnstemDict = (datapath) => {
     return {}
 }
 
-const unstem = (word) => unstemDict[word] ? unstemDict[word] : word;
+const unstem = (word, datapath, relFolder) => {
+    const unstemmed = unstemDict[word] ? unstemDict[word] : [word];
+
+    if(datapath != undefined && relFolder != undefined) {
+        return filterLongWordsForFolder(unstemmed,datapath, relFolder)
+    } else {
+        return unstemmed
+    }
+}
 
 const initUnstemDict = (datapath) => {
     unstemDict = readUnstemDict(datapath);
 }
 
-const unstemWordsAndValues = (wordsAndValues) => {
+const readLongWordsOfFolder = (datapath, relFolder) => {
+    const absPath = path.join(datapath, "words", relFolder, "_._long_words_of_folder");
+    const longWordsOfFolderBuffer = fs.readFileSync(absPath);
+    return String(longWordsOfFolderBuffer).replaceAll("\n", "").split(" ");
+}
+
+const filterLongWordsForFolder = (words, datapath, relFolder) => {
+    const longWordsOfFolder = readLongWordsOfFolder(datapath, relFolder)
+    return words.filter(w => longWordsOfFolder.indexOf(w) > -1);
+}
+
+const unstemWordsAndValues = (wordsAndValues, datapath, relFolder) => {
     return  wordsAndValues.map(wav => {
-        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word)};
+        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word, datapath, relFolder)};
         delete wavNew.word;
 
         return wavNew
