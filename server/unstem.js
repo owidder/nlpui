@@ -14,11 +14,11 @@ const readUnstemDict = (datapath) => {
     return {}
 }
 
-const unstem = (word, datapath, relFolder) => {
+const unstem = (word, datapath, relFileOrFolder) => {
     const unstemmed = unstemDict[word] ? unstemDict[word] : [word];
 
-    if(datapath != undefined && relFolder != undefined) {
-        return filterLongWordsForFolder(unstemmed,datapath, relFolder)
+    if(datapath != undefined && relFileOrFolder != undefined) {
+        return filterLongWordsForFolder(unstemmed,datapath, relFileOrFolder)
     } else {
         return unstemmed
     }
@@ -28,20 +28,20 @@ const initUnstemDict = (datapath) => {
     unstemDict = readUnstemDict(datapath);
 }
 
-const readLongWordsOfFolder = (datapath, relFolder) => {
-    const absPath = path.join(datapath, "words", relFolder, "_._long_words_of_folder");
+const readLongWordsOfFileOrFolder = (datapath, relFileOrFolder) => {
+    const absPath = path.join(datapath, "words", relFileOrFolder, relFileOrFolder.endsWith("_long_words_") ? "" : "_._long_words_of_folder");
     const longWordsOfFolderBuffer = fs.readFileSync(absPath);
     return String(longWordsOfFolderBuffer).replaceAll("\n", "").split(" ");
 }
 
-const filterLongWordsForFolder = (words, datapath, relFolder) => {
-    const longWordsOfFolder = readLongWordsOfFolder(datapath, relFolder)
+const filterLongWordsForFolder = (words, datapath, relFileOrFolder) => {
+    const longWordsOfFolder = readLongWordsOfFileOrFolder(datapath, relFileOrFolder)
     return words.filter(w => longWordsOfFolder.indexOf(w) > -1);
 }
 
-const unstemWordsAndValues = (wordsAndValues, datapath, relFolder) => {
+const unstemWordsAndValues = (wordsAndValues, datapath, relFileOrFolder) => {
     return  wordsAndValues.map(wav => {
-        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word, datapath, relFolder)};
+        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word, datapath, relFileOrFolder)};
         delete wavNew.word;
 
         return wavNew
