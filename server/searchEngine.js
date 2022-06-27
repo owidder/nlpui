@@ -20,7 +20,7 @@ const addToIndex = async (relFilePath, index, baseFolder) => {
     })
 }
 
-const _createIndexRecursive = (index, relFolder, extension, baseFolder) => {
+const _createStemIndexRecursive = (index, relFolder, extension, baseFolder) => {
     console.log(Object.keys(index).length);
     return new Promise(async (resolve, reject) => {
         try {
@@ -31,7 +31,7 @@ const _createIndexRecursive = (index, relFolder, extension, baseFolder) => {
                     const relFileOrFolder = path.join(relFolder, f);
                     const type = await typeFromPathWithDefaultExtension(absFileOrFolder);
                     if(type === "folder") {
-                        await _createIndexRecursive(index, relFileOrFolder, extension, baseFolder);
+                        await _createStemIndexRecursive(index, relFileOrFolder, extension, baseFolder);
                     } else if(f.endsWith(extension)) {
                         const fileWithoutExtension = relFileOrFolder.substring(0, relFileOrFolder.indexOf(extension));
                         await addToIndex(fileWithoutExtension, index, baseFolder);
@@ -46,7 +46,7 @@ const _createIndexRecursive = (index, relFolder, extension, baseFolder) => {
 }
 
 const createStemIndex = async (relFolder, extension, baseFolder) => {
-    await _createIndexRecursive(stemIndex, relFolder, extension, baseFolder);
+    await _createStemIndexRecursive(stemIndex, relFolder, extension, baseFolder);
     console.log(stemIndex)
 }
 
