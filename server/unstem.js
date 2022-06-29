@@ -36,10 +36,11 @@ const readLongWordsOfFileOrFolder = (datapath, relFileOrFolder) => {
 
 const filterLongWordsForFolder = (words, datapath, relFileOrFolder) => {
     const longWordsOfFolder = readLongWordsOfFileOrFolder(datapath, relFileOrFolder)
-const readLongWordsOfSourceFile = async (datapath, relSourceFile) => {
-    return readLongWordsOfFileOrFolder(datapath, `${relSourceFile}.${LONG_WORDS_SUFFIX}`)
-}
     return words.filter(w => longWordsOfFolder.indexOf(w) > -1);
+}
+
+const readLongWordsOfSourceFile = (datapath, relSourceFile) => {
+    return readLongWordsOfFileOrFolder(datapath, `${relSourceFile}.${LONG_WORDS_SUFFIX}`)
 }
 
 const unstemWordsAndValues = (wordsAndValues, datapath, relFileOrFolder) => {
@@ -53,4 +54,4 @@ const unstemWordsAndValues = (wordsAndValues, datapath, relFileOrFolder) => {
 
 const stemFromUnstem = (unstemmed) => reversedUnstemDict[unstemmed] ? reversedUnstemDict[unstemmed] : unstemmed;
 
-module.exports = {unstem, stemFromUnstem, initUnstemDict, unstemWordsAndValues}
+module.exports = {unstem, stemFromUnstem, initUnstemDict, unstemWordsAndValues, readLongWordsOfSourceFile}
