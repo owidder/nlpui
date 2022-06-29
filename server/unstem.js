@@ -36,6 +36,9 @@ const readLongWordsOfFileOrFolder = (datapath, relFileOrFolder) => {
 
 const filterLongWordsForFolder = (words, datapath, relFileOrFolder) => {
     const longWordsOfFolder = readLongWordsOfFileOrFolder(datapath, relFileOrFolder)
+const readLongWordsOfSourceFile = async (datapath, relSourceFile) => {
+    return readLongWordsOfFileOrFolder(datapath, `${relSourceFile}.${LONG_WORDS_SUFFIX}`)
+}
     return words.filter(w => longWordsOfFolder.indexOf(w) > -1);
 }
 

@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const {typeFromPathWithDefaultExtension} = require("./fileUtil");
 const {readFeatures} = require("./tfidf");
+const {readLongWordsOfSourceFile} = require("./unstem");
 
 let stemIndex = {constructor: []};
 
@@ -57,6 +58,17 @@ const searchStem = (stem) => {
 const searchStemInPath = (stem, _path) => {
     const allResults = searchStem(stem);
     return allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
+}
+
+const searchStemAndFullWord = (stem, fullWord, datapath) => {
+    const allResults = searchStem(stem);
+    return allResults.filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
+}
+
+const searchStemAndFullWordInPath = (stem, fullWord, path, datapath) => {
+    const allResults = searchStem(stem);
+    return allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
+        .filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
 }
 
 module.exports = {createStemIndex, searchStem, searchStemInPath}
