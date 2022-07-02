@@ -29,6 +29,7 @@ interface DirectoryProps {
     path: string
     initialCurrentMetric: string
     feature?: string
+    fullWord?: string
     initialFmt: string
     initialOrderByAlpha: boolean
     initialFilter: string
@@ -237,6 +238,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                     <CosinesWithProgress
                                         doc={this.state.currentPath}
                                         searchStem={this.props.feature}
+                                        searchFullWord={this.props.fullWord}
                                         feature={this.props.feature}
                                         srcPathMap={this.state.srcPathMap}
                                     /> :

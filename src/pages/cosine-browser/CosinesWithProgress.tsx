@@ -30,6 +30,7 @@ import {SrcPathLink} from "./SrcPathLink";
 interface CosinesWithProgressProps {
     doc?: string
     searchStem?: string
+    searchFullWord?: string
     feature?: string
     srcPathMap?: any
 }
@@ -42,14 +43,20 @@ interface CosineValue {
 
 let rootStems: String[] = [];
 
-export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem}: CosinesWithProgressProps) => {
+export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem, searchFullWord}: CosinesWithProgressProps) => {
     const [cosineValues, setCosineValues] = useState([] as CosineValue[])
     const [progress, setProgress] = useState(0);
     const [progressText, setProgressText] = useState("");
     const [numberOfFiles, setNumberOfFiles] = useState(0);
 
     useEffect(() => {
-        if(searchStem) {
+        if(searchStem && searchFullWord) {
+            callApi(`/api/searchStemAndFullwWord?stem=${searchStem}&path=${doc}&fullword=${searchFullWord}`).then((result: CosineValue[]) => {
+                const sortedResult = _.sortBy(result, cv => -cv.cosine);
+                setCosineValues(sortedResult)
+            })
+        }
+        else if(searchStem) {
             callApi(`/api/searchStem?stem=${searchStem}&path=${doc}`).then((result: CosineValue[]) => {
                 const sortedResult = _.sortBy(result, cv => -cv.cosine);
                 setCosineValues(sortedResult)

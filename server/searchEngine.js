@@ -65,10 +65,14 @@ const searchStemAndFullWord = (stem, fullWord, datapath) => {
     return allResults.filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
 }
 
-const searchStemAndFullWordInPath = (stem, fullWord, path, datapath) => {
-    const allResults = searchStem(stem);
-    return allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
-        .filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
+const searchStemAndFullWordInPath = (stem, fullWord, _path, datapath) => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const allResults = searchStem(stem);
+            resolve(allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
+                .filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1))
+        })
+    })
 }
 
-module.exports = {createStemIndex, searchStem, searchStemInPath}
+module.exports = {createStemIndex, searchStem, searchStemInPath, searchStemAndFullWord, searchStemAndFullWordInPath}

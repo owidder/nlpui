@@ -7,7 +7,7 @@ const {initVectorspath, similarDocsFromFileWithProgress, VECTORS_FILE_NAME} = re
 const {readFeatures, TFIDF_EXTENSION, TFIDF_FOLDER} = require("./tfidf");
 const {writeJsonz} = require("./stream");
 const {getSrcPathMap} = require("./srcPath");
-const {createStemIndex, searchStem, searchStemInPath} = require("./searchEngine");
+const {createStemIndex, searchStem, searchStemInPath, searchStemAndFullWordInPath, searchStemAndFullWord} = require("./searchEngine");
 
 const {readAggFolder, readSrcFolder2, readSubAggFolders, readAllValuesForOneFeature, readSrcFolder3} = require("./serverFunctions");
 const {typeFromPathWithDefaultExtension} = require("./fileUtil");
@@ -147,6 +147,17 @@ router.get("/searchStem", (req, res) => {
         res.json(searchStemInPath(stem, path))
     } else {
         res.json(searchStem(stem));
+    }
+})
+
+router.get("/searchStemAndFullWord", async (req, res) => {
+    const stem = req.query.stem;
+    const fullWord = req.query.fullword;
+    const path = req.query.path;
+    if(path && path.length > 1) {
+        res.json(searchStemAndFullWordInPath(stem, fullWord, path, cliOptions.datapath))
+    } else {
+        res.json(searchStemAndFullWord(stem, fullWord, cliOptions.datapath));
     }
 })
 
