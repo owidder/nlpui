@@ -44,11 +44,15 @@ const readLongWordsOfSourceFile = (datapath, relSourceFile) => {
 }
 
 const unstemWordsAndValues = (wordsAndValues, datapath, relFileOrFolder) => {
-    return  wordsAndValues.map(wav => {
-        const wavNew = {...wav, stem: wav.word, words: unstem(wav.word, datapath, relFileOrFolder)};
-        delete wavNew.word;
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(wordsAndValues.map(wav => {
+                const wavNew = {...wav, stem: wav.word, words: unstem(wav.word, datapath, relFileOrFolder)};
+                delete wavNew.word;
 
-        return wavNew
+                return wavNew
+            }))
+        })
     })
 }
 

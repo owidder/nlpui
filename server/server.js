@@ -33,7 +33,7 @@ router.get("/agg/folder/*", async function (req, res) {
         const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
         const folder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const wordsAndValues = await readAggFolder(folder);
-        res.json(unstemWordsAndValues(wordsAndValues, cliOptions.datapath, relFolder));
+        res.json(await unstemWordsAndValues(wordsAndValues, cliOptions.datapath, relFolder));
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }
