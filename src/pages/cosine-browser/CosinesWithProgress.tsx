@@ -51,7 +51,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem, searc
 
     useEffect(() => {
         if(searchStem && searchFullWord) {
-            callApi(`/api/searchStemAndFullwWord?stem=${searchStem}&path=${doc}&fullword=${searchFullWord}`).then((result: CosineValue[]) => {
+            callApi(`/api/searchStemAndFullWord?stem=${searchStem}&path=${doc}&fullword=${searchFullWord}`).then((result: CosineValue[]) => {
                 const sortedResult = _.sortBy(result, cv => -cv.cosine);
                 setCosineValues(sortedResult)
             })

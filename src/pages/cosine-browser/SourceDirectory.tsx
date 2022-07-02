@@ -208,7 +208,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         }, []) : [];
         return this.state.loading ? <ClimbingBoxLoader color="blue" css={override} loading={true} size={100}/> :
             <div className="directory">
-                <div className="featurename">{this.props.feature}</div>
+                <div className="featurename">{this.props.fullWord ? `${this.props.feature} (${this.props.fullWord})` : this.props.feature}</div>
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
                 <div className="margins row">
                     <div className={gridClass(2)}>

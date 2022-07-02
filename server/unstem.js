@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
+const LONG_WORDS_SUFFIX = "_long_words_";
+
 let unstemDict;
 let reversedUnstemDict;
 

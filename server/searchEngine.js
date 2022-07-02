@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const {typeFromPathWithDefaultExtension} = require("./fileUtil");
 const {readFeatures} = require("./tfidf");
-const {readLongWordsOfSourceFile} = require("./unstem");
+const {readLongWordsOfSourceFile, unstem} = require("./unstem");
 
 let stemIndex = {constructor: []};
 
@@ -62,15 +62,20 @@ const searchStemInPath = (stem, _path) => {
 
 const searchStemAndFullWord = (stem, fullWord, datapath) => {
     const allResults = searchStem(stem);
-    return allResults.filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
+    if(unstem(stem)?.length > 1) {
+        return allResults.filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1);
+    } else {
+        return allResults;
+    }
 }
 
 const searchStemAndFullWordInPath = (stem, fullWord, _path, datapath) => {
     return new Promise(resolve => {
         setTimeout(() => {
             const allResults = searchStem(stem);
-            resolve(allResults.filter(result => result.document.startsWith(path.join(_path, "/")))
-                .filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1))
+            const pathFiltered = allResults.filter(result => result.document.startsWith(path.join(_path, "/")));
+            const fullWordFiltered = unstem(stem)?.length > 1 ? pathFiltered.filter(result => readLongWordsOfSourceFile(datapath, result.document).indexOf(fullWord) > -1) : pathFiltered;
+            resolve(fullWordFiltered)
         })
     })
 }
