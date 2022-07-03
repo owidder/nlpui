@@ -56,7 +56,8 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                     <div className="cell index">{index+1}</div>
                     <div className="cell string">
                         <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric})}>{wordAndMetrics.stem}</a>
-                        &nbsp;[{wordAndMetrics.words.map((word, index2) => <span key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</span>)}]
+                        &nbsp;[{wordAndMetrics.words.map((word, index2) =>
+                        <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric, fullword: word})} key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</a>)}]
                     </div>
                     <div className="cell">{wordAndMetrics[currentMetric].toFixed(currentMetric == "count" ? 0 : 2)}</div>
                 </div>

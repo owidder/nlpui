@@ -78,7 +78,7 @@ export const CosinesWithProgress = ({doc, feature, srcPathMap, searchStem, searc
     }, [doc])
 
     const featureTooltipRenderer = new FeatureTooltipRenderer(
-        (feature: string) => currentLocationWithNewHashValues({path: doc, feature}),
+        (feature: string, fullWord?: string) => currentLocationWithNewHashValues({path: doc, feature, fullword: fullWord}),
         (stem: string) => rootStems.indexOf(stem) > -1,
         (documentPath: string) => tooltipLink(`/cosine-browser/cosine-browser.html#path=${documentPath}&feature=${feature}`, "Show similar documents")
     )

@@ -4,17 +4,18 @@ import {addEventListener, removeAllEventListeners} from "../../util/listener";
 
 type IsHighlightedCallback = (stem: string) => boolean
 type ListFootCallback = (documentPath: string) => string
+type HrefCallback = (feature: string, fullWord?: string) => string
 
 const SHORTLIST_LENGTH = 20;
 
 export class FeatureTooltipRenderer {
-    href: (feature: string) => string
+    href: HrefCallback
     isHighlighted: IsHighlightedCallback
     listFoot: ListFootCallback
 
     shortlist = true;
 
-    constructor(href: (feature: string) => string,
+    constructor(href: HrefCallback,
                 isHighlighted: IsHighlightedCallback = () => false,
                 listFoot:ListFootCallback = () => "<span/>") {
         this.href = href;
@@ -46,7 +47,7 @@ export class FeatureTooltipRenderer {
 
         const list = sortedFeatures.slice(0, this.shortlist ? SHORTLIST_LENGTH : sortedFeatures.length).map(f => {
             const searchLink = `<a href="${this.href(f.stem)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${f.stem}</a>`
-            const words = f.features.join(", ");
+            const words = f.features.map(feature => `<a href="${this.href(f.stem, feature)}" onclick="document.dispatchEvent(new CustomEvent('reload'))">${feature}</a>`).join(", ");
             return `<span class="${this.isHighlighted(f.stem) ? 'highlight-feature' : 'lowlight-feature'}">${searchLink} [${words}] <small>[${f.value.toFixed(2)}]</small></span>`
         });
 
