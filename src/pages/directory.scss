@@ -34,6 +34,19 @@
     &.withline {
       border-bottom: solid black 1px;
     }
+
+    & .cell.string {
+      flex: 5;
+    }
+
+    & .cell.number {
+      font-family: "Courier New", monospace;
+      text-align: right;
+    }
+
+    & .cell {
+      flex: 1;
+    }
   }
 }
 

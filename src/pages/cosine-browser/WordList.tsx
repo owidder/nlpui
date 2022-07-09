@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
 
-import {WordAndMetrics} from "./metrics";
+import {WordAndMetrics, METRICS} from "./metrics";
 import {currentLocationWithNewHashValues, setNewHashValues} from "../../util/queryUtil2";
 
 interface WordListProps {
@@ -48,7 +48,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                 <a href={currentLocationWithNewHashValues({abc: orderByAlpha ? 1 : 0})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a>
                 <input value={filterInputFieldValue} onChange={(e) => setFilterInputFieldValue(e.target.value)}/>
             </div>
-            <div className="cell">{currentMetric}</div>
+            {METRICS.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
         </div>
         {sortedWordsAndMetrics.length > 0 ?
             sortedWordsAndMetrics.map((wordAndMetrics, index) => {

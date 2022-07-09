@@ -70,6 +70,11 @@ interface PathInfo {
     pathType: PathType
 }
 
+const extendMetrics = (values: MetricValues | WordAndMetrics): MetricValues | WordAndMetrics => {
+    const factor = Math.min(values.count, 100);
+    return {...values, avgMax: values.avg * factor, maxMax: values.max * factor}
+}
+
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
 
     readonly state: DirectoryState = {
@@ -93,7 +98,15 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         return new Promise<void>(resolve => {
             streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
                 (valuesForFeature: ValuesForFeature) => {
-                    this.setState({valuesForFeature})
+                    const extendedValuesForFeature: ValuesForFeature = Object.keys(valuesForFeature).reduce<ValuesForFeature>((_extendedValuesForFeature, fileOrFolder) => {
+                        const metricValues: number | MetricValues = valuesForFeature[fileOrFolder];
+                        if(typeof metricValues == "number") {
+                            return {..._extendedValuesForFeature, [fileOrFolder]: metricValues}
+                        } else {
+                            return {..._extendedValuesForFeature, [fileOrFolder]: extendMetrics(metricValues)}
+                        }
+                    }, {})
+                    this.setState({valuesForFeature: extendedValuesForFeature})
                     resolve()
                 })
         })
@@ -114,7 +127,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderInfo: FolderInfo = await callApi(`/api/src/folder2/${folder}`)
             if (pathType == "folder") {
                 const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
-                this.setState({wordsAndMetrics})
+                const extendedWordsAndMetrics: WordAndMetrics[] = wordsAndMetrics.map(wam => {
+                    return extendMetrics(wam) as WordAndMetrics;
+                })
+                this.setState({wordsAndMetrics: extendedWordsAndMetrics})
             }
 
             removeAllTooltips();
