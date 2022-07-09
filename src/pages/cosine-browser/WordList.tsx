@@ -39,7 +39,16 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         }
     }
 
-    const sortedWordsAndMetrics = wordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
+    const weightedWordsAndMetrics = wordsAndMetrics.map(wam => {
+        return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
+            if(METRICS.indexOf(key) > -1) {
+                return {..._w, [key]: wam[key] * wam.stem.length}
+            } else {
+                return {..._w, [key]: wam[key]}
+            }
+        }, {} as WordAndMetrics)
+    })
+    const sortedWordsAndMetrics = weightedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
         <div className="listrow title">
