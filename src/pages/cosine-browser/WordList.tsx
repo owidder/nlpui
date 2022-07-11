@@ -9,12 +9,14 @@ interface WordListProps {
     wordsAndMetrics: WordAndMetrics[]
     initialOrderByAlpha: boolean
     initialFilter: string
+    initialLengthWeightened: boolean
 }
 
-export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter}: WordListProps) => {
+export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter, initialLengthWeightened}: WordListProps) => {
     const [orderByAlpha, setOrderByAlpha] = useState(initialOrderByAlpha);
     const [filter, setFilter] = useState(initialFilter);
     const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
+    const [lengthWeightened, setLengthWeightened] = useState(initialLengthWeightened);
 
     let filterDelayTimer;
 
@@ -39,7 +41,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         }
     }
 
-    const weightedWordsAndMetrics = wordsAndMetrics.map(wam => {
+    const weightedWordsAndMetrics = lengthWeightened ? wordsAndMetrics.map(wam => {
         return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
             if(METRICS.indexOf(key) > -1) {
                 return {..._w, [key]: wam[key] * wam.stem.length}
@@ -47,15 +49,20 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                 return {..._w, [key]: wam[key]}
             }
         }, {} as WordAndMetrics)
-    })
+    }) : wordsAndMetrics;
     const sortedWordsAndMetrics = weightedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
+
         <div className="listrow title">
             <div className="cell index">No.</div>
-            <div className="cell string">stem and long words
+            <div className="cell string">
                 <a href={currentLocationWithNewHashValues({abc: orderByAlpha ? 1 : 0})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a>
                 <input value={filterInputFieldValue} onChange={(e) => setFilterInputFieldValue(e.target.value)}/>
+                <label><input className="filled-in" type="checkbox" checked={lengthWeightened} onChange={() => {
+                    setNewHashValues({lw: lengthWeightened ? 0 : 1});
+                    setLengthWeightened(!lengthWeightened);
+                }}/><span>weight on length</span></label>
             </div>
             {METRICS.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
         </div>
@@ -68,7 +75,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                         &nbsp;[{wordAndMetrics.words.map((word, index2) =>
                         <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric, fullword: word})} key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</a>)}]
                     </div>
-                    {METRICS.map(metric => <div className="cell number">{wordAndMetrics[metric].toFixed(metric == "count" ? 0 : 2)}</div>)}
+                    {METRICS.map((metric, index) => <div key={index} className="cell number">{wordAndMetrics[metric].toFixed(metric == "count" ? 0 : 2)}</div>)}
                 </div>
             }) :
             <h5>???</h5>

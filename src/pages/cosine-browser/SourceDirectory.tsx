@@ -33,6 +33,7 @@ interface DirectoryProps {
     initialFmt: string
     initialOrderByAlpha: boolean
     initialFilter: string
+    initialLengthWeightened: boolean
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -261,6 +262,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                     <WordList currentMetric={this.state.currentMetric}
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
+                                              initialLengthWeightened={this.props.initialLengthWeightened}
                                               initialOrderByAlpha={this.props.initialOrderByAlpha}/>
                                 }
                             </div>}
