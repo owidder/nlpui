@@ -34,6 +34,7 @@ interface DirectoryProps {
     initialOrderByAlpha: boolean
     initialFilter: string
     initialLengthWeightened: boolean
+    initialUseWeightedTfIdf: boolean
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -58,6 +59,7 @@ interface DirectoryState {
     wordsAndMetrics: WordAndMetrics[]
     fmt: string
     srcPathMap: any
+    useWeightedTfIdf: boolean
 }
 
 interface FolderInfo {
@@ -73,7 +75,12 @@ interface PathInfo {
 
 const extendMetrics = (values: MetricValues | WordAndMetrics): MetricValues | WordAndMetrics => {
     const factor = Math.min(values.count, 100);
-    return {...values, avgMax: values.avg * factor, maxMax: values.max * factor}
+    return {...values,
+        avgMax: values.avg * factor,
+        maxMax: values.max * factor,
+        avgMax2: values.avg2 ? [values.avg2[0] * factor, values.avg2[1] * factor] : undefined,
+        maxMax2: values.max2 ? [values.max2[0] * factor, values.max2[1] * factor] : undefined
+    } as MetricValues | WordAndMetrics
 }
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
@@ -87,7 +94,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         currentMetric: this.props.initialCurrentMetric,
         wordsAndMetrics: [],
         fmt: this.props.initialFmt,
-        srcPathMap: {}
+        srcPathMap: {},
+        useWeightedTfIdf: false
     }
 
     private async readSrcPathMap() {
@@ -204,6 +212,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         </span>
     }
 
+    switchTfIdfWeights() {
+
+    }
+
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
@@ -263,6 +275,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                               wordsAndMetrics={this.state.wordsAndMetrics}
                                               initialFilter={this.props.initialFilter}
                                               initialLengthWeightened={this.props.initialLengthWeightened}
+                                              initialUseWeightedTfIdf={this.props.initialUseWeightedTfIdf}
                                               initialOrderByAlpha={this.props.initialOrderByAlpha}/>
                                 }
                             </div>}

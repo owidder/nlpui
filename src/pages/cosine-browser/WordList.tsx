@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
 
-import {WordAndMetrics, METRICS} from "./metrics";
+import {WordAndMetrics, METRICS, METRICS2} from "./metrics";
 import {currentLocationWithNewHashValues, setNewHashValues} from "../../util/queryUtil2";
 
 interface WordListProps {
@@ -10,13 +10,15 @@ interface WordListProps {
     initialOrderByAlpha: boolean
     initialFilter: string
     initialLengthWeightened: boolean
+    initialUseWeightedTfIdf: boolean
 }
 
-export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter, initialLengthWeightened}: WordListProps) => {
+export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter, initialLengthWeightened, initialUseWeightedTfIdf}: WordListProps) => {
     const [orderByAlpha, setOrderByAlpha] = useState(initialOrderByAlpha);
     const [filter, setFilter] = useState(initialFilter);
     const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
     const [lengthWeightened, setLengthWeightened] = useState(initialLengthWeightened);
+    const [useWeightedTfIdf, setUseWeightedTfIdf] = useState(initialUseWeightedTfIdf)
 
     let filterDelayTimer;
 
@@ -37,7 +39,11 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         if(orderByAlpha) {
             return a.stem.localeCompare(b.stem)
         } else {
-            return b[currentMetric] - a[currentMetric]
+            if(currentMetric === 'count') {
+                return b.count - a.count;
+            } else {
+                return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 0 : 1]
+            }
         }
     }
 
@@ -45,6 +51,8 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
             if(METRICS.indexOf(key) > -1) {
                 return {..._w, [key]: wam[key] * wam.stem.length}
+            } else if (METRICS2.indexOf(key) > -1) {
+                return {..._w, [key]: [wam[key][0] * wam.stem.length, wam[key][1] * wam.stem.length]}
             } else {
                 return {..._w, [key]: wam[key]}
             }
@@ -63,8 +71,12 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                     setNewHashValues({lw: lengthWeightened ? 0 : 1});
                     setLengthWeightened(!lengthWeightened);
                 }}/><span>weight on length</span></label>
+                <label><input className="filled-in" type="checkbox" checked={useWeightedTfIdf} onChange={() => {
+                    setNewHashValues({tfw: useWeightedTfIdf ? 0 : 1});
+                    setUseWeightedTfIdf(!useWeightedTfIdf);
+                }}/><span>use weighted TfIdf</span></label>
             </div>
-            {METRICS.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
+            {METRICS2.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
         </div>
         {sortedWordsAndMetrics.length > 0 ?
             sortedWordsAndMetrics.map((wordAndMetrics, index) => {
@@ -75,7 +87,12 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                         &nbsp;[{wordAndMetrics.words.map((word, index2) =>
                         <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric, fullword: word})} key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</a>)}]
                     </div>
-                    {METRICS.map((metric, index) => <div key={index} className="cell number">{wordAndMetrics[metric].toFixed(metric == "count" ? 0 : 2)}</div>)}
+                    {METRICS2.map((metric, index) => {
+                        const value = metric === 'count' ?
+                            wordAndMetrics.count.toFixed(0) :
+                            wordAndMetrics [metric][useWeightedTfIdf ? 1 : 0].toFixed(2);
+                        return <div key={index} className="cell number">{value}</div>
+                    })}
                 </div>
             }) :
             <h5>???</h5>

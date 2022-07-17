@@ -15,6 +15,7 @@ const fullWord = getHashParamValue("fullword", "");
 const fmt = getHashParamValue("fmt", "wordlist");
 const abc = getHashParamValue("abc", "0");
 const lw = getHashParamValue("lw", "0");
+const tfw = getHashParamValue("tfw", "0");
 const initialFilter = getHashParamValue("filter", "")
 
 configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
@@ -28,5 +29,6 @@ ReactDOM.createRoot(document.getElementById("container"))
         initialFmt={fmt}
         initialFilter={initialFilter}
         initialOrderByAlpha={Number(abc) === 1}
+        initialUseWeightedTfIdf={Number(tfw) === 1}
         initialLengthWeightened={Number(lw) === 1}
     />)

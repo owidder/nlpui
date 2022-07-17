@@ -13,10 +13,13 @@ const IGNORED_AGG_CSV = ["_all.csv", "_2.csv"];
 
 const isNoAggFile = f => !(f === AGG_CSV || IGNORED_AGG_CSV.indexOf(f) > -1);
 
-const SUM_INDEX = 5
-const MAX_INDEX = 6
+const SUM_INDEX_UNWEIGHTED = 1
+const MAX_INDEX_UNWEIGHTED = 2
+const AVG_INDEX_UNWEIGHTED = 4
+const SUM_INDEX_WEIGHTED = 5
+const MAX_INDEX_WEIGHTED = 6
 const COUNT_INDEX = 3
-const AVG_INDEX = 7
+const AVG_INDEX_WEIGHTED = 7
 
 function sortNonCaseSensitive(list) {
     return list.sort(function (a, b) {
@@ -97,12 +100,18 @@ function readAggFolder(folder) {
             const wordsAndValues = [];
             readLineInterface.on("line", line => {
                 const wordAndValues = line.split("\t");
-                const value = Number(wordAndValues[SUM_INDEX])
-                wordsAndValues.push({word: wordAndValues[0], sum: _.round(wordAndValues[SUM_INDEX], 2),
+                const value = Number(wordAndValues[SUM_INDEX_WEIGHTED])
+                wordsAndValues.push({word: wordAndValues[0], sum: _.round(wordAndValues[SUM_INDEX_WEIGHTED], 2),
                     count: Number(wordAndValues[COUNT_INDEX]),
-                    max: _.round(wordAndValues[MAX_INDEX], 2),
-                    avg: _.round(wordAndValues[AVG_INDEX], 2),
-                    "max*count": _.round(wordAndValues[MAX_INDEX] * wordAndValues[COUNT_INDEX], 2), value});
+                    max: _.round(wordAndValues[MAX_INDEX_WEIGHTED], 2),
+                    avg: _.round(wordAndValues[AVG_INDEX_WEIGHTED], 2),
+                    "max*count": _.round(wordAndValues[MAX_INDEX_WEIGHTED] * wordAndValues[COUNT_INDEX], 2),
+                    sum2: [_.round(wordAndValues[SUM_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[SUM_INDEX_WEIGHTED], 2)],
+                    max2: [_.round(wordAndValues[MAX_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[MAX_INDEX_WEIGHTED], 2)],
+                    avg2: [_.round(wordAndValues[AVG_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[AVG_INDEX_WEIGHTED], 2)],
+                    "max*count2": [_.round(wordAndValues[MAX_INDEX_UNWEIGHTED] * wordAndValues[COUNT_INDEX], 2), _.round(wordAndValues[MAX_INDEX_WEIGHTED] * wordAndValues[COUNT_INDEX], 2)],
+                    value
+                });
             }).on("close", () => {
                 resolve(_.sortBy(wordsAndValues, ["value"]).reverse())
             })
