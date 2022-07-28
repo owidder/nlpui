@@ -42,7 +42,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
             if(currentMetric === 'count') {
                 return b.count - a.count;
             } else {
-                return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 0 : 1]
+                return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
             }
         }
     }
