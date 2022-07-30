@@ -35,6 +35,7 @@ interface DirectoryProps {
     initialFilter: string
     initialLengthWeightened: boolean
     initialUseWeightedTfIdf: boolean
+    maxCount: number
 }
 
 type PathType = "file" | "folder" | "NA"
@@ -73,8 +74,8 @@ interface PathInfo {
     pathType: PathType
 }
 
-const extendMetrics = (values: MetricValues | WordAndMetrics): MetricValues | WordAndMetrics => {
-    const factor = Math.min(values.count, 100);
+const extendMetrics = (values: MetricValues | WordAndMetrics, maxCount = 100): MetricValues | WordAndMetrics => {
+    const factor = Math.min(values.count, maxCount);
     return {...values,
         avgMax: values.avg * factor,
         maxMax: values.max * factor,
@@ -112,7 +113,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                         if(typeof metricValues == "number") {
                             return {..._extendedValuesForFeature, [fileOrFolder]: metricValues}
                         } else {
-                            return {..._extendedValuesForFeature, [fileOrFolder]: extendMetrics(metricValues)}
+                            return {..._extendedValuesForFeature, [fileOrFolder]: extendMetrics(metricValues, this.props.maxCount)}
                         }
                     }, {})
                     this.setState({valuesForFeature: extendedValuesForFeature})
@@ -137,7 +138,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             if (pathType == "folder") {
                 const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
                 const extendedWordsAndMetrics: WordAndMetrics[] = wordsAndMetrics.map(wam => {
-                    return extendMetrics(wam) as WordAndMetrics;
+                    return extendMetrics(wam, this.props.maxCount) as WordAndMetrics;
                 })
                 this.setState({wordsAndMetrics: extendedWordsAndMetrics})
             }
