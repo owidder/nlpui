@@ -1,4 +1,5 @@
 import * as React from "react";
+import {rank} from "d3-array";
 import {useState, useEffect} from "react";
 
 import {WordAndMetrics, METRICS, METRICS2} from "./metrics";
@@ -11,6 +12,15 @@ interface WordListProps {
     initialFilter: string
     initialLengthWeightened: boolean
     initialUseWeightedTfIdf: boolean
+}
+
+const createRanksForMetric = (wordsAndMetrics: WordAndMetrics[], metric: string): [number[], number[]] => {
+    const data0 = wordsAndMetrics.map(wam => wam[metric][0]);
+    const ranks0 = rank(data0);
+    const data1 = wordsAndMetrics.map(wam => wam[metric][1]);
+    const ranks1 = rank(data1);
+
+    return [[...ranks0], [...ranks1]];
 }
 
 export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, initialFilter, initialLengthWeightened, initialUseWeightedTfIdf}: WordListProps) => {
@@ -39,11 +49,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         if(orderByAlpha) {
             return a.stem.localeCompare(b.stem)
         } else {
-            if(currentMetric === 'count') {
-                return b.count - a.count;
-            } else {
-                return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
-            }
+            return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
         }
     }
 
@@ -58,7 +64,22 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
             }
         }, {} as WordAndMetrics)
     }) : wordsAndMetrics;
-    const sortedWordsAndMetrics = weightedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
+
+    const metricRanks = METRICS2.reduce<{[metric: string]: [number[], number[]]}>((_metricRanks, metric) => {
+        return {..._metricRanks, [metric]: createRanksForMetric(weightedWordsAndMetrics, metric)}
+    }, {})
+
+    const rankedWordsAndMetrics = wordsAndMetrics.map((wam, i) => {
+        return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
+            if (METRICS2.indexOf(key) > -1) {
+                return {..._w, [key]: [metricRanks[key][0][i], metricRanks[key][1][i]]}
+            } else {
+                return {..._w, [key]: wam[key]}
+            }
+        }, {} as WordAndMetrics)
+    })
+
+    const sortedWordsAndMetrics = rankedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
 
@@ -88,9 +109,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                         <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric, fullword: word})} key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</a>)}]
                     </div>
                     {METRICS2.map((metric, index) => {
-                        const value = metric === 'count' ?
-                            wordAndMetrics.count.toFixed(0) :
-                            wordAndMetrics [metric][useWeightedTfIdf ? 1 : 0].toFixed(2);
+                        const value = wordAndMetrics [metric][useWeightedTfIdf ? 1 : 0].toFixed(0);
                         return <div key={index} className="cell number">{value}</div>
                     })}
                 </div>

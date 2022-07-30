@@ -109,6 +109,7 @@ function readAggFolder(folder) {
                     sum2: [_.round(wordAndValues[SUM_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[SUM_INDEX_WEIGHTED], 2)],
                     max2: [_.round(wordAndValues[MAX_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[MAX_INDEX_WEIGHTED], 2)],
                     avg2: [_.round(wordAndValues[AVG_INDEX_UNWEIGHTED], 2), _.round(wordAndValues[AVG_INDEX_WEIGHTED], 2)],
+                    count2: [Number(wordAndValues[COUNT_INDEX]), Number(wordAndValues[COUNT_INDEX])],
                     "max*count2": [_.round(wordAndValues[MAX_INDEX_UNWEIGHTED] * wordAndValues[COUNT_INDEX], 2), _.round(wordAndValues[MAX_INDEX_WEIGHTED] * wordAndValues[COUNT_INDEX], 2)],
                     value
                 });
