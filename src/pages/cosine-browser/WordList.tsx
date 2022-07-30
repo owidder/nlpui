@@ -16,9 +16,9 @@ interface WordListProps {
 
 const createRanksForMetric = (wordsAndMetrics: WordAndMetrics[], metric: string): [number[], number[]] => {
     const data0 = wordsAndMetrics.map(wam => wam[metric][0]);
-    const ranks0 = rank(data0);
+    const ranks0 = rank(data0).map(r => wordsAndMetrics.length - r);
     const data1 = wordsAndMetrics.map(wam => wam[metric][1]);
-    const ranks1 = rank(data1);
+    const ranks1 = rank(data1).map(r => wordsAndMetrics.length - r);
 
     return [[...ranks0], [...ranks1]];
 }
@@ -49,7 +49,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         if(orderByAlpha) {
             return a.stem.localeCompare(b.stem)
         } else {
-            return b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
+            return a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
         }
     }
 
