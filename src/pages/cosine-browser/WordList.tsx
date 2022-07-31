@@ -2,7 +2,7 @@ import * as React from "react";
 import {rank} from "d3-array";
 import {useState, useEffect} from "react";
 
-import {WordAndMetrics, METRICS, METRICS2} from "./metrics";
+import {WordAndMetrics, METRICS2} from "./metrics";
 import {currentLocationWithNewHashValues, setNewHashValues} from "../../util/queryUtil2";
 
 interface WordListProps {
@@ -49,15 +49,13 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         if(orderByAlpha) {
             return a.stem.localeCompare(b.stem)
         } else {
-            return a[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0] - b[`${currentMetric}2`][useWeightedTfIdf ? 1 : 0]
+            return a[currentMetric][useWeightedTfIdf ? 1 : 0] - b[currentMetric][useWeightedTfIdf ? 1 : 0]
         }
     }
 
     const weightedWordsAndMetrics = lengthWeightened ? wordsAndMetrics.map(wam => {
         return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
-            if(METRICS.indexOf(key) > -1) {
-                return {..._w, [key]: wam[key] * wam.stem.length}
-            } else if (METRICS2.indexOf(key) > -1) {
+            if (METRICS2.indexOf(key) > -1) {
                 return {..._w, [key]: [wam[key][0] * wam.stem.length, wam[key][1] * wam.stem.length]}
             } else {
                 return {..._w, [key]: wam[key]}
@@ -78,7 +76,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
             }
         }, {} as WordAndMetrics)
 
-        rankedWam._count = wam.count;
+        rankedWam._count = wam.count2[0];
 
         return rankedWam;
     })
