@@ -135,6 +135,22 @@ router.get("/valuesForFeature", async (req, res) => {
     }
 })
 
+router.get("/countsForFeature", async (req, res) => {
+    try {
+        const relFolder = req.query.path;
+        const feature = req.query.feature;
+        const absPath = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder)
+        const values = await readAllValuesForOneFeature(absPath, feature);
+        const counts = Object.keys(values).reduce((_counts, entry) => {
+            return {..._counts, [entry]: values[entry].count}
+        }, {});
+        await writeJsonz(null, JSON.stringify(counts), res);
+        res.status(200).send();
+    } catch (e) {
+        res.status(500).json({error: e.toString()});
+    }
+})
+
 router.get("/srcPathMap", async (req, res) => {
     const srcPathMap = await getSrcPathMap(path.join(cliOptions.datapath, "info"));
     res.json(srcPathMap)

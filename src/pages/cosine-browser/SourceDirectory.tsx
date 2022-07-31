@@ -3,7 +3,7 @@ import * as React from "react";
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import "../directory.scss";
-import {METRICS2, WordAndMetrics, MetricValues} from "./metrics";
+import {METRICS2, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import {css} from "@emotion/react";
@@ -40,7 +40,7 @@ interface DirectoryProps {
 
 type PathType = "file" | "folder" | "NA"
 
-type ValuesForFeature = { [fileOrFolder: string]: number | MetricValues }
+type CountsForFeature = { [fileOrFolder: string]: number }
 
 interface AdvancedEntry {
     name: string
@@ -55,7 +55,7 @@ interface DirectoryState {
     currentPathType?: PathType
     tree?: any
     loading: boolean
-    valuesForFeature?: ValuesForFeature
+    countsForFeature?: CountsForFeature
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
     fmt: string
@@ -74,14 +74,14 @@ interface PathInfo {
     pathType: PathType
 }
 
-const extendMetrics = (values: MetricValues | WordAndMetrics, maxCount = 100): MetricValues | WordAndMetrics => {
+const extendMetrics = (values: WordAndMetrics, maxCount = 100): WordAndMetrics => {
     const factor = Math.min(values.count, maxCount);
     return {...values,
         avgMax: values.avg * factor,
         maxMax: values.max * factor,
         avgMax2: values.avg2 ? [values.avg2[0] * factor, values.avg2[1] * factor] : undefined,
         maxMax2: values.max2 ? [values.max2[0] * factor, values.max2[1] * factor] : undefined
-    } as MetricValues | WordAndMetrics
+    }
 }
 
 export class SourceDirectory extends React.Component<DirectoryProps, DirectoryState> {
@@ -91,7 +91,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         advancedEntries: [],
         currentPath: this.props.path,
         loading: true,
-        valuesForFeature: {},
+        countsForFeature: {},
         currentMetric: this.props.initialCurrentMetric,
         wordsAndMetrics: [],
         fmt: this.props.initialFmt,
@@ -104,19 +104,11 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         this.setState({srcPathMap})
     }
 
-    private readValuesForFeature(path: string, feature: string) {
+    private readCountsForFeature(path: string, feature: string) {
         return new Promise<void>(resolve => {
-            streamContentWithProgress(`/api/valuesForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
-                (valuesForFeature: ValuesForFeature) => {
-                    const extendedValuesForFeature: ValuesForFeature = Object.keys(valuesForFeature).reduce<ValuesForFeature>((_extendedValuesForFeature, fileOrFolder) => {
-                        const metricValues: number | MetricValues = valuesForFeature[fileOrFolder];
-                        if(typeof metricValues == "number") {
-                            return {..._extendedValuesForFeature, [fileOrFolder]: metricValues}
-                        } else {
-                            return {..._extendedValuesForFeature, [fileOrFolder]: extendMetrics(metricValues, this.props.maxCount)}
-                        }
-                    }, {})
-                    this.setState({valuesForFeature: extendedValuesForFeature})
+            streamContentWithProgress(`/api/countsForFeature?path=${path}&feature=${feature}`, NOP, NOP, NOP,
+                (countsForFeature: CountsForFeature) => {
+                    this.setState({countsForFeature})
                     resolve()
                 })
         })
@@ -124,7 +116,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     private async gotoPath(path: string, withReload?: boolean) {
         if (this.props.feature) {
-            await this.readValuesForFeature(path, this.props.feature);
+            await this.readCountsForFeature(path, this.props.feature);
         }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
@@ -181,25 +173,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         </div>
     }
 
-    extractValueForFeature(value: number | MetricValues): [number | undefined, string] {
-        if (value) {
-            if (typeof value === "number") {
-                return [value, `(tf-idf of "${this.props.feature}": ${value.toFixed(2)})`];
-            } else {
-                const v = value[this.state.currentMetric];
-                return [v, `(${this.state.currentMetric} of "${this.props.feature}": ${v % 1 != 0 ? v.toFixed(2) : v.toFixed(0)})`]
-            }
-        }
-
-        return [undefined, ""]
-    }
-
     renderLink(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
-        const maxValue: number = Object.values(this.state.valuesForFeature).reduce<number>((_max, _v) => {
-            const value: number = this.extractValueForFeature(_v)[0];
-            return value > _max ? value : _max
-        }, 0);
-        const [value, valueStr] = this.extractValueForFeature(this.state.valuesForFeature[entry]);
+        const maxValue: number = Object.values(this.state.countsForFeature).reduce<number>((_max, _v) => _v > _max ? _v : _max, 0);
+        const value: number = this.state.countsForFeature[entry];
         const backgroundColor = wordSearchColor(value, maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <span style={{backgroundColor}}>
@@ -208,7 +184,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <span className="directoryentry no-vector">{entry}</span> :
                 <a className={`directoryentry ${doHighlight ? "highlight" : ""}`}
                    href={currentLocationWithNewHashValues({path, fmt: this.state.fmt})}
-                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{valueStr}</span></a>
+                   onClick={() => this.gotoPath(path, true)}>{entry} <span className="small-value">{value > 0 ? `[${value}]` : ""}</span></a>
             }
         </span>
     }
