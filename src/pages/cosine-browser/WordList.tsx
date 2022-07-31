@@ -69,17 +69,21 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
         return {..._metricRanks, [metric]: createRanksForMetric(weightedWordsAndMetrics, metric)}
     }, {})
 
-    const rankedWordsAndMetrics = wordsAndMetrics.map((wam, i) => {
-        return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
+    const rankedWordsAndMetrics = weightedWordsAndMetrics.map((wam, i) => {
+        const rankedWam = Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
             if (METRICS2.indexOf(key) > -1) {
                 return {..._w, [key]: [metricRanks[key][0][i], metricRanks[key][1][i]]}
             } else {
                 return {..._w, [key]: wam[key]}
             }
         }, {} as WordAndMetrics)
+
+        rankedWam._count = wam.count;
+
+        return rankedWam;
     })
 
-    const sortedWordsAndMetrics = rankedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
+    const sortedRankedWordsAndMetrics = rankedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
     return <div className="directory list">
 
@@ -99,8 +103,8 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
             </div>
             {METRICS2.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
         </div>
-        {sortedWordsAndMetrics.length > 0 ?
-            sortedWordsAndMetrics.map((wordAndMetrics, index) => {
+        {sortedRankedWordsAndMetrics.length > 0 ?
+            sortedRankedWordsAndMetrics.map((wordAndMetrics, index) => {
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index+1}</div>
                     <div className="cell string">
@@ -109,8 +113,8 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                         <a onClick={() => document.dispatchEvent(new CustomEvent('reload'))} href={currentLocationWithNewHashValues({feature: wordAndMetrics.stem, currentMetric, fullword: word})} key={index2}>{word}{index2 < wordAndMetrics.words.length-1 ? ", " : ""}</a>)}]
                     </div>
                     {METRICS2.map((metric, index) => {
-                        const value = wordAndMetrics [metric][useWeightedTfIdf ? 1 : 0].toFixed(0);
-                        return <div key={index} className="cell number">{value}</div>
+                        const value = wordAndMetrics[metric][useWeightedTfIdf ? 1 : 0].toFixed(0);
+                        return <div key={index} className={`cell number ${metric}`}>{metric === "count2" ? `${value} [${wordAndMetrics._count}]` : value}</div>
                     })}
                 </div>
             }) :
