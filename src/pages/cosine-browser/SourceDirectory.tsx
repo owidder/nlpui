@@ -75,12 +75,10 @@ interface PathInfo {
 }
 
 const extendMetrics = (values: WordAndMetrics, maxCount = 100): WordAndMetrics => {
-    const factor = Math.min(values.count, maxCount);
+    const factor = Math.min(values.count[0], maxCount);
     return {...values,
-        avgMax: values.avg * factor,
-        maxMax: values.max * factor,
-        avgMax2: values.avg2 ? [values.avg2[0] * factor, values.avg2[1] * factor] : undefined,
-        maxMax2: values.max2 ? [values.max2[0] * factor, values.max2[1] * factor] : undefined
+        avgMax: values.avg ? [values.avg[0] * factor, values.avg[1] * factor] : undefined,
+        maxMax: values.max ? [values.max[0] * factor, values.max[1] * factor] : undefined
     }
 }
 

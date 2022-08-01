@@ -42,6 +42,9 @@
     & .cell.number {
       font-family: "Courier New", monospace;
       text-align: right;
+      &.indexmetric {
+        background-color: lightcyan;
+      }
     }
 
     & .cell {

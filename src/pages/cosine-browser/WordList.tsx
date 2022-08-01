@@ -76,7 +76,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
             }
         }, {} as WordAndMetrics)
 
-        rankedWam._count = wam.count2[0];
+        rankedWam._count = wam.count[0];
 
         return rankedWam;
     })
@@ -112,7 +112,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                     </div>
                     {METRICS.map((metric, index) => {
                         const value = wordAndMetrics[metric][useWeightedTfIdf ? 1 : 0].toFixed(0);
-                        return <div key={index} className={`cell number ${metric}`}>{metric === "count2" ? `${value} [${wordAndMetrics._count}]` : value}</div>
+                        return <div key={index} className={`cell number ${currentMetric == metric ? "indexmetric" : ""}`}>{metric === "count" ? `${value} [${wordAndMetrics._count}]` : value}</div>
                     })}
                 </div>
             }) :
