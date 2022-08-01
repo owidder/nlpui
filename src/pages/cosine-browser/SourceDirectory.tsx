@@ -3,7 +3,7 @@ import * as React from "react";
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
 import "../directory.scss";
-import {METRICS2, WordAndMetrics} from "./metrics";
+import {METRICS, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 import {css} from "@emotion/react";
@@ -198,7 +198,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
         const gridClass = (width: number) => `col-xs-${width} col s${width}`
 
-        const links = this.state.currentPathType == "folder" ? METRICS2.reduce((_links, metric, i) => {
+        const links = this.state.currentPathType == "folder" ? METRICS.reduce((_links, metric, i) => {
             const href = currentLocationWithNewHashValues({
                 currentMetric: metric,
                 fmt: this.state.fmt,
