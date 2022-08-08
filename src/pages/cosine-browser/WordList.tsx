@@ -55,7 +55,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
 
     const weightedWordsAndMetrics = lengthWeightened ? wordsAndMetrics.map(wam => {
         return Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
-            if (METRICS.indexOf(key) > -1) {
+            if (METRICS.indexOf(key) > -1 && key != "count") {
                 return {..._w, [key]: [wam[key][0] * wam.stem.length, wam[key][1] * wam.stem.length]}
             } else {
                 return {..._w, [key]: wam[key]}
@@ -70,13 +70,11 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
     const rankedWordsAndMetrics = weightedWordsAndMetrics.map((wam, i) => {
         const rankedWam = Object.keys(wam).reduce<WordAndMetrics>((_w, key) => {
             if (METRICS.indexOf(key) > -1) {
-                return {..._w, [key]: [metricRanks[key][0][i], metricRanks[key][1][i]]}
+                return {..._w, [key]: [metricRanks[key][0][i], metricRanks[key][1][i]], [`_${key}`]: wam[key]}
             } else {
                 return {..._w, [key]: wam[key]}
             }
         }, {} as WordAndMetrics)
-
-        rankedWam._count = wam.count[0];
 
         return rankedWam;
     })
@@ -112,7 +110,8 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
                     </div>
                     {METRICS.map((metric, index) => {
                         const value = wordAndMetrics[metric][useWeightedTfIdf ? 1 : 0].toFixed(0);
-                        return <div key={index} className={`cell number ${currentMetric == metric ? "indexmetric" : ""}`}>{metric === "count" ? `${value} [${wordAndMetrics._count}]` : value}</div>
+                        const absValue = wordAndMetrics[`_${metric}`][useWeightedTfIdf ? 1 : 0].toFixed(0);
+                        return <div title={absValue} key={index} className={`cell number ${currentMetric == metric ? "indexmetric" : ""}`}>{metric === "count" ? `${value} [${wordAndMetrics._count[0]}]` : value}</div>
                     })}
                 </div>
             }) :

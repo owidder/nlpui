@@ -1,4 +1,5 @@
 import * as React from "react";
+import {quantile} from "d3-array";
 
 import {callApi} from "../../util/fetchUtil";
 import {CosinesWithProgress} from "./CosinesWithProgress";
@@ -127,8 +128,10 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
             const folderInfo: FolderInfo = await callApi(`/api/src/folder2/${folder}`)
             if (pathType == "folder") {
                 const wordsAndMetrics: WordAndMetrics[] = await callApi(`/api/agg/folder/${path}`);
+                const p95 = quantile(wordsAndMetrics.map(wam => wam.count[0]), .95);
+                console.log(`p95: ${p95}`);
                 const extendedWordsAndMetrics: WordAndMetrics[] = wordsAndMetrics.map(wam => {
-                    return extendMetrics(wam, this.props.maxCount) as WordAndMetrics;
+                    return extendMetrics(wam, p95) as WordAndMetrics;
                 })
                 this.setState({wordsAndMetrics: extendedWordsAndMetrics})
             }
