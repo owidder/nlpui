@@ -174,8 +174,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     renderLink(entry: string, path: string, withSourceLink = true, isFileWithoutVector = false) {
-        const maxValue: number = Object.values(this.state.countsForFeature).reduce<number>((_max, _v) => _v > _max ? _v : _max, 0);
-        const value: number = this.state.countsForFeature[entry];
+        const maxValue: number = Object.values(this.state.countsForFeature).reduce<number>((_max, _v) => _v[0] > _max ? _v[0] : _max, 0);
+        const value: number = this.state.countsForFeature[entry] ? this.state.countsForFeature[entry][0] : undefined;
         const backgroundColor = wordSearchColor(value, maxValue);
         const doHighlight = _path.basename(this.state.currentPath) == entry;
         return <span style={{backgroundColor}}>
