@@ -36,7 +36,6 @@ interface DirectoryProps {
     initialFilter: string
     initialLengthWeightened: boolean
     initialUseWeightedTfIdf: boolean
-    maxCount: number
 }
 
 type PathType = "file" | "folder" | "NA"

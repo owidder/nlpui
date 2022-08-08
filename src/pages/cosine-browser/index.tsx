@@ -17,7 +17,6 @@ const abc = getHashParamValue("abc", "0");
 const lw = getHashParamValue("lw", "0");
 const tfw = getHashParamValue("tfw", "0");
 const initialFilter = getHashParamValue("filter", "")
-const maxCount = getHashParamValue("mc", "100")
 
 configureGlobalLinksForCosineBrowserPage({currentMetric, feature, path});
 
@@ -32,5 +31,4 @@ ReactDOM.createRoot(document.getElementById("container"))
         initialOrderByAlpha={Number(abc) === 1}
         initialUseWeightedTfIdf={Number(tfw) === 1}
         initialLengthWeightened={Number(lw) === 1}
-        maxCount={Number(maxCount)}
     />)
