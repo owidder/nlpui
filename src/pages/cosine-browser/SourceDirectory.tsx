@@ -16,11 +16,21 @@ import {WordList} from "./WordList";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 import {SrcPathLink} from "./SrcPathLink";
 
-const override = css`
+const loader_override = css`
   position: absolute;
   top: 50vh;
   left: 50vw;
 `;
+
+const glasspane_style: React.CSSProperties = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(255, 255, 255, .5)",
+    backdropFilter: "blur(5px)",
+}
 
 const _path = require("path");
 
@@ -218,7 +228,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
-        return this.state.loading ? <ClimbingBoxLoader color="blue" css={override} loading={true} size={100}/> :
+        return this.state.loading ? <ClimbingBoxLoader color="blue" css={loader_override} loading={true} size={100}/> :
             <div className="directory">
                 <div className="featurename">{this.props.fullWord ? `${this.props.feature} (${this.props.fullWord})` : this.props.feature}</div>
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
@@ -265,7 +275,12 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                             </div>}
                     </div>
                 </div>
-                {this.state.wait ? <ClockLoader color="blue" css={override} loading={true} size={100}/> : <span/>}
+                {this.state.wait ?
+                    <span>
+                        <div style={glasspane_style}/>
+                        <ClockLoader color="blue" css={loader_override} loading={true} size={100}/>
+                    </span> :
+                    <span/>}
             </div>
     }
 }
