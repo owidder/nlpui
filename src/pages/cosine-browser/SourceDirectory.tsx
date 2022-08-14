@@ -7,6 +7,7 @@ import "../directory.scss";
 import {METRICS, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
 import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
+import ClockLoader from "react-spinners/ClockLoader";
 import {css} from "@emotion/react";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
@@ -55,6 +56,7 @@ interface DirectoryState {
     currentPathType?: PathType
     tree?: any
     loading: boolean
+    wait: boolean
     countsForFeature?: CountsForFeature
     currentMetric: string
     wordsAndMetrics: WordAndMetrics[]
@@ -89,6 +91,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
         advancedEntries: [],
         currentPath: this.props.path,
         loading: true,
+        wait: false,
         countsForFeature: {},
         currentMetric: this.props.initialCurrentMetric,
         wordsAndMetrics: [],
@@ -113,8 +116,9 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
     }
 
     private async gotoPath(path: string, withReload?: boolean) {
+        this.setState({wait: true});
         if (this.props.feature) {
-            await this.readCountsForFeature(path, this.props.feature);
+            this.readCountsForFeature(path, this.props.feature);
         }
         const pathInfo: PathInfo = await callApi(`/api/src/pathType/${path}`)
         const pathType = pathInfo.pathType
@@ -144,6 +148,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 loading: false
             })
         }
+
+        this.setState({wait: false})
     }
 
     async componentDidMount() {
@@ -259,6 +265,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                             </div>}
                     </div>
                 </div>
+                {this.state.wait ? <ClockLoader color="blue" css={override} loading={true} size={100}/> : <span/>}
             </div>
     }
 }
