@@ -224,6 +224,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                                         this.setState({fmt: this.state.fmt == "wordlist" ? "search" : "wordlist"})
                                     }}>Show {this.state.fmt == "wordlist" ? "search" : "words"}</a></div> : <span/>
                         }
+                        {parentFolder != null ? this.renderLinkWithDiv("<root>", "", false) : <span/>}
                         {this.renderLinkWithDiv(".", this.state.currentPathType == "file" ? _path.dirname(this.state.currentPath) : this.state.currentPath, false)}
                         {parentFolder != null ? this.renderLinkWithDiv("..", parentFolder, false) : <span/>}
                         {this.state.advancedEntries.map(advancedEntry => {
