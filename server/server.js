@@ -30,10 +30,12 @@ const server = require("http").createServer(app);
 
 router.get("/agg/folder/*", async function (req, res) {
     try {
+        console.time("/agg/folder");
         const relFolder = req.originalUrl.substr("/api/agg/folder".length + 1);
         const folder = path.join(cliOptions.datapath, TFIDF_FOLDER, relFolder);
         const wordsAndValues = await readAggFolder(folder);
         res.json(await unstemWordsAndValues(wordsAndValues, cliOptions.datapath, relFolder));
+        console.timeEnd("/agg/folder");
     } catch (e) {
         res.status(500).json({error: e.toString()});
     }

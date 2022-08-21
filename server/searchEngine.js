@@ -48,7 +48,6 @@ const _createStemIndexRecursive = (index, relFolder, extension, baseFolder) => {
 
 const createStemIndex = async (relFolder, extension, baseFolder) => {
     await _createStemIndexRecursive(stemIndex, relFolder, extension, baseFolder);
-    console.log(stemIndex)
 }
 
 const searchStem = (stem) => {

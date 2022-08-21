@@ -9,3 +9,7 @@ export const joinUrlPaths = (path1: string, path2: string): string => {
         return `${path1}/${path2}`
     }
 }
+
+export const randomNumberBetween = (from, toIncluding) => {
+    return (from + (Math.floor(Math.random() * (toIncluding - from + 1))))
+}

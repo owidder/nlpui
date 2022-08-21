@@ -30,10 +30,15 @@ const initUnstemDict = (datapath) => {
     unstemDict = readUnstemDict(datapath);
 }
 
+const longWordsOfFolderCache = {};
+
 const readLongWordsOfFileOrFolder = (datapath, relFileOrFolder) => {
-    const absPath = path.join(datapath, "words", relFileOrFolder, relFileOrFolder.endsWith("_long_words_") ? "" : "_._long_words_of_folder");
-    const longWordsOfFolderBuffer = fs.readFileSync(absPath);
-    return String(longWordsOfFolderBuffer).replaceAll("\n", "").split(" ");
+    if(longWordsOfFolderCache[relFileOrFolder] == null) {
+        const absPath = path.join(datapath, "words", relFileOrFolder, relFileOrFolder.endsWith("_long_words_") ? "" : "_._long_words_of_folder");
+        const longWordsOfFolderBuffer = fs.readFileSync(absPath);
+        longWordsOfFolderCache[relFileOrFolder] = String(longWordsOfFolderBuffer).replaceAll("\n", "").split(" ");
+    }
+    return longWordsOfFolderCache[relFileOrFolder];
 }
 
 const filterLongWordsForFolder = (words, datapath, relFileOrFolder) => {
