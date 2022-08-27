@@ -28,7 +28,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
     const [filter, setFilter] = useState(initialFilter);
     const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
     const [lengthWeightened, setLengthWeightened] = useState(initialLengthWeightened);
-    const [useWeightedTfIdf, setUseWeightedTfIdf] = useState(initialUseWeightedTfIdf)
+    const [useWeightedTfIdf, setUseWeightedTfIdf] = useState(initialUseWeightedTfIdf);
 
     let filterDelayTimer;
 

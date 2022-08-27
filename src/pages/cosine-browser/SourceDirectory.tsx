@@ -6,53 +6,13 @@ import {CosinesWithProgress} from "./CosinesWithProgress";
 import "../directory.scss";
 import {METRICS, WordAndMetrics} from "./metrics";
 import {streamContentWithProgress} from "../stream/streamContentWithProgress";
-import ClockLoader from "react-spinners/ClockLoader";
-import BarLoader from "react-spinners/BarLoader";
-import BeatLoader from "react-spinners/BeatLoader";
-import BounceLoader from "react-spinners/BounceLoader";
-import CircleLoader from "react-spinners/CircleLoader";
-import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
-import ClipLoader from "react-spinners/ClipLoader";
-import DotLoader from "react-spinners/DotLoader";
-import FadeLoader from "react-spinners/FadeLoader";
-import GridLoader from "react-spinners/GridLoader";
-import HashLoader from "react-spinners/HashLoader";
-import MoonLoader from "react-spinners/MoonLoader";
-import PacmanLoader from "react-spinners/PacmanLoader";
-import PuffLoader from "react-spinners/PuffLoader";
-import PulseLoader from "react-spinners/PulseLoader";
-import RingLoader from "react-spinners/RingLoader";
-import RiseLoader from "react-spinners/RiseLoader";
-import RotateLoader from "react-spinners/RotateLoader";
-import ScaleLoader from "react-spinners/ScaleLoader";
-import SkewLoader from "react-spinners/SkewLoader";
-import SquareLoader from "react-spinners/SquareLoader";
-import SyncLoader from "react-spinners/SyncLoader";
-import {css} from "@emotion/react";
 import {wordSearchColor} from "../../wordSearch/wordSearchColor";
 import {removeAllTooltips} from "../../util/tooltip";
 import {configureGlobalLinksForCosineBrowserPage} from "../../global/globalLinks";
 import {WordList} from "./WordList";
 import {currentLocationWithNewHashValues} from "../../util/queryUtil2";
 import {SrcPathLink} from "./SrcPathLink";
-import {PropagateLoader} from "react-spinners";
-import {randomNumberBetween} from "../../util/miscUtil";
-
-const loader_override = css`
-  position: absolute;
-  top: 50vh;
-  left: 50vw;
-`;
-
-const glasspane_style: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    background: "rgba(255, 255, 255, .5)",
-    backdropFilter: "blur(5px)",
-}
+import {RandomLoader, GlassPane} from "./Loaders";
 
 const _path = require("path");
 
@@ -231,32 +191,6 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
 
     }
 
-    private loaders = [
-        <BarLoader color="blue" css={loader_override} loading={true}/>,
-        <BeatLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <BounceLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <CircleLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <ClimbingBoxLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <ClipLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <ClockLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <DotLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <FadeLoader color="blue" css={loader_override} loading={true}/>,
-        <GridLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <HashLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <MoonLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <PacmanLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <PropagateLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <PuffLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <PulseLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <RingLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <RiseLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <RotateLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <ScaleLoader color="blue" css={loader_override} loading={true}/>,
-        <SkewLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <SquareLoader color="blue" css={loader_override} loading={true} size={100}/>,
-        <SyncLoader color="blue" css={loader_override} loading={true} size={100}/>,
-    ]
-
     render() {
         const parentFolder = this.parentFolderOfCurrentPath()
 
@@ -276,7 +210,7 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 <small key={i}><i>{a}</i></small>;
             return [..._links, link]
         }, []) : [];
-        return this.state.loading ? this.loaders[randomNumberBetween(0, this.loaders.length-1)] :
+        return this.state.loading ? <RandomLoader/> :
             <div className="directory">
                 <div className="featurename">{this.props.fullWord ? `${this.props.feature} (${this.props.fullWord})` : this.props.feature}</div>
                 <h5 className="title">{this.state.currentPath && this.state.currentPath.length > 0 ? this.state.currentPath : "/"} {links}</h5>
@@ -325,8 +259,8 @@ export class SourceDirectory extends React.Component<DirectoryProps, DirectorySt
                 </div>
                 {this.state.wait ?
                     <span>
-                        <div style={glasspane_style}/>
-                        {this.loaders[randomNumberBetween(0, this.loaders.length-1)]}
+                        <GlassPane/>
+                        <RandomLoader/>
                     </span> :
                     <span/>}
             </div>
