@@ -29,6 +29,7 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
     const [filterInputFieldValue, setFilterInputFieldValue] = useState(initialFilter);
     const [lengthWeightened, setLengthWeightened] = useState(initialLengthWeightened);
     const [useWeightedTfIdf, setUseWeightedTfIdf] = useState(initialUseWeightedTfIdf);
+    const [currentLength, setCurrentLength] = useState(0);
 
     let filterDelayTimer;
 
@@ -81,26 +82,36 @@ export const WordList = ({currentMetric, wordsAndMetrics, initialOrderByAlpha, i
 
     const sortedRankedWordsAndMetrics = rankedWordsAndMetrics.filter(wam => wam.stem.indexOf(filter) > -1).sort(sortByMetricOrAlpha);
 
+    if(currentLength < sortedRankedWordsAndMetrics.length) {
+        setTimeout(() => {
+            setCurrentLength(currentLength+1000);
+        });
+    }
     return <div className="directory list">
 
         <div className="listrow title">
             <div className="cell index">No.</div>
             <div className="cell string">
                 <a href={currentLocationWithNewHashValues({abc: orderByAlpha ? 1 : 0})} onClick={() => setOrderByAlpha(!orderByAlpha)}>{orderByAlpha ? "order by value" : "order by a-z"}</a>
-                <input value={filterInputFieldValue} onChange={(e) => setFilterInputFieldValue(e.target.value)}/>
+                <input value={filterInputFieldValue} onChange={(e) => {
+                    setFilterInputFieldValue(e.target.value);
+                    setCurrentLength(1000);
+                }}/>
                 <label><input className="filled-in" type="checkbox" checked={lengthWeightened} onChange={() => {
                     setNewHashValues({lw: lengthWeightened ? 0 : 1});
                     setLengthWeightened(!lengthWeightened);
+                    setCurrentLength(1000);
                 }}/><span>weight on length</span></label>
                 <label><input className="filled-in" type="checkbox" checked={useWeightedTfIdf} onChange={() => {
                     setNewHashValues({tfw: useWeightedTfIdf ? 0 : 1});
                     setUseWeightedTfIdf(!useWeightedTfIdf);
+                    setCurrentLength(1000);
                 }}/><span>use weighted TfIdf</span></label>
             </div>
             {METRICS.map((metric, index) => <div key={index} className="cell">{metric}</div>)}
         </div>
         {sortedRankedWordsAndMetrics.length > 0 ?
-            sortedRankedWordsAndMetrics.map((wordAndMetrics, index) => {
+            sortedRankedWordsAndMetrics.slice(0, currentLength).map((wordAndMetrics, index) => {
                 return <div className="listrow" key={index}>
                     <div className="cell index">{index+1}</div>
                     <div className="cell string">
