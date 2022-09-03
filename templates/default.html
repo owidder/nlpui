@@ -40,9 +40,37 @@
 <div id="container"></div>
 
 <script>
-    document.addEventListener("reload", () => {
-        setTimeout(() => window.location.reload(), 200);
-    })
+    (function() {
+        document.addEventListener("reload", () => {
+            setTimeout(() => window.location.reload(), 200);
+        })
+
+        let atTop = true;
+        let atBottom = false;
+        window.addEventListener("scroll", () => {
+            const b = document.getElementsByTagName("body")[0];
+            const d = window.scrollY + window.innerHeight - b.scrollHeight;
+            if(d > -window.innerHeight) {
+                if(!atBottom) {
+                    atBottom = true;
+                    console.log(`atBottom: ${d}`);
+                    document.dispatchEvent(new CustomEvent("atBottom"));
+                }
+            } else {
+                atBottom = false;
+            }
+
+            if (window.scrollY < window.innerHeight) {
+                if(!atTop) {
+                    atTop = true;
+                    console.log(`atTop: ${window.scrollY}`);
+                    document.dispatchEvent(new CustomEvent("atTop"));
+                }
+            } else {
+                atTop = false;
+            }
+        })
+    })();
 </script>
 </body>
 </html>
